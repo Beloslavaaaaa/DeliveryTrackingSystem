@@ -1,8 +1,8 @@
-using DeliveryTrackingSystem.Data;
-using DeliveryTrackingSystem.Models;
+﻿using DeliveryTrackingSystem.Data;
 using DeliveryTrackingSystem.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DeliveryTrackingSystem.Controllers
@@ -15,37 +15,45 @@ namespace DeliveryTrackingSystem.Controllers
         {
             _context = context;
         }
-
         public IActionResult Index()
         {
             return View();
         }
-
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> TrackShipment(string trackingCode)
         {
             if (string.IsNullOrEmpty(trackingCode))
+            {
+                TempData["Error"] = "Please enter a tracking code.";
                 return RedirectToAction("Index");
+            }
 
             var shipment = await _context.Shipments
                 .Include(s => s.Status)
                 .Include(s => s.DeliveryRoute)
                 .Include(s => s.StatusHistory)
+                    .ThenInclude(sh => sh.Status)
                 .FirstOrDefaultAsync(s => s.TrackingCode == trackingCode);
 
             if (shipment == null)
             {
-                TempData["Error"] = "Shipment not found";
+                TempData["Error"] = "Shipment not found.";
                 return RedirectToAction("Index");
             }
 
-            var model = new ShipmentTrackingViewModel
+            var viewModel = new ShipmentTrackingViewModel
             {
-                TrackingCode = trackingCode,
-                Shipment = shipment
+                TrackingCode = shipment.TrackingCode,
+                Status = shipment.Status.Name,
+                Route = $"{shipment.DeliveryRoute.StartLocation} → {shipment.DeliveryRoute.EndLocation}",
+                StatusHistory = shipment.StatusHistory
+                    .OrderByDescending(sh => sh.Timestamp)
+                    .ToList()
             };
 
-            return RedirectToAction("Details", "Shipments", new { trackingCode });
+            return View("~/Views/Shipments/Details.cshtml", viewModel);
+
         }
     }
 }

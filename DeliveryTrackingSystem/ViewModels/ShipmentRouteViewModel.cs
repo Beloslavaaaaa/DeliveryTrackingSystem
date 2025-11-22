@@ -1,13 +1,13 @@
 ﻿using DeliveryTrackingSystem.Models;
-using System.Collections.Generic;
 
 namespace DeliveryTrackingSystem.ViewModels
 {
-    public class ShipmentTrackingViewModel
+    public class ShipmentRouteViewModel
     {
         public string TrackingCode { get; set; }
-        public string Status { get; set; }
         public string Route { get; set; }
-        public List<StatusHistory> StatusHistory { get; set; }
+        public string CourierName { get; set; }
+        public string StartLocation { get; set; }
+        public string EndLocation { get; set; }
     }
 }

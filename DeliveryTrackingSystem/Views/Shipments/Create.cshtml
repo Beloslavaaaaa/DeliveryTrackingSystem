@@ -1,0 +1,40 @@
+﻿@model DeliveryTrackingSystem.Models.Shipment
+@{
+    ViewData["Title"] = "Create Shipment";
+}
+
+<h2>Create New Shipment</h2>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label for="TrackingCode">Tracking Code</label>
+        <input type="text" class="form-control" id="TrackingCode" name="TrackingCode" required />
+    </div>
+
+    <div class="form-group mt-2">
+        <label for="SenderId">Sender Id</label>
+        <input type="text" class="form-control" id="SenderId" name="SenderId" required />
+    </div>
+
+    <div class="form-group mt-2">
+        <label for="ReceiverId">Receiver Id</label>
+        <input type="text" class="form-control" id="ReceiverId" name="ReceiverId" required />
+    </div>
+
+    <div class="form-group mt-2">
+        <label for="CourierId">Courier Id</label>
+        <input type="text" class="form-control" id="CourierId" name="CourierId" required />
+    </div>
+
+    <div class="form-group mt-2">
+        <label for="RouteId">Route</label>
+        <select class="form-select" id="RouteId" name="RouteId" required>
+            @foreach (var route in ViewBag.Routes)
+            {
+                    <option value="@route.RouteId">@route.StartLocation → @route.EndLocation</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Create Shipment</button>
+</form>

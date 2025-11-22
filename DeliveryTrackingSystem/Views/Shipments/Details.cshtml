@@ -5,12 +5,9 @@
 
 <h2>Shipment Details</h2>
 
-<div>
-    <p><strong>Tracking Code:</strong> @Model.Shipment.TrackingCode</p>
-    <p><strong>Status:</strong> @Model.Shipment.Status.Name</p>
-    <p><strong>Estimated Delivery:</strong> @(Model.Shipment.EstimatedDelivery?.ToString("g") ?? "N/A")</p>
-    <p><strong>Route:</strong> @Model.Shipment.DeliveryRoute.StartLocation → @Model.Shipment.DeliveryRoute.EndLocation</p>
-</div>
+<p><strong>Tracking Code:</strong> @Model.TrackingCode</p>
+<p><strong>Status:</strong> @Model.Status</p>
+<p><strong>Route:</strong> @Model.Route</p>
 
 <h3>Status History</h3>
 <table class="table table-striped">
@@ -22,7 +19,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var history in Model.Shipment.StatusHistory.OrderByDescending(sh => sh.Timestamp))
+        @foreach (var history in Model.StatusHistory)
         {
                 <tr>
                     <td>@history.Timestamp.ToString("g")</td>

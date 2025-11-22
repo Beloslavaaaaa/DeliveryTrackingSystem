@@ -12,10 +12,15 @@
         </div>
 }
 
-<form asp-action="TrackShipment" asp-controller="Home" method="post">
+   <form asp-action="TrackShipment" asp-controller="Home" method="post">
     <div class="form-group">
         <label for="trackingCode">Tracking Code</label>
         <input type="text" class="form-control" id="trackingCode" name="trackingCode" placeholder="Enter your tracking code" required />
     </div>
     <button type="submit" class="btn btn-primary mt-2">Track</button>
 </form>
+
+@if (!string.IsNullOrEmpty(TempData["Error"] as string))
+{
+        <div class="alert alert-danger mt-2">@TempData["Error"]</div>
+}

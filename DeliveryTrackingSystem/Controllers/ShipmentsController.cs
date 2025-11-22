@@ -1,12 +1,9 @@
 ﻿using DeliveryTrackingSystem.Data;
 using DeliveryTrackingSystem.Models;
 using DeliveryTrackingSystem.ViewModels;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace DeliveryTrackingSystem.Controllers
 {
@@ -21,7 +18,6 @@ namespace DeliveryTrackingSystem.Controllers
             _userManager = userManager;
         }
 
-        // GET: /Shipments/Details/{trackingCode}
         public async Task<IActionResult> Details(string trackingCode)
         {
             if (string.IsNullOrEmpty(trackingCode))
@@ -30,51 +26,94 @@ namespace DeliveryTrackingSystem.Controllers
             var shipment = await _context.Shipments
                 .Include(s => s.Status)
                 .Include(s => s.DeliveryRoute)
-                .Include(s => s.StatusHistory.OrderByDescending(sh => sh.Timestamp))
+                .Include(s => s.StatusHistory)
+                    .ThenInclude(sh => sh.Status)
                 .FirstOrDefaultAsync(s => s.TrackingCode == trackingCode);
 
             if (shipment == null)
             {
-                TempData["Error"] = "Shipment not found";
+                TempData["Error"] = "Shipment not found.";
                 return RedirectToAction("Index", "Home");
             }
 
-            var model = new ShipmentTrackingViewModel
+            var viewModel = new ShipmentTrackingViewModel
             {
-                TrackingCode = trackingCode,
-                Shipment = shipment
+                TrackingCode = shipment.TrackingCode,
+                Status = shipment.Status.Name,
+                Route = $"{shipment.DeliveryRoute.StartLocation} → {shipment.DeliveryRoute.EndLocation}",
+                StatusHistory = shipment.StatusHistory.OrderByDescending(sh => sh.Timestamp).ToList()
             };
 
-            return View(model);
+            return View(viewModel);
         }
 
-        // GET: /Shipments/History
-        [Authorize]
         public async Task<IActionResult> History()
         {
             var userId = _userManager.GetUserId(User);
 
+            if (userId == null)
+                return RedirectToAction("Index", "Home");
+
             var shipments = await _context.Shipments
                 .Include(s => s.Status)
                 .Include(s => s.DeliveryRoute)
-                .Where(s => s.SenderId == userId || s.ReceiverId == userId)
-                .OrderByDescending(s => s.CreatedAt)
+                .Where(s => s.SenderId == userId || s.ReceiverId == userId || s.CourierId == userId)
                 .ToListAsync();
 
             return View(shipments);
         }
+
         public async Task<IActionResult> RouteMap(string trackingCode)
+    {
+        if (string.IsNullOrEmpty(trackingCode))
+            return RedirectToAction("Index", "Home");
+
+        var shipment = await _context.Shipments
+            .Include(s => s.DeliveryRoute)
+            .Include(s => s.Courier)
+            .FirstOrDefaultAsync(s => s.TrackingCode == trackingCode);
+
+        if (shipment == null)
         {
-            if (string.IsNullOrEmpty(trackingCode))
-                return RedirectToAction("Index", "Home");
+            TempData["Error"] = "Shipment not found.";
+            return RedirectToAction("Index", "Home");
+        }
 
-            var shipment = await _context.Shipments
-                .Include(s => s.DeliveryRoute)
-                .FirstOrDefaultAsync(s => s.TrackingCode == trackingCode);
+        var viewModel = new ShipmentRouteViewModel
+        {
+            TrackingCode = shipment.TrackingCode,
+            Route = $"{shipment.DeliveryRoute.StartLocation} → {shipment.DeliveryRoute.EndLocation}",
+            CourierName = shipment.Courier.UserName,
+            StartLocation = shipment.DeliveryRoute.StartLocation,
+            EndLocation = shipment.DeliveryRoute.EndLocation
+        };
 
-            if (shipment == null)
-                return RedirectToAction("Index", "Home");
+        return View(viewModel);
+    }
 
+
+    public IActionResult Create()
+        {
+            ViewBag.Routes = _context.DeliveryRoutes.ToList();
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(Shipment shipment)
+        {
+            if (ModelState.IsValid)
+            {
+                shipment.CreatedAt = DateTime.UtcNow;
+                shipment.StatusId = _context.Statuses.First(s => s.Name == "Pending").StatusId;
+
+                _context.Shipments.Add(shipment);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("Details", new { trackingCode = shipment.TrackingCode });
+            }
+
+            ViewBag.Routes = _context.DeliveryRoutes.ToList();
             return View(shipment);
         }
     }
