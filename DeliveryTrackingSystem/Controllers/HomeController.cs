@@ -1,16 +1,19 @@
+using DeliveryTrackingSystem.Data;
 using DeliveryTrackingSystem.Models;
+using DeliveryTrackingSystem.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace DeliveryTrackingSystem.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ApplicationDbContext context)
         {
-            _logger = logger;
+            _context = context;
         }
 
         public IActionResult Index()
@@ -18,15 +21,31 @@ namespace DeliveryTrackingSystem.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        [HttpPost]
+        public async Task<IActionResult> TrackShipment(string trackingCode)
         {
-            return View();
-        }
+            if (string.IsNullOrEmpty(trackingCode))
+                return RedirectToAction("Index");
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var shipment = await _context.Shipments
+                .Include(s => s.Status)
+                .Include(s => s.DeliveryRoute)
+                .Include(s => s.StatusHistory)
+                .FirstOrDefaultAsync(s => s.TrackingCode == trackingCode);
+
+            if (shipment == null)
+            {
+                TempData["Error"] = "Shipment not found";
+                return RedirectToAction("Index");
+            }
+
+            var model = new ShipmentTrackingViewModel
+            {
+                TrackingCode = trackingCode,
+                Shipment = shipment
+            };
+
+            return RedirectToAction("Details", "Shipments", new { trackingCode });
         }
     }
 }

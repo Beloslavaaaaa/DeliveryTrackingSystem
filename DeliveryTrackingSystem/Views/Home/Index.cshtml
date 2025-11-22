@@ -1,8 +1,21 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model DeliveryTrackingSystem.ViewModels.HomePageViewModel
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">gei</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<h2>Track Your Shipment</h2>
+
+@if (!string.IsNullOrEmpty(TempData["Error"] as string))
+{
+        <div class="alert alert-danger">
+        @TempData["Error"]
+        </div>
+}
+
+<form asp-action="TrackShipment" asp-controller="Home" method="post">
+    <div class="form-group">
+        <label for="trackingCode">Tracking Code</label>
+        <input type="text" class="form-control" id="trackingCode" name="trackingCode" placeholder="Enter your tracking code" required />
+    </div>
+    <button type="submit" class="btn btn-primary mt-2">Track</button>
+</form>
