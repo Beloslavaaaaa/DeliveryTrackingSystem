@@ -1,0 +1,36 @@
+﻿@model DeliveryTrackingSystem.ViewModels.UserProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<h2>@Model.User.UserName's Profile</h2>
+
+<h3>My Shipments</h3>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Tracking Code</th>
+            <th>Status</th>
+            <th>Route</th>
+            <th>Created</th>
+            <th>Estimated Delivery</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var shipment in Model.Shipments)
+        {
+                <tr>
+                    <td>
+                        <a asp-action="Details" asp-controller="Shipments" asp-route-trackingCode="@shipment.TrackingCode">
+                        @shipment.TrackingCode
+                        </a>
+                    </td>
+                    <td>@shipment.Status.Name</td>
+                    <td>@shipment.DeliveryRoute.StartLocation → @shipment.DeliveryRoute.EndLocation</td>
+                    <td>@shipment.CreatedAt.ToString("g")</td>
+                    <td>@(shipment.EstimatedDelivery?.ToString("g") ?? "N/A")</td>
+                </tr>
+        }
+    </tbody>
+</table>
