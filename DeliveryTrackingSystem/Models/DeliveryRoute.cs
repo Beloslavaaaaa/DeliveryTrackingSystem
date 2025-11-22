@@ -3,9 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DeliveryTrackingSystem.Models
 {
-    public class Route
+    public class DeliveryRoute
     {
-        public int RouteId { get; set; }
+        public int DeliveryRouteId { get; set; }
 
         [Required]
         public string StartLocation { get; set; }

@@ -14,6 +14,6 @@ namespace DeliveryTrackingSystem.Models
         public Status Status { get; set; }
 
         public string Location { get; set; }
-        public DateTime Timestamp { get; set; } = DateTime.Now;
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace DeliveryTrackingSystem.Models
 {
@@ -11,22 +12,22 @@ namespace DeliveryTrackingSystem.Models
         [Required, MaxLength(20)]
         public string TrackingCode { get; set; }
 
-        public int SenderId { get; set; }
-        public User Sender { get; set; }
+        public string SenderId { get; set; }
+        public IdentityUser Sender { get; set; }
 
-        public int ReceiverId { get; set; }
-        public User Receiver { get; set; }
+        public string ReceiverId { get; set; }
+        public IdentityUser Receiver { get; set; }
 
-        public int CourierId { get; set; }
-        public User Courier { get; set; }
+        public string CourierId { get; set; }
+        public IdentityUser Courier { get; set; }
 
-        public int RouteId { get; set; }
-        public Route Route { get; set; }
+        public int DeliveryRouteId { get; set; }
+        public DeliveryRoute DeliveryRoute { get; set; }
 
         public int StatusId { get; set; }
         public Status Status { get; set; }
 
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? EstimatedDelivery { get; set; }
         public DateTime? DeliveredDate { get; set; }
 

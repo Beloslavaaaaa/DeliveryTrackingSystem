@@ -8,11 +8,10 @@ namespace DeliveryTrackingSystem.Models
         public int StatusId { get; set; }
 
         [Required]
-        public string Name { get; set; } 
+        public string Name { get; set; }
 
         public string Description { get; set; }
 
-        public ICollection<Shipment> Shipments { get; set; }
         public ICollection<StatusHistory> StatusHistories { get; set; }
     }
 }

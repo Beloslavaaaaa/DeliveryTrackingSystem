@@ -1,18 +1,17 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using DeliveryTrackingSystem.Models;
-using System.Reflection.Emit;
 
 namespace DeliveryTrackingSystem.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<IdentityUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options) { }
 
-        public DbSet<User> Users { get; set; }
-        public DbSet<Role> Roles { get; set; }
         public DbSet<Shipment> Shipments { get; set; }
-        public DbSet<Models.Route> Routes { get; set; }
+        public DbSet<DeliveryRoute> DeliveryRoutes { get; set; }
         public DbSet<Status> Statuses { get; set; }
         public DbSet<StatusHistory> StatusHistories { get; set; }
         public DbSet<Rating> Ratings { get; set; }
@@ -21,38 +20,44 @@ namespace DeliveryTrackingSystem.Data
         {
             base.OnModelCreating(builder);
 
-            builder.Entity<User>()
-                .HasMany(u => u.SentShipments)
-                .WithOne(s => s.Sender)
+            builder.Entity<Shipment>()
+                .HasIndex(s => s.TrackingCode)
+                .IsUnique();
+
+            builder.Entity<Shipment>()
+                .HasOne<IdentityUser>(s => s.Sender)
+                .WithMany()
                 .HasForeignKey(s => s.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<User>()
-                .HasMany(u => u.ReceivedShipments)
-                .WithOne(s => s.Receiver)
+            builder.Entity<Shipment>()
+                .HasOne<IdentityUser>(s => s.Receiver)
+                .WithMany()
                 .HasForeignKey(s => s.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<User>()
-                .HasMany(u => u.AssignedShipments)
-                .WithOne(s => s.Courier)
+            builder.Entity<Shipment>()
+                .HasOne<IdentityUser>(s => s.Courier)
+                .WithMany()
                 .HasForeignKey(s => s.CourierId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<Shipment>()
-                .HasIndex(s => s.TrackingCode)
-            .IsUnique();
-
             builder.Entity<StatusHistory>()
-        .HasOne(sh => sh.Shipment)
-        .WithMany(s => s.StatusHistory)
-        .HasForeignKey(sh => sh.ShipmentId)
-        .OnDelete(DeleteBehavior.Restrict);
+                .HasOne(sh => sh.Shipment)
+                .WithMany(s => s.StatusHistory)
+                .HasForeignKey(sh => sh.ShipmentId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<StatusHistory>()
                 .HasOne(sh => sh.Status)
-                .WithMany()
+                .WithMany(s => s.StatusHistories)
                 .HasForeignKey(sh => sh.StatusId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Rating>()
+                .HasOne<IdentityUser>(r => r.Courier)
+                .WithMany()
+                .HasForeignKey(r => r.CourierId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
