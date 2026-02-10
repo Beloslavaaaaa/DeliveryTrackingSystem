@@ -1,0 +1,42 @@
+﻿@page
+@using Microsoft.AspNetCore.Identity
+@model Microsoft.AspNetCore.Identity.UI.V5.Pages.Account.Internal.LoginModel
+@{
+    ViewData["Title"] = "Log In | Cargobell";
+}
+
+<div class="container py-5 mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card p-5 border-gold shadow-lg" style="background: rgba(255,255,255,0.02); backdrop-filter: blur(15px); border: 1px solid var(--gold-solid);">
+                <div class="text-center mb-4">
+                    <h2 class="text-gold h3 fw-bold">SIGN IN</h2>
+                    <p class="text-secondary small text-uppercase">Elite Access</p>
+                </div>
+
+                <form id="account" method="post">
+                    <div class="mb-4">
+                        <label class="form-label small text-gold">EMAIL</label>
+                        <input name="Input.Email" class="form-control bg-transparent text-white border-secondary py-3" required />
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small text-gold">PASSWORD</label>
+                        <input type="password" name="Input.Password" class="form-control bg-transparent text-white border-secondary py-3" required />
+                    </div>
+                    <button type="submit" class="btn btn-gold w-100 py-3">LOG IN</button>
+
+                    <div class="text-center mt-4">
+                        <p class="mb-2">
+                            <a href="/Identity/Account/Register" class="text-secondary small text-decoration-none">New to Cargobell? <span class="text-gold fw-bold">Create Account</span></a>
+                        </p>
+                        <p>
+                            <a href="/" class="text-secondary small text-decoration-none">
+                                <i class="bi bi-arrow-left me-1"></i> Return to Command
+                            </a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
