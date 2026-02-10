@@ -1,0 +1,133 @@
+﻿@{
+    ViewData["Title"] = "Pricing | Cargobell";
+}
+
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 text-gold mb-2">PRICING</h1>
+        <p class="text-gold opacity-50" style="letter-spacing: 5px;">LOGISTICS VALUATION MATRIX</p>
+    </div>
+
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-10">
+            <div class="card p-5 shadow-lg border-0" style="background-color: var(--soft-black);">
+                <h3 class="text-gold h5 mb-4 text-uppercase fw-bold text-center">Instant Estimate</h3>
+                <div class="row g-4 align-items-end">
+                    <div class="col-md-4">
+                        <label class="small text-secondary text-uppercase mb-2">Select Destination</label>
+                        <select id="calcDest" class="form-control bg-dark text-white border-secondary py-2">
+                            <option value="1">Domestic (Bulgaria)</option>
+                            <option value="2.5">International (Europe)</option>
+                            <option value="5.0">International (Global)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="small text-secondary text-uppercase mb-2">Select Package Type</label>
+                        <select id="calcSize" class="form-control bg-dark text-white border-secondary py-2">
+                            <option value="5">Document Envelope</option>
+                            <option value="15">Small Parcel (< 2kg)</option>
+                            <option value="35">Standard Box (< 10kg)</option>
+                            <option value="70">Heavy Freight (< 30kg)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <p class="small text-secondary mb-0 text-uppercase">Estimated Cost</p>
+                        <h2 id="calcTotal" class="text-gold display-4 mb-0">€5.00</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-12"> 
+            <div class="table-responsive">
+                <table class="table table-dark align-middle text-center border border-secondary">
+                    <thead>
+                        <tr class="bg-dark text-gold">
+                            <th class="py-4 px-3 text-start border-bottom border-gold">
+                                <div class="text-uppercase small fw-bold">Package Type</div>
+                            </th>
+                            <th class="py-4 px-3 border-bottom border-gold">
+                                <div class="text-white fw-bold">DOMESTIC FEES</div>
+                                <div class="small text-gold fw-light mt-1">Bulgaria</div>
+                            </th>
+                            <th class="py-4 px-3 border-bottom border-gold">
+                                <div class="text-white fw-bold">EU ZONE FEES</div>
+                                <div class="small text-gold fw-light mt-1">Europe</div>
+                            </th>
+                            <th class="py-4 px-3 border-bottom border-gold">
+                                <div class="text-white fw-bold">GLOBAL FEES</div>
+                                <div class="small text-gold fw-light mt-1">Worldwide</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="py-4 px-3 text-start border-secondary">
+                                <strong class="text-white">Document Envelope</strong><br>
+                                <small class="text-secondary">Up to 0.5kg</small>
+                            </td>
+                            <td class="py-4 text-gold fw-bold border-secondary">€5.00</td>
+                            <td class="py-4 border-secondary">€12.50</td>
+                            <td class="py-4 border-secondary">€25.00</td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 px-3 text-start border-secondary">
+                                <strong class="text-white">Small Parcel</strong><br>
+                                <small class="text-secondary">Up to 2kg</small>
+                            </td>
+                            <td class="py-4 text-gold fw-bold border-secondary">€15.00</td>
+                            <td class="py-4 border-secondary">€37.50</td>
+                            <td class="py-4 border-secondary">€75.00</td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 px-3 text-start border-secondary">
+                                <strong class="text-white">Standard Box</strong><br>
+                                <small class="text-secondary">Up to 10kg</small>
+                            </td>
+                            <td class="py-4 text-gold fw-bold border-secondary">€35.00</td>
+                            <td class="py-4 border-secondary">€87.50</td>
+                            <td class="py-4 border-secondary">€175.00</td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 px-3 text-start border-secondary">
+                                <strong class="text-white">Heavy Freight</strong><br>
+                                <small class="text-secondary">Up to 30kg</small>
+                            </td>
+                            <td class="py-4 text-gold fw-bold border-secondary">€70.00</td>
+                            <td class="py-4 border-secondary">€175.00</td>
+                            <td class="py-4 border-secondary">€350.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-5 p-4 border border-gold border-opacity-25 rounded text-center shadow-sm" style="background: rgba(212, 175, 55, 0.02);">
+                <p class="mb-0 text-secondary">
+                    <i class="bi bi-gem me-2 text-gold"></i>
+                    Is your cargo above <strong>30kg</strong>? We offer bespoke <strong>Sovereign Quotes</strong> for heavy and high-value freight.
+                </p>
+                <div class="mt-3">
+                    <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-gold px-4 py-2">
+                        Contact Our Concierge
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+        <script type="text/javascript">
+            $(document).ready(function () {
+                function updatePrice() {
+                    var size = parseFloat($('#calcSize').val()) || 0;
+                    var dest = parseFloat($('#calcDest').val()) || 1;
+                    $('#calcTotal').text('€' + (size * dest).toFixed(2));
+                }
+                $('#calcDest, #calcSize').on('change', updatePrice);
+            });
+        </script>
+}
