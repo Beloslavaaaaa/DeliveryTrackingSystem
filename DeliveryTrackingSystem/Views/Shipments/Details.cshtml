@@ -1,31 +1,37 @@
 ﻿@model DeliveryTrackingSystem.ViewModels.ShipmentTrackingViewModel
 
 <div class="container py-5">
-    <div class="card shadow border-0">
-        <div class="card-header bg-primary text-white p-4">
-            <h2 class="mb-0">Shipment @Model.TrackingCode</h2>
-            <p class="mb-0">Current Status: <strong>@Model.Status</strong></p>
+    <div class="card border-0 shadow-lg overflow-hidden">
+        <div class="p-5 border-bottom border-gold">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <h1 class="text-gold mb-0">ID: @Model.TrackingCode</h1>
+                    <p class="text-secondary small mt-2">TRANSIT MANIFEST</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <span class="badge py-3 px-4 rounded-0" style="background: var(--gold-solid); color: #000; font-family: 'Cinzel'; font-size: 1rem;">
+                        @Model.Status
+                    </span>
+                </div>
+            </div>
         </div>
-        <div class="card-body p-4">
-            <h5>Route: <span class="text-muted">@Model.Route</span></h5>
-            <hr />
 
-            <h4 class="mt-4 mb-3">Shipment Timeline</h4>
-            <div class="list-group">
+        <div class="card-body p-5">
+            <p class="text-gold small mb-1 text-uppercase fw-bold" style="letter-spacing: 2px;">Route</p>
+            <h3 class="fw-light mb-5">@Model.Route</h3>
+
+            <div class="timeline">
                 @foreach (var history in Model.StatusHistory)
                 {
-                        <div class="list-group-item list-group-item-action border-start border-4 border-primary mb-2">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1 text-primary">@history.Status.Name</h6>
-                                <small class="text-muted">@history.Timestamp.ToString("f")</small>
+                        <div class="d-flex mb-4">
+                            <div class="me-4 text-gold"><i class="bi bi-dot fs-1"></i></div>
+                            <div>
+                                <h5 class="text-white mb-0">@history.Status.Name</h5>
+                                <small class="text-secondary">@history.Timestamp.ToString("MMMM dd, yyyy - HH:mm")</small>
                             </div>
-                            <p class="mb-1 small">Updated by system.</p>
                         </div>
                 }
             </div>
-        </div>
-        <div class="card-footer bg-light p-3 text-center">
-            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Back to Search</a>
         </div>
     </div>
 </div>

@@ -1,78 +1,64 @@
 ﻿@{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "Cargobell | Elite Logistics";
 }
 
-<div class="container py-5">
-    <div class="row text-center mb-5">
-        <div class="col-lg-8 mx-auto">
-            <h1 class="display-4 fw-bold text-primary mb-3">Welcome to SwiftDelivery</h1>
-            <p class="lead text-secondary">
-                We provide fast, secure, and transparent logistics solutions. 
-                Enter your tracking code below to follow your package's journey in real-time.
-            </p>
+<div class="container py-5 mt-lg-5">
+    <div class="text-center mb-5">
+        <h1 class="display-1 fw-bold text-gold mb-0">CARGOBELL</h1>
+        <p class="text-gold opacity-75 mt-0" style="letter-spacing: 8px; font-size: 0.9rem;">YOUR CARGO ON THE BELL</p>
+
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-6">
+                <p class="fw-light text-secondary" style="line-height: 2;">
+                    The pinnacle of global logistics. Secure, swift, and strictly confidential. 
+                    Monitor your assets with absolute precision.
+                </p>
+            </div>
         </div>
     </div>
 
     <div class="row justify-content-center mb-5">
         <div class="col-md-8">
-            <div class="card shadow border-0 p-4">
+            <div class="card p-2 shadow-lg" style="background: rgba(255,255,255,0.02); backdrop-filter: blur(10px);">
                 <form asp-controller="Shipments" asp-action="Details" method="get">
-                    <div class="input-group input-group-lg">
-                        <span class="input-group-text bg-white border-end-0">
-                            <i class="bi bi-search text-muted"></i>
-                        </span>
-                        <input type="text" name="trackingCode" class="form-control border-start-0" 
-                               placeholder="Enter Tracking Code (e.g. SW-123456)" required autocomplete="off" />
-                        <button type="submit" class="btn btn-warning px-5 fw-bold">Track</button>
+                    <div class="input-group">
+                        <input type="text" name="trackingCode" 
+                               class="form-control form-control-lg bg-transparent text-white border-0 py-4 ps-4" 
+                               placeholder="MANIFEST TRACKING ID" 
+                               style="letter-spacing: 4px; font-family: 'Cinzel', serif;" required />
+                        <button type="submit" class="btn btn-gold px-5">
+                            FIND
+                        </button>
                     </div>
                 </form>
-                @if (TempData["Error"] != null)
-                {
-                        <div class="alert alert-danger mt-3 mb-0 py-2">
-                            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
-                        </div>
-                }
             </div>
+            @if (TempData["Error"] != null)
+            {
+                    <p class="text-center text-danger mt-3 small fw-bold">@TempData["Error"]</p>
+            }
         </div>
     </div>
 
-    <div class="row g-4 text-center">
+    <div class="row g-5 mt-5 text-center">
         <div class="col-md-4">
-            <div class="card h-100 border shadow-sm">
-                <div class="card-body p-4">
-                    <div class="feature-icon mb-3">
-                        <i class="bi bi-telephone-outbound fs-1 text-primary"></i>
-                    </div>
-                    <h4 class="card-title">Contact Us</h4>
-                    <p class="card-text text-muted small mb-4">Have a question about your delivery? Reach out to our 24/7 support desk.</p>
-                    <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-primary w-100">Get Help</a>
-                </div>
+            <div class="p-4">
+                <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Concierge</h5>
+                <p class="small text-secondary fw-light mb-4">Dedicated 24-hour asset management.</p>
+                <a asp-action="Contact" class="btn btn-outline-gold btn-sm px-4">Inquire</a>
             </div>
         </div>
-
         <div class="col-md-4">
-            <div class="card h-100 border shadow-sm">
-                <div class="card-body p-4">
-                    <div class="feature-icon mb-3">
-                        <i class="bi bi-shield-check fs-1 text-primary"></i>
-                    </div>
-                    <h4 class="card-title">Privacy Policy</h4>
-                    <p class="card-text text-muted small mb-4">We value your data. Learn how we handle your shipment and personal information.</p>
-                    <a asp-controller="Home" asp-action="Privacy" class="btn btn-outline-primary w-100">Read Policy</a>
-                </div>
+            <div class="p-4">
+                <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Transparency</h5>
+                <p class="small text-secondary fw-light mb-4">Our commitment to data sovereignty.</p>
+                <a asp-action="Privacy" class="btn btn-outline-gold btn-sm px-4">Protocols</a>
             </div>
         </div>
-
         <div class="col-md-4">
-            <div class="card h-100 border shadow-sm">
-                <div class="card-body p-4">
-                    <div class="feature-icon mb-3">
-                        <i class="bi bi-tags fs-1 text-primary"></i>
-                    </div>
-                    <h4 class="card-title">Pricing</h4>
-                    <p class="card-text text-muted small mb-4">Competitive rates for local and international shipping based on weight.</p>
-                    <a asp-controller="Home" asp-action="Pricing" class="btn btn-outline-primary w-100">View Rates</a>
-                </div>
+            <div class="p-4">
+                <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Valuation</h5>
+                <p class="small text-secondary fw-light mb-4">Custom rates for high-value transit.</p>
+                <a asp-action="Pricing" class="btn btn-outline-gold btn-sm px-4">Schedule</a>
             </div>
         </div>
     </div>
