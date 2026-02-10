@@ -1,26 +1,79 @@
-﻿@model DeliveryTrackingSystem.ViewModels.HomePageViewModel
-@{
+﻿@{
     ViewData["Title"] = "Home";
 }
 
-<h2>Track Your Shipment</h2>
-
-@if (!string.IsNullOrEmpty(TempData["Error"] as string))
-{
-        <div class="alert alert-danger">
-        @TempData["Error"]
+<div class="container py-5">
+    <div class="row text-center mb-5">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="display-4 fw-bold text-primary mb-3">Welcome to SwiftDelivery</h1>
+            <p class="lead text-secondary">
+                We provide fast, secure, and transparent logistics solutions. 
+                Enter your tracking code below to follow your package's journey in real-time.
+            </p>
         </div>
-}
-
-   <form asp-action="TrackShipment" asp-controller="Home" method="post">
-    <div class="form-group">
-        <label for="trackingCode">Tracking Code</label>
-        <input type="text" class="form-control" id="trackingCode" name="trackingCode" placeholder="Enter your tracking code" required />
     </div>
-    <button type="submit" class="btn btn-primary mt-2">Track</button>
-</form>
 
-@if (!string.IsNullOrEmpty(TempData["Error"] as string))
-{
-        <div class="alert alert-danger mt-2">@TempData["Error"]</div>
-}
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+            <div class="card shadow border-0 p-4">
+                <form asp-controller="Shipments" asp-action="Details" method="get">
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="bi bi-search text-muted"></i>
+                        </span>
+                        <input type="text" name="trackingCode" class="form-control border-start-0" 
+                               placeholder="Enter Tracking Code (e.g. SW-123456)" required autocomplete="off" />
+                        <button type="submit" class="btn btn-warning px-5 fw-bold">Track</button>
+                    </div>
+                </form>
+                @if (TempData["Error"] != null)
+                {
+                        <div class="alert alert-danger mt-3 mb-0 py-2">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+                        </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 text-center">
+        <div class="col-md-4">
+            <div class="card h-100 border shadow-sm">
+                <div class="card-body p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-telephone-outbound fs-1 text-primary"></i>
+                    </div>
+                    <h4 class="card-title">Contact Us</h4>
+                    <p class="card-text text-muted small mb-4">Have a question about your delivery? Reach out to our 24/7 support desk.</p>
+                    <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-primary w-100">Get Help</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border shadow-sm">
+                <div class="card-body p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-shield-check fs-1 text-primary"></i>
+                    </div>
+                    <h4 class="card-title">Privacy Policy</h4>
+                    <p class="card-text text-muted small mb-4">We value your data. Learn how we handle your shipment and personal information.</p>
+                    <a asp-controller="Home" asp-action="Privacy" class="btn btn-outline-primary w-100">Read Policy</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 border shadow-sm">
+                <div class="card-body p-4">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-tags fs-1 text-primary"></i>
+                    </div>
+                    <h4 class="card-title">Pricing</h4>
+                    <p class="card-text text-muted small mb-4">Competitive rates for local and international shipping based on weight.</p>
+                    <a asp-controller="Home" asp-action="Pricing" class="btn btn-outline-primary w-100">View Rates</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

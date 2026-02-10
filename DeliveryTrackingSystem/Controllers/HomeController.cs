@@ -2,8 +2,6 @@
 using DeliveryTrackingSystem.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace DeliveryTrackingSystem.Controllers
 {
@@ -15,10 +13,12 @@ namespace DeliveryTrackingSystem.Controllers
         {
             _context = context;
         }
+
         public IActionResult Index()
         {
             return View();
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> TrackShipment(string trackingCode)
@@ -53,7 +53,10 @@ namespace DeliveryTrackingSystem.Controllers
             };
 
             return View("~/Views/Shipments/Details.cshtml", viewModel);
-
         }
+
+        public IActionResult Contact() => View();
+        public IActionResult Privacy() => View();
+        public IActionResult Pricing() => View();
     }
 }

@@ -4,6 +4,7 @@ using DeliveryTrackingSystem.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace DeliveryTrackingSystem.Controllers
 {
@@ -18,10 +19,15 @@ namespace DeliveryTrackingSystem.Controllers
             _userManager = userManager;
         }
 
+        // Action for the Guest Search bar (GET)
+        [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> Details(string trackingCode)
         {
             if (string.IsNullOrEmpty(trackingCode))
+            {
                 return RedirectToAction("Index", "Home");
+            }
 
             var shipment = await _context.Shipments
                 .Include(s => s.Status)
@@ -32,7 +38,7 @@ namespace DeliveryTrackingSystem.Controllers
 
             if (shipment == null)
             {
-                TempData["Error"] = "Shipment not found.";
+                TempData["Error"] = "Shipment not found. Please verify your tracking code.";
                 return RedirectToAction("Index", "Home");
             }
 
@@ -47,63 +53,57 @@ namespace DeliveryTrackingSystem.Controllers
             return View(viewModel);
         }
 
+        [Authorize]
         public async Task<IActionResult> History()
         {
             var userId = _userManager.GetUserId(User);
-
-            if (userId == null)
-                return RedirectToAction("Index", "Home");
 
             var shipments = await _context.Shipments
                 .Include(s => s.Status)
                 .Include(s => s.DeliveryRoute)
                 .Where(s => s.SenderId == userId || s.ReceiverId == userId || s.CourierId == userId)
+                .OrderByDescending(s => s.CreatedAt)
                 .ToListAsync();
 
             return View(shipments);
         }
 
+        [Authorize]
         public async Task<IActionResult> RouteMap(string trackingCode)
-    {
-        if (string.IsNullOrEmpty(trackingCode))
-            return RedirectToAction("Index", "Home");
-
-        var shipment = await _context.Shipments
-            .Include(s => s.DeliveryRoute)
-            .Include(s => s.Courier)
-            .FirstOrDefaultAsync(s => s.TrackingCode == trackingCode);
-
-        if (shipment == null)
         {
-            TempData["Error"] = "Shipment not found.";
-            return RedirectToAction("Index", "Home");
+            var shipment = await _context.Shipments
+                .Include(s => s.DeliveryRoute)
+                .Include(s => s.Courier)
+                .FirstOrDefaultAsync(s => s.TrackingCode == trackingCode);
+
+            if (shipment == null) return NotFound();
+
+            var viewModel = new ShipmentRouteViewModel
+            {
+                TrackingCode = shipment.TrackingCode,
+                CourierName = shipment.Courier?.UserName ?? "Unassigned",
+                StartLocation = shipment.DeliveryRoute.StartLocation,
+                EndLocation = shipment.DeliveryRoute.EndLocation
+            };
+
+            return View(viewModel);
         }
 
-        var viewModel = new ShipmentRouteViewModel
-        {
-            TrackingCode = shipment.TrackingCode,
-            Route = $"{shipment.DeliveryRoute.StartLocation} → {shipment.DeliveryRoute.EndLocation}",
-            CourierName = shipment.Courier.UserName,
-            StartLocation = shipment.DeliveryRoute.StartLocation,
-            EndLocation = shipment.DeliveryRoute.EndLocation
-        };
-
-        return View(viewModel);
-    }
-
-
-    public IActionResult Create()
+        [Authorize(Roles = "Admin,Operator")]
+        public IActionResult Create()
         {
             ViewBag.Routes = _context.DeliveryRoutes.ToList();
             return View();
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Operator")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Shipment shipment)
         {
             if (ModelState.IsValid)
             {
+                shipment.TrackingCode = "SW-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
                 shipment.CreatedAt = DateTime.UtcNow;
                 shipment.StatusId = _context.Statuses.First(s => s.Name == "Pending").StatusId;
 

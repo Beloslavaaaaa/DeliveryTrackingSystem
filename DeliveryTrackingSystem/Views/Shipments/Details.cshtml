@@ -1,31 +1,31 @@
 ﻿@model DeliveryTrackingSystem.ViewModels.ShipmentTrackingViewModel
-@{
-    ViewData["Title"] = "Shipment Details";
-}
 
-<h2>Shipment Details</h2>
+<div class="container py-5">
+    <div class="card shadow border-0">
+        <div class="card-header bg-primary text-white p-4">
+            <h2 class="mb-0">Shipment @Model.TrackingCode</h2>
+            <p class="mb-0">Current Status: <strong>@Model.Status</strong></p>
+        </div>
+        <div class="card-body p-4">
+            <h5>Route: <span class="text-muted">@Model.Route</span></h5>
+            <hr />
 
-<p><strong>Tracking Code:</strong> @Model.TrackingCode</p>
-<p><strong>Status:</strong> @Model.Status</p>
-<p><strong>Route:</strong> @Model.Route</p>
-
-<h3>Status History</h3>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Time</th>
-            <th>Status</th>
-            <th>Location</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var history in Model.StatusHistory)
-        {
-                <tr>
-                    <td>@history.Timestamp.ToString("g")</td>
-                    <td>@history.Status.Name</td>
-                    <td>@history.Location</td>
-                </tr>
-        }
-    </tbody>
-</table>
+            <h4 class="mt-4 mb-3">Shipment Timeline</h4>
+            <div class="list-group">
+                @foreach (var history in Model.StatusHistory)
+                {
+                        <div class="list-group-item list-group-item-action border-start border-4 border-primary mb-2">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1 text-primary">@history.Status.Name</h6>
+                                <small class="text-muted">@history.Timestamp.ToString("f")</small>
+                            </div>
+                            <p class="mb-1 small">Updated by system.</p>
+                        </div>
+                }
+            </div>
+        </div>
+        <div class="card-footer bg-light p-3 text-center">
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Back to Search</a>
+        </div>
+    </div>
+</div>
