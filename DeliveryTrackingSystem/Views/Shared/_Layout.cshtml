@@ -13,16 +13,79 @@
         :root {
             --gold-gradient: linear-gradient(45deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
             --gold-solid: #D4AF37;
-            --rich-black: #0A0A0A;
-            --soft-black: #161616;
+            --rich-black: #050505;
         }
-        body { background-color: var(--rich-black); color: #E0E0E0; font-family: 'Montserrat', sans-serif; }
-        h1, h2, h3, .navbar-brand { font-family: 'Cinzel', serif; letter-spacing: 3px; }
-        .navbar { background-color: #000 !important; border-bottom: 1px solid var(--gold-solid); padding: 1rem 0; }
-        .text-gold { background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold; }
-        .btn-gold { background: var(--gold-gradient); color: #000 !important; font-weight: 700; border: none; font-family: 'Cinzel', serif; text-transform: uppercase; }
-        .nav-link { text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; color: #fff !important; }
+
+        body { 
+            background-color: var(--rich-black) !important; 
+            color: #ffffff !important; 
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .navbar { 
+            background-color: #000000 !important; 
+            border-bottom: 1px solid var(--gold-solid); 
+            padding: 1rem 0;
+        }
+
+        .text-gold { 
+            background: var(--gold-gradient); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            font-weight: bold; 
+        }
+
+        .nav-link { 
+            color: #ffffff !important; 
+            font-weight: 600 !important;
+            transition: 0.3s;
+        }
+
         .nav-link:hover { color: var(--gold-solid) !important; }
+
+        /* LUXURY SHINE BUTTONS */
+        .btn-gold {
+            background: var(--gold-gradient) !important;
+            color: #000 !important;
+            font-weight: 700;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            transition: 0.4s;
+            font-family: 'Cinzel', serif;
+        }
+
+        .btn-outline-gold {
+            border: 1px solid var(--gold-solid) !important;
+            color: var(--gold-solid) !important;
+            background: transparent;
+            position: relative;
+            overflow: hidden;
+            transition: 0.4s;
+            font-family: 'Cinzel', serif;
+        }
+
+        .btn-gold:hover, .btn-outline-gold:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .btn-gold::after, .btn-outline-gold::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -150%;
+            width: 50%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.4);
+            transform: rotate(30deg);
+            transition: 0.6s ease-in-out;
+        }
+
+        .btn-gold:hover::after, .btn-outline-gold:hover::after {
+            left: 150%;
+        }
+
         footer { border-top: 1px solid #222; margin-top: 5rem; padding: 2rem 0; background: #000; }
     </style>
 </head>
@@ -31,33 +94,21 @@
         <nav class="navbar navbar-expand-lg navbar-dark shadow mb-5">
             <div class="container">
                 <a class="navbar-brand fs-2 text-gold" asp-controller="Home" asp-action="Index">CARGOBELL</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Pricing">Pricing</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Contact">Contact Us</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Privacy">Privacy Policy</a></li>
+                <div class="ms-auto">
+                    <ul class="navbar-nav align-items-center">
                         @if (User.Identity.IsAuthenticated)
                         {
-                                <li class="nav-item"><a class="nav-link text-gold" asp-controller="Shipments" asp-action="History">My History</a></li>
-                        }
-                    </ul>
-                    <ul class="navbar-nav">
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                                <li class="nav-item"><span class="nav-link">@User.Identity.Name</span></li>
+                                <li class="nav-item me-3"><span class="nav-link">@User.Identity.Name</span></li>
                                 <li class="nav-item">
                                     <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
-                                        <button type="submit" class="nav-link btn btn-link">Logout</button>
+                                        <button type="submit" class="nav-link btn btn-link text-uppercase small text-white" style="text-decoration:none;">Exit</button>
                                     </form>
                                 </li>
                         }
                         else
                         {
-                                <li class="nav-item"><a class="nav-link" asp-area="Identity" asp-page="/Account/Login">Sign In</a></li>
-                                <li class="nav-item"><a class="btn btn-gold ms-lg-3 px-4" asp-area="Identity" asp-page="/Account/Register">Register</a></li>
+                                <li class="nav-item"><a class="nav-link text-uppercase small me-3" asp-area="Identity" asp-page="/Account/Login">Sign In</a></li>
+                                <li class="nav-item"><a class="btn btn-gold px-4 py-2" asp-area="Identity" asp-page="/Account/Register">Register</a></li>
                         }
                     </ul>
                 </div>

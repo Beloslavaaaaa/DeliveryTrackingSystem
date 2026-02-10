@@ -38,24 +38,26 @@
 
     <div class="row g-5 mt-5 text-center">
         <div class="col-md-4">
-            <div class="p-4 border-bottom border-gold border-opacity-25 h-100 d-flex flex-column">
+            <div class="p-4 border border-secondary rounded h-100 d-flex flex-column bg-dark" style="background: #111 !important;">
                 <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Contact Us</h5>
                 <p class="small text-secondary fw-light mb-4">Reach out to our global concierge for support.</p>
-                <a asp-action="Contact" class="btn btn-outline-gold btn-sm px-4 mt-auto">Open Inquiry</a>
+                <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-gold px-4 mt-auto py-2">Open Inquiry</a>
             </div>
         </div>
+
         <div class="col-md-4">
-            <div class="p-4 border-bottom border-gold border-opacity-25 h-100 d-flex flex-column">
-                <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Privacy Policy</h5>
-                <p class="small text-secondary fw-light mb-4">Learn about our data security and cargo protection.</p>
-                <a asp-action="Privacy" class="btn btn-outline-gold btn-sm px-4 mt-auto">Read Policy</a>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="p-4 border-bottom border-gold border-opacity-25 h-100 d-flex flex-column">
+            <div class="p-4 border border-gold rounded h-100 d-flex flex-column shadow-lg" style="background: rgba(212, 175, 55, 0.08); transform: scale(1.05);">
                 <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Pricing</h5>
                 <p class="small text-secondary fw-light mb-4">Calculate shipping rates for domestic and international.</p>
-                <a asp-action="Pricing" class="btn btn-outline-gold btn-sm px-4 mt-auto">View Rates</a>
+                <a asp-controller="Home" asp-action="Pricing" class="btn btn-gold px-4 mt-auto py-2">View Rates</a>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="p-4 border border-secondary rounded h-100 d-flex flex-column bg-dark" style="background: #111 !important;">
+                <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Privacy Policy</h5>
+                <p class="small text-secondary fw-light mb-4">Learn about our data security and cargo protection.</p>
+                <a asp-controller="Home" asp-action="Privacy" class="btn btn-outline-gold px-4 mt-auto py-2">Read Policy</a>
             </div>
         </div>
     </div>
