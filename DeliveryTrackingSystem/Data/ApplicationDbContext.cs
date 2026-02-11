@@ -25,19 +25,19 @@ namespace DeliveryTrackingSystem.Data
                 .IsUnique();
 
             builder.Entity<Shipment>()
-                .HasOne<IdentityUser>(s => s.Sender)
+                .HasOne(s => s.Sender)
                 .WithMany()
                 .HasForeignKey(s => s.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Shipment>()
-                .HasOne<IdentityUser>(s => s.Receiver)
+                .HasOne(s => s.Receiver)
                 .WithMany()
                 .HasForeignKey(s => s.ReceiverId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Shipment>()
-                .HasOne<IdentityUser>(s => s.Courier)
+                .HasOne(s => s.Courier)
                 .WithMany()
                 .HasForeignKey(s => s.CourierId)
                 .OnDelete(DeleteBehavior.Restrict);
@@ -50,12 +50,12 @@ namespace DeliveryTrackingSystem.Data
 
             builder.Entity<StatusHistory>()
                 .HasOne(sh => sh.Status)
-                .WithMany(s => s.StatusHistories)
+                .WithMany()
                 .HasForeignKey(sh => sh.StatusId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Rating>()
-                .HasOne<IdentityUser>(r => r.Courier)
+                .HasOne(r => r.Courier)
                 .WithMany()
                 .HasForeignKey(r => r.CourierId)
                 .OnDelete(DeleteBehavior.Restrict);

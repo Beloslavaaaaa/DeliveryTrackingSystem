@@ -1,5 +1,5 @@
-﻿using DeliveryTrackingSystem.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using DeliveryTrackingSystem.Models;
 
 namespace DeliveryTrackingSystem.ViewModels
 {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace DeliveryTrackingSystem.Models
 {
@@ -13,7 +12,8 @@ namespace DeliveryTrackingSystem.Models
         public int StatusId { get; set; }
         public Status Status { get; set; }
 
-        public string Location { get; set; }
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public string Location { get; set; }
+        public string Note { get; set; }
     }
 }
