@@ -8,13 +8,15 @@
 <div class="container py-5 mt-5">
     <div class="row justify-content-center">
         <div class="col-md-5">
-            <div class="card p-5 border-gold shadow-lg" style="background: rgba(255,255,255,0.02); backdrop-filter: blur(15px); border: 1px solid var(--gold-solid);">
+            <div class="card p-5 border-gold shadow-lg" style="background: rgba(255,255,255,0.02); backdrop-filter: blur(15px); border: 1px solid #D4AF37;">
                 <div class="text-center mb-4">
                     <h2 class="text-gold h3 fw-bold">MEMBERSHIP</h2>
                     <p class="text-secondary small text-uppercase" style="letter-spacing: 2px;">Join the Global Elite</p>
                 </div>
 
                 <form id="registerForm" method="post">
+                    @Html.AntiForgeryToken()
+
                     <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
                     <div class="mb-4">
@@ -37,6 +39,10 @@
                     <div class="text-center text-secondary small">
                         By registering, you agree to our 
                         <a href="/Home/Privacy" class="text-gold text-decoration-none fw-bold">Privacy Protocol</a>.
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a href="/Identity/Account/Login" class="text-secondary small text-decoration-none">Already a member? <span class="text-gold fw-bold">Sign In</span></a>
                     </div>
                 </form>
             </div>

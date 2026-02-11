@@ -1,0 +1,82 @@
+﻿@model DeliveryTrackingSystem.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Command Center";
+}
+
+<div class="container py-4">
+    <div class="mb-5">
+        <h4 class="text-secondary small mb-1" style="letter-spacing: 3px;">WELCOME BACK</h4>
+        <h1 class="text-gold display-5 fw-bold">GREETINGS, @Model.UserName</h1>
+    </div>
+
+    <div class="row g-4 mb-5 text-center">
+        <div class="col-md-4">
+            <a href="/Shipments/Active" class="text-decoration-none">
+                <div class="p-4 border border-gold rounded h-100 btn-gold-hover" style="background: rgba(212, 175, 55, 0.05);">
+                    <i class="bi bi-box-seam fs-1 text-gold mb-3 d-block"></i>
+                    <h5 class="text-white text-uppercase small fw-bold">Shipments</h5>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="/Couriers/Request" class="text-decoration-none">
+                <div class="p-4 border border-gold rounded h-100 btn-gold-hover" style="background: rgba(212, 175, 55, 0.05);">
+                    <i class="bi bi-truck fs-1 text-gold mb-3 d-block"></i>
+                    <h5 class="text-white text-uppercase small fw-bold">Courier Requests</h5>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="/Payments/COD" class="text-decoration-none">
+                <div class="p-4 border border-gold rounded h-100 btn-gold-hover" style="background: rgba(212, 175, 55, 0.05);">
+                    <i class="bi bi-cash-stack fs-1 text-gold mb-3 d-block"></i>
+                    <h5 class="text-white text-uppercase small fw-bold">Cash On Delivery</h5>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="mb-5">
+        <h5 class="text-gold text-uppercase small mb-4" style="letter-spacing: 2px;">Recent Action Log</h5>
+        <div class="d-flex flex-nowrap overflow-auto pb-3 gap-3" style="scrollbar-width: thin; scrollbar-color: #D4AF37 #000;">
+            @foreach (var action in Model.RecentActions)
+            {
+                    <div class="card border-secondary flex-shrink-0" style="width: 300px; background: #111;">
+                        <div class="card-body">
+                            <span class="badge border border-gold text-gold mb-2">@action.Status</span>
+                            <h6 class="text-white mb-1">@action.Title</h6>
+                            <p class="text-secondary small mb-3">@action.Type</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-gold fw-bold">@action.Amount</span>
+                                <span class="text-muted small">@action.Date</span>
+                            </div>
+                        </div>
+                    </div>
+            }
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="p-4 border border-secondary rounded" style="background: rgba(255,255,255,0.02);">
+                <span class="text-secondary small text-uppercase">Total Logistics Expenditure</span>
+                <h2 class="text-white mt-2 fw-bold">$@Model.TotalSpent.ToString("N2")</h2>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-4 border border-secondary rounded" style="background: rgba(255,255,255,0.02);">
+                <span class="text-secondary small text-uppercase">Total COD Earnings</span>
+                <h2 class="text-gold mt-2 fw-bold">$@Model.TotalEarned.ToString("N2")</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-gold-hover { transition: 0.3s; cursor: pointer; }
+    .btn-gold-hover:hover { 
+        background: rgba(212, 175, 55, 0.15) !important; 
+        transform: translateY(-5px); 
+        box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+    }
+</style>

@@ -8,22 +8,30 @@
 <div class="container py-5 mt-5">
     <div class="row justify-content-center">
         <div class="col-md-5">
-            <div class="card p-5 border-gold shadow-lg" style="background: rgba(255,255,255,0.02); backdrop-filter: blur(15px); border: 1px solid var(--gold-solid);">
+            <div class="card p-5 border-gold shadow-lg" style="background: rgba(255,255,255,0.02); backdrop-filter: blur(15px); border: 1px solid #D4AF37;">
                 <div class="text-center mb-4">
                     <h2 class="text-gold h3 fw-bold">SIGN IN</h2>
-                    <p class="text-secondary small text-uppercase">Elite Access</p>
+                    <p class="text-secondary small text-uppercase" style="letter-spacing: 2px;">Elite Access</p>
                 </div>
 
                 <form id="account" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
                     <div class="mb-4">
-                        <label class="form-label small text-gold">EMAIL</label>
+                        <label class="form-label small text-gold">EMAIL ADDRESS</label>
                         <input name="Input.Email" class="form-control bg-transparent text-white border-secondary py-3" required />
                     </div>
+
                     <div class="mb-4">
                         <label class="form-label small text-gold">PASSWORD</label>
                         <input type="password" name="Input.Password" class="form-control bg-transparent text-white border-secondary py-3" required />
                     </div>
-                    <button type="submit" class="btn btn-gold w-100 py-3">LOG IN</button>
+
+                    <input type="hidden" name="Input.RememberMe" value="false" />
+
+                    <button type="submit" class="btn btn-gold w-100 py-3 mb-3">LOG IN</button>
 
                     <div class="text-center mt-4">
                         <p class="mb-2">
