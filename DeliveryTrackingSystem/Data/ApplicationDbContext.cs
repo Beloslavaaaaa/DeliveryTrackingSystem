@@ -15,6 +15,8 @@ namespace DeliveryTrackingSystem.Data
         public DbSet<Status> Statuses { get; set; }
         public DbSet<StatusHistory> StatusHistories { get; set; }
         public DbSet<Rating> Ratings { get; set; }
+        public DbSet<CourierRequest> CourierRequests { get; set; }
+        
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
