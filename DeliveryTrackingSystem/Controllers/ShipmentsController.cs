@@ -47,7 +47,22 @@ namespace DeliveryTrackingSystem.Controllers
 
             return View(viewModel);
         }
+        [Authorize]
+        public async Task<IActionResult> Active()
+        {
+            var userId = _userManager.GetUserId(User);
 
+            var shipments = await _context.Shipments
+                .Include(s => s.Status)
+                .Include(s => s.DeliveryRoute)
+                .Where(s => (s.SenderId == userId || s.ReceiverId == userId)
+                            && s.Status.Name != "Delivered"
+                            && s.Status.Name != "Cancelled")
+                .OrderByDescending(s => s.CreatedAt)
+                .ToListAsync();
+
+            return View(shipments);
+        }
         [Authorize]
         public async Task<IActionResult> History()
         {
