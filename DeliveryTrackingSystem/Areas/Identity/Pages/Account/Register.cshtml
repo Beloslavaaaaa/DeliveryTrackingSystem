@@ -16,22 +16,23 @@
 
                 <form id="registerForm" method="post">
                     @Html.AntiForgeryToken()
+                    <input type="hidden" name="ReturnUrl" value="/Dashboard" />
 
-                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                    <div asp-validation-summary="All" class="text-danger small mb-3"></div>
 
                     <div class="mb-4">
                         <label class="form-label small text-gold">EMAIL ADDRESS</label>
-                        <input name="Input.Email" class="form-control bg-transparent text-white border-secondary py-3" placeholder="name@cargobell.com" required />
+                        <input name="Input.Email" type="email" class="form-control bg-transparent text-white border-secondary py-3" placeholder="name@cargobell.com" required />
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label small text-gold">PASSWORD</label>
-                        <input type="password" name="Input.Password" class="form-control bg-transparent text-white border-secondary py-3" placeholder="••••••••" required />
+                        <input name="Input.Password" type="password" class="form-control bg-transparent text-white border-secondary py-3" placeholder="••••••••" required />
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label small text-gold">CONFIRM PASSWORD</label>
-                        <input type="password" name="Input.ConfirmPassword" class="form-control bg-transparent text-white border-secondary py-3" placeholder="••••••••" required />
+                        <input name="Input.ConfirmPassword" type="password" class="form-control bg-transparent text-white border-secondary py-3" placeholder="••••••••" required />
                     </div>
 
                     <button type="submit" class="btn btn-gold w-100 py-3 mb-4">REGISTER MEMBERSHIP</button>
