@@ -9,6 +9,7 @@ namespace DeliveryTrackingSystem.Controllers
     [Authorize]
     public class DashboardController : Controller
     {
+        [HttpGet("/Dashboard")]
         public IActionResult Index()
         {
             var model = new DashboardViewModel

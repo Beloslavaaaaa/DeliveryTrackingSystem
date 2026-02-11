@@ -16,17 +16,18 @@
 
                 <form id="account" method="post">
                     @Html.AntiForgeryToken()
+                    <input type="hidden" name="ReturnUrl" value="/Dashboard" />
 
-                    <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+                    <div asp-validation-summary="All" class="text-danger small mb-3"></div>
 
                     <div class="mb-4">
                         <label class="form-label small text-gold">EMAIL ADDRESS</label>
-                        <input name="Input.Email" class="form-control bg-transparent text-white border-secondary py-3" required />
+                        <input name="Input.Email" type="email" class="form-control bg-transparent text-white border-secondary py-3" required />
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label small text-gold">PASSWORD</label>
-                        <input type="password" name="Input.Password" class="form-control bg-transparent text-white border-secondary py-3" required />
+                        <input name="Input.Password" type="password" class="form-control bg-transparent text-white border-secondary py-3" required />
                     </div>
 
                     <input type="hidden" name="Input.RememberMe" value="false" />
