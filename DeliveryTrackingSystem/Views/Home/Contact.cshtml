@@ -1,4 +1,5 @@
-﻿@{
+﻿@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
     ViewData["Title"] = "Contact Concierge | Cargobell";
 }
 
@@ -36,7 +37,7 @@
 </div>
 
 @section Scripts {
-            <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAomYbmIpNcpXVABwiTNIex-89F1wu231s&callback=initMap" async defer></script>
+                <script src="https://maps.googleapis.com/maps/api/js?key=@Configuration["GoogleMaps:ApiKey"]&callback=initMap" async defer></script>
 
         <script>
             function initMap() {

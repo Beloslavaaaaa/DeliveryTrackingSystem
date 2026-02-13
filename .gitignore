@@ -361,3 +361,18 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# ====================================================================
+# CUSTOM SENSITIVE DATA HIDING (Cargobell Security)
+# ====================================================================
+# Ignore all appsettings files that contain secrets
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+
+# Ignore local user secret files if they ever appear in the project root
+secrets.json
+
+# Ignore any environment files
+.env
+.env.*
