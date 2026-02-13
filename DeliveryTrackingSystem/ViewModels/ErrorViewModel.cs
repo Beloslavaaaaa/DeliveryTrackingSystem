@@ -1,4 +1,4 @@
-namespace DeliveryTrackingSystem.Models
+namespace DeliveryTrackingSystem.ViewModels
 {
     public class ErrorViewModel
     {

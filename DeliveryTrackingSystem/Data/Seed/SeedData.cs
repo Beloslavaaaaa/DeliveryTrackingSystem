@@ -15,11 +15,10 @@ namespace DeliveryTrackingSystem.Data.Seed
         {
             using var scope = serviceProvider.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
             context.Database.Migrate();
 
-            // Seed Statuses
             if (!context.Statuses.Any())
             {
                 var statuses = new List<Status>
@@ -32,11 +31,10 @@ namespace DeliveryTrackingSystem.Data.Seed
                 await context.SaveChangesAsync();
             }
 
-            // Seed Users
             var adminEmail = "admin@softuni.com";
             if (await userManager.FindByEmailAsync(adminEmail) == null)
             {
-                var admin = new IdentityUser
+                var admin = new ApplicationUser
                 {
                     UserName = "admin",
                     Email = adminEmail,
@@ -48,7 +46,7 @@ namespace DeliveryTrackingSystem.Data.Seed
             var courierEmail = "courier@softuni.com";
             if (await userManager.FindByEmailAsync(courierEmail) == null)
             {
-                var courier = new IdentityUser
+                var courier = new ApplicationUser
                 {
                     UserName = "courier",
                     Email = courierEmail,

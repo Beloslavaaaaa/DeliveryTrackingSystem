@@ -13,13 +13,13 @@ namespace DeliveryTrackingSystem.Models
         public string TrackingCode { get; set; }
 
         public string SenderId { get; set; }
-        public IdentityUser Sender { get; set; }
+        public ApplicationUser Sender { get; set; }
 
         public string ReceiverId { get; set; }
         public IdentityUser Receiver { get; set; }
 
         public string CourierId { get; set; }
-        public IdentityUser Courier { get; set; }
+        public ApplicationUser Courier { get; set; }
 
         public int DeliveryRouteId { get; set; }
         public DeliveryRoute DeliveryRoute { get; set; }

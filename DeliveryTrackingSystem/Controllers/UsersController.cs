@@ -1,4 +1,5 @@
 ﻿using DeliveryTrackingSystem.Data;
+using DeliveryTrackingSystem.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,9 +12,9 @@ namespace DeliveryTrackingSystem.Controllers
     public class UsersController : Controller
     {
         private readonly ApplicationDbContext _context;
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public UsersController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public UsersController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;

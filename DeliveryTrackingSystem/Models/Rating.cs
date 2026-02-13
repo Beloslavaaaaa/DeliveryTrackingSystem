@@ -11,7 +11,7 @@ namespace DeliveryTrackingSystem.Models
         public Shipment Shipment { get; set; }
 
         public string CourierId { get; set; }
-        public IdentityUser Courier { get; set; }
+        public ApplicationUser Courier { get; set; }
 
         [Range(1, 5)]
         public int Score { get; set; }

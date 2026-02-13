@@ -40,23 +40,20 @@
 
         <script>
             function initMap() {
-                // Location for Bulgaria HQ
                 const bulgariaHQ = { lat: 42.6977, lng: 23.3219 };
 
                 const map = new google.maps.Map(document.getElementById("map"), {
                     zoom: 5,
                     center: bulgariaHQ,
-                    // Custom Dark/Gold Style
                     styles: [
                         { "stylers": [{ "visibility": "simplified" }] },
                         { "stylers": [{ "color": "#131314" }] },
                         { "featureType": "water", "stylers": [{ "color": "#000000" }] },
                         { "featureType": "gold", "elements": "geometry", "stylers": [{ "color": "#D4AF37" }] }
                     ],
-                    disableDefaultUI: true // Keeps it clean and minimalist
+                    disableDefaultUI: true 
                 });
 
-                // Add a Custom Gold Marker
                 const marker = new google.maps.Marker({
                     position: bulgariaHQ,
                     map: map,
@@ -71,7 +68,6 @@
                     }
                 });
 
-                // Info Window on click
                 const infoWindow = new google.maps.InfoWindow({
                     content: '<div style="color:#000; padding:10px;"><strong>CARGOBELL HQ</strong><br>Sofia, Bulgaria</div>'
                 });

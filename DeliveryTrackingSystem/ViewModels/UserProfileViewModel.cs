@@ -6,7 +6,7 @@ namespace DeliveryTrackingSystem.ViewModels
 {
     public class UserProfileViewModel
     {
-        public IdentityUser User { get; set; }
+        public ApplicationUser User { get; set; }
         public List<Shipment> Shipments { get; set; }
     }
 }
