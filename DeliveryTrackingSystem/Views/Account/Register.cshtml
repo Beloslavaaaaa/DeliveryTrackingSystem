@@ -3,59 +3,90 @@
     ViewData["Title"] = "Join Cargobell | Elite Registration";
 }
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
+
+<style>
+    .iti { width: 100%; }
+    .iti__country-list { 
+        background-color: #0a0a0a !important; 
+        border: 1px solid #D4AF37 !important; 
+        color: white !important; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+    .iti__country:hover { background-color: #1a1a1a !important; }
+    .iti__selected-flag { 
+        background-color: rgba(255,255,255,0.05) !important; 
+        border-radius: 4px 0 0 4px; 
+    }
+    .iti__arrow { border-top-color: #D4AF37 !important; }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+    }
+
+    .form-control:focus {
+        background-color: #111 !important;
+        border-color: #D4AF37 !important;
+        box-shadow: 0 0 10px rgba(212, 175, 55, 0.3) !important;
+    }
+</style>
+
 <div class="container py-5 mt-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-md-7">
             <div class="card p-5 border-gold shadow-lg" style="background: rgba(10, 10, 10, 0.9); backdrop-filter: blur(15px); border: 1px solid #D4AF37;">
                 <div class="text-center mb-4">
                     <h2 class="text-gold h3 fw-bold">MEMBERSHIP</h2>
                     <p class="text-secondary small text-uppercase" style="letter-spacing: 2px;">Join the Global Elite</p>
                 </div>
 
-                <form asp-controller="Account" asp-action="Register" method="post">
+                <form asp-controller="Account" asp-action="Register" method="post" id="registerForm">
                     @Html.AntiForgeryToken()
                     <div asp-validation-summary="All" class="text-danger small mb-3"></div>
 
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <label asp-for="FirstName" class="form-label small text-gold">FIRST NAME</label>
-                            <input asp-for="FirstName" class="form-control bg-dark text-white border-secondary py-3" placeholder="John" style="background-color: #111 !important; color: white !important;" />
+                            <input asp-for="FirstName" class="form-control bg-dark text-white border-secondary py-3" placeholder="John" style="background-color: #111 !important; color: white !important;" required />
                             <span asp-validation-for="FirstName" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6 mb-4">
                             <label asp-for="LastName" class="form-label small text-gold">LAST NAME</label>
-                            <input asp-for="LastName" class="form-control bg-dark text-white border-secondary py-3" placeholder="Doe" style="background-color: #111 !important; color: white !important;" />
+                            <input asp-for="LastName" class="form-control bg-dark text-white border-secondary py-3" placeholder="Doe" style="background-color: #111 !important; color: white !important;" required />
                             <span asp-validation-for="LastName" class="text-danger small"></span>
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <label asp-for="Email" class="form-label small text-gold">EMAIL ADDRESS</label>
-                        <input asp-for="Email" class="form-control bg-dark text-white border-secondary py-3" placeholder="name@cargobell.com" style="background-color: #111 !important; color: white !important;" />
+                        <input asp-for="Email" class="form-control bg-dark text-white border-secondary py-3" placeholder="name@cargobell.com" style="background-color: #111 !important; color: white !important;" required />
                         <span asp-validation-for="Email" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-4">
-                        <label asp-for="PhoneNumber" class="form-label small text-gold">PHONE NUMBER</label>
-                        <input asp-for="PhoneNumber" class="form-control bg-dark text-white border-secondary py-3" placeholder="+1..." style="background-color: #111 !important; color: white !important;" />
+                        <label asp-for="PhoneNumber" class="form-label small text-gold d-block">PHONE NUMBER</label>
+                        <input asp-for="PhoneNumber" id="phone" type="tel" 
+                               class="form-control bg-dark text-white border-secondary py-3" 
+                               style="background-color: #111 !important; color: white !important;"
+                               onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 43" required />
                         <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-4">
                         <label asp-for="DateOfBirth" class="form-label small text-gold">DATE OF BIRTH</label>
-                        <input asp-for="DateOfBirth" type="date" class="form-control bg-dark text-white border-secondary py-3" style="background-color: #111 !important; color: white !important;" />
+                        <input asp-for="DateOfBirth" type="date" class="form-control bg-dark text-white border-secondary py-3" style="background-color: #111 !important; color: white !important;" required />
                         <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-4">
                         <label asp-for="Password" class="form-label small text-gold">PASSWORD</label>
-                        <input asp-for="Password" type="password" class="form-control bg-dark text-white border-secondary py-3" placeholder="••••••••" style="background-color: #111 !important; color: white !important;" />
+                        <input asp-for="Password" type="password" class="form-control bg-dark text-white border-secondary py-3" placeholder="••••••••" style="background-color: #111 !important; color: white !important;" required />
                         <span asp-validation-for="Password" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-4">
                         <label asp-for="ConfirmPassword" class="form-label small text-gold">CONFIRM PASSWORD</label>
-                        <input asp-for="ConfirmPassword" type="password" class="form-control bg-dark text-white border-secondary py-3" placeholder="••••••••" style="background-color: #111 !important; color: white !important;" />
+                        <input asp-for="ConfirmPassword" type="password" class="form-control bg-dark text-white border-secondary py-3" placeholder="••••••••" style="background-color: #111 !important; color: white !important;" required />
                         <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
                     </div>
 
@@ -72,4 +103,20 @@
 
 @section Scripts {
         <partial name="_ValidationScriptsPartial" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+        <script>
+            const phoneInputField = document.querySelector("#phone");
+            const phoneInput = window.intlTelInput(phoneInputField, {
+                preferredCountries: ["us", "gb", "de"],
+                separateDialCode: true, 
+                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+            });
+
+            phoneInputField.addEventListener('input', function (e) {
+                this.value = this.value.replace(/[^0-9+]/g, '');
+            });
+
+            document.getElementById("registerForm").addEventListener("submit", function() {
+            });
+        </script>
 }
