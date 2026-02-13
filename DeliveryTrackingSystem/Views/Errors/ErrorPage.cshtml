@@ -1,5 +1,6 @@
 ﻿@{
     Layout = "_Layout";
+    var returnUrl = User.Identity.IsAuthenticated ? "/Dashboard" : "/";
 }
 
 <div class="text-center py-5 my-5">
@@ -9,7 +10,8 @@
         <p class="text-secondary mx-auto mb-5" style="max-width: 500px;">@ViewData["Subline"]</p>
 
         <div class="d-flex justify-content-center gap-3">
-            <a href="/" class="btn btn-outline-gold px-4 py-2">RETURN TO COMMAND</a>
+
+            <a href="@returnUrl" class="btn btn-outline-gold px-4 py-2">RETURN TO COMMAND</a>
             <a href="/Home/Contact" class="btn btn-gold px-4 py-2">REPORT DISCREPANCY</a>
         </div>
     </div>
