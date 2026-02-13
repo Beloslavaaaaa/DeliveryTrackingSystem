@@ -16,7 +16,7 @@ namespace DeliveryTrackingSystem.Models
         public ApplicationUser Sender { get; set; }
 
         public string ReceiverId { get; set; }
-        public IdentityUser Receiver { get; set; }
+        public ApplicationUser Receiver { get; set; }
 
         public string CourierId { get; set; }
         public ApplicationUser Courier { get; set; }

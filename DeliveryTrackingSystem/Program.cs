@@ -30,7 +30,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromMinutes(1);
     options.SlidingExpiration = true;
 
-    options.LoginPath = "/Identity/Account/Login";
+    options.LoginPath = "/Views/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+
     options.AccessDeniedPath = "/Error/403";
 
     options.Events.OnRedirectToLogin = context =>
@@ -67,11 +69,6 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    await SeedData.InitializeAsync(services);
-}
 
 if (app.Environment.IsDevelopment())
 {
