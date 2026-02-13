@@ -16,6 +16,9 @@ namespace DeliveryTrackingSystem.Models
         public string PickupAddress { get; set; }
 
         [Required]
+        public string DropoffAddress { get; set; }
+
+        [Required]
         public string PackageDescription { get; set; }
 
         public DateTime PreferredPickupTime { get; set; }

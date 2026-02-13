@@ -43,5 +43,23 @@ namespace DeliveryTrackingSystem.Controllers
 
             return RedirectToAction(nameof(RequestIndex));
         }
+        [HttpPost]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var request = await _context.CourierRequests
+                .FirstOrDefaultAsync(r => r.CourierRequestId == id && r.UserId == userId);
+
+            if (request == null) return NotFound();
+
+            if (request.Status == "Pending")
+            {
+                request.Status = "Cancelled";
+                request.IsCompleted = true;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(RequestIndex));
+        }
     }
 }
