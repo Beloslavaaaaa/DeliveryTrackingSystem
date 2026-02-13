@@ -33,5 +33,7 @@ namespace DeliveryTrackingSystem.Models
 
         public ICollection<StatusHistory> StatusHistory { get; set; }
         public ICollection<Rating> Ratings { get; set; }
+        public bool IsCashOnDelivery { get; set; }
+        public decimal CodAmount { get; set; }
     }
 }

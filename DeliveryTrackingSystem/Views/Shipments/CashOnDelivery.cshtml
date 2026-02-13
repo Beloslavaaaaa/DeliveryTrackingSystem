@@ -1,0 +1,72 @@
+﻿@model IEnumerable<DeliveryTrackingSystem.Models.Shipment>
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> UserManager
+@{
+    ViewData["Title"] = "COD Terminal";
+    var currentUserId = UserManager.GetUserId(User);
+}
+
+<div class="container py-5">
+    <div class="mb-5">
+        <h4 class="text-secondary small mb-1" style="letter-spacing: 3px;">FINANCIAL</h4>
+        <h1 class="text-gold display-6 fw-bold">CASH ON DELIVERY</h1>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            @if (Model.Any())
+            {
+                    <div class="table-responsive border border-secondary rounded shadow-lg" style="background: rgba(255,255,255,0.02);">
+                        <table class="table table-dark table-hover mb-0 align-middle">
+                            <thead class="text-gold small uppercase" style="background: rgba(212, 175, 55, 0.05);">
+                                <tr>
+                                    <th class="ps-4 py-3 border-0">Manifest #</th>
+                                    <th class="py-3 border-0">Your Role</th>
+                                    <th class="py-3 border-0">Destination</th>
+                                    <th class="py-3 border-0 text-center">Amount to Collect</th>
+                                    <th class="pe-4 py-3 border-0 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-white border-0">
+                            @foreach (var item in Model)
+                            {
+                                bool isSender = item.SenderId == currentUserId;
+                                        <tr>
+                                            <td class="ps-4 py-4 fw-bold text-gold">@item.TrackingCode</td>
+                                            <td class="py-4">
+                                                <span class="small @(isSender ? "text-info" : "text-warning")">
+                                            @(isSender ? "RECEIVING FUNDS" : "PAYMENT DUE")
+                                                </span>
+                                            </td>
+                                            <td class="py-4 small text-secondary">
+                                        @item.DeliveryRoute?.EndLocation
+                                            </td>
+                                            <td class="py-4 text-center">
+                                                <span class="fs-5 fw-bold text-white">$@item.CodAmount</span>
+                                            </td>
+                                            <td class="pe-4 py-4 text-end">
+                                                <a href="/Shipments/Details?trackingCode=@item.TrackingCode" class="btn btn-sm btn-outline-gold px-3">View Manifest</a>
+                                            </td>
+                                        </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+            }
+            else
+            {
+                    <div class="text-center py-5 border border-secondary border-dashed rounded bg-black" style="border-style: dashed !important; opacity: 0.6;">
+                        <i class="bi bi-currency-dollar fs-1 text-secondary d-block mb-3"></i>
+                        <h5 class="text-secondary small text-uppercase" style="letter-spacing: 2px;">No pending COD transactions detected.</h5>
+                        <p class="text-muted small">All accounts are currently settled.</p>
+                    </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .border-dashed { border: 1px dashed #444 !important; }
+    .btn-outline-gold { border-color: #D4AF37; color: #D4AF37; }
+    .btn-outline-gold:hover { background: #D4AF37; color: #000; }
+</style>

@@ -76,5 +76,21 @@ namespace DeliveryTrackingSystem.Controllers
 
             return View(shipments);
         }
+        [Authorize]
+        public async Task<IActionResult> CashOnDelivery()
+        {
+            var userId = _userManager.GetUserId(User);
+            var pendingCod = await _context.Shipments
+                .Include(s => s.Status)
+                .Include(s => s.DeliveryRoute)
+                .Where(s => (s.SenderId == userId || s.ReceiverId == userId)
+                            && s.IsCashOnDelivery
+                            && s.Status.Name != "Delivered"
+                            && s.Status.Name != "Cancelled")
+                .OrderByDescending(s => s.CreatedAt)
+                .ToListAsync();
+
+            return View(pendingCod);
+        }
     }
 }
