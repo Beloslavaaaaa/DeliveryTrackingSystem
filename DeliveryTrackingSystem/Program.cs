@@ -26,8 +26,27 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(1);
+    options.SlidingExpiration = true;
+
     options.LoginPath = "/Identity/Account/Login";
-    options.AccessDeniedPath = "/Error/403"; 
+    options.AccessDeniedPath = "/Error/403";
+
+    options.Events.OnRedirectToLogin = context =>
+    {
+        if (context.Request.Path.StartsWithSegments("/Dashboard") ||
+            context.Request.Path.StartsWithSegments("/Shipments") ||
+            context.Request.Path.StartsWithSegments("/Couriers"))
+        {
+            context.Response.Redirect(context.RedirectUri + "&message=expired");
+        }
+        else
+        {
+            context.Response.Redirect(context.RedirectUri);
+        }
+        return Task.CompletedTask;
+    };
+
     options.Events.OnRedirectToReturnUrl = context =>
     {
         if (context.RedirectUri.EndsWith("/") || string.IsNullOrEmpty(context.RedirectUri))
@@ -59,7 +78,7 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
-    app.UseExceptionHandler("/Error/500"); 
+    app.UseExceptionHandler("/Error/500");
     app.UseHsts();
 }
 
