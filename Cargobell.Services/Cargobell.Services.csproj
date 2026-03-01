@@ -11,4 +11,9 @@
     <ProjectReference Include="..\Cargobell.Shared\Cargobell.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Interfaces\" />
+    <Folder Include="Implementation\" />
+  </ItemGroup>
+
 </Project>

@@ -1,9 +1,9 @@
-﻿@model IEnumerable<DeliveryTrackingSystem.Models.CourierRequest>
+﻿@model IEnumerable<Cargobell.Shared.Models.CourierRequest>
 @{
     ViewData["Title"] = "Courier Services";
     string activeTab = ViewBag.ActiveTab ?? "active";
-    var activeRequests = Model?.Where(r => !r.IsCompleted).ToList() ?? new List<DeliveryTrackingSystem.Models.CourierRequest>();
-    var finishedRequests = Model?.Where(r => r.IsCompleted).ToList() ?? new List<DeliveryTrackingSystem.Models.CourierRequest>();
+    var activeRequests = Model?.Where(r => !r.IsCompleted).ToList() ?? new List<Cargobell.Shared.Models.CourierRequest>();
+    var finishedRequests = Model?.Where(r => r.IsCompleted).ToList() ?? new List<Cargobell.Shared.Models.CourierRequest>();
 }
 
 <div class="container py-5">

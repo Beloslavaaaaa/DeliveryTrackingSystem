@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DeliveryTrackingSystem.Models
+namespace Cargobell.Shared.ViewModels
 {
     public class RegisterViewModel
     {

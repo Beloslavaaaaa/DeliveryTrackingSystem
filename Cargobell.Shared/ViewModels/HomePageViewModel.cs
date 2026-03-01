@@ -1,4 +1,4 @@
-﻿namespace DeliveryTrackingSystem.ViewModels
+﻿namespace Cargobell.Shared.ViewModels
 {
     public class HomePageViewModel
     {

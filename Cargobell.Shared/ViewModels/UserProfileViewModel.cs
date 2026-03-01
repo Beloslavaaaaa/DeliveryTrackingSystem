@@ -1,8 +1,8 @@
-﻿using DeliveryTrackingSystem.Models;
+﻿using Cargobell.Shared.Models;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 
-namespace DeliveryTrackingSystem.ViewModels
+namespace Cargobell.Shared.ViewModels
 {
     public class UserProfileViewModel
     {

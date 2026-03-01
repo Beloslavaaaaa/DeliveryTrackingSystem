@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using DeliveryTrackingSystem.Data;
-using DeliveryTrackingSystem.Models;
+using Cargobell.Data;
+using Cargobell.Shared.Models;
 using System.Linq;
 using System.Threading.Tasks;
 

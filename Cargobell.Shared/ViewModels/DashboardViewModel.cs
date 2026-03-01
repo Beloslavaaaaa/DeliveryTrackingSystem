@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace DeliveryTrackingSystem.Models
+namespace Cargobell.Shared.ViewModels
 {
     public class DashboardViewModel
     {

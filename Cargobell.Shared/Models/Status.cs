@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace DeliveryTrackingSystem.Models
+namespace Cargobell.Shared.Models
 {
     public class Status
     {

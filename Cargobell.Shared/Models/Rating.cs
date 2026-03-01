@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 
-namespace DeliveryTrackingSystem.Models
+namespace Cargobell.Shared.Models
 {
     public class Rating
     {

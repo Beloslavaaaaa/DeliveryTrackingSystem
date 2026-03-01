@@ -1,4 +1,4 @@
-﻿namespace DeliveryTrackingSystem.Models
+﻿namespace Cargobell.Shared.Models
 {
     public class DeliveryRoute
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using DeliveryTrackingSystem.Models;
+using Cargobell.Shared.Models;
 
 namespace DeliveryTrackingSystem.Controllers
 {

@@ -1,6 +1,6 @@
-using DeliveryTrackingSystem.Data;
-using DeliveryTrackingSystem.Data.Seed;
-using DeliveryTrackingSystem.Models;
+using Cargobell.Data;
+using Cargobell.Data.Data.Seed;
+using Cargobell.Shared.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

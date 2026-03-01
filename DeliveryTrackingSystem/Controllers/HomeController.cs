@@ -1,5 +1,5 @@
-﻿using DeliveryTrackingSystem.Data;
-using DeliveryTrackingSystem.ViewModels;
+﻿using Cargobell.Data;
+using Cargobell.Shared.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,5 +1,5 @@
-﻿using DeliveryTrackingSystem.Data;
-using DeliveryTrackingSystem.Models;
+﻿using Cargobell.Data;
+using Cargobell.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

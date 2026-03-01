@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Cargobell.Data\Cargobell.Data.csproj" />
     <ProjectReference Include="..\Cargobell.Services\Cargobell.Services.csproj" />
     <ProjectReference Include="..\Cargobell.Shared\Cargobell.Shared.csproj" />
   </ItemGroup>

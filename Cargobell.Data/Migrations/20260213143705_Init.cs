@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace DeliveryTrackingSystem.Migrations
+namespace Cargobell.Data.Migrations
 {
     /// <inheritdoc />
     public partial class Init : Migration

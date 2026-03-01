@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using DeliveryTrackingSystem.Models;
+using Cargobell.Shared.Models;
 
 
-namespace DeliveryTrackingSystem.Data
+namespace Cargobell.Data.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {

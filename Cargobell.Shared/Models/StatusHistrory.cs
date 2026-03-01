@@ -1,6 +1,5 @@
 ﻿using System;
-
-namespace DeliveryTrackingSystem.Models
+namespace Cargobell.Shared.Models
 {
     public class StatusHistory
     {

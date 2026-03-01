@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
-namespace DeliveryTrackingSystem.Models
+namespace Cargobell.Shared.Models
 {
     public class ApplicationUser : IdentityUser
     {

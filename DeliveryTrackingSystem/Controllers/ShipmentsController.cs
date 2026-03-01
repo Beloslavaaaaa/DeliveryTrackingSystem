@@ -1,9 +1,9 @@
-﻿using DeliveryTrackingSystem.Data;
-using DeliveryTrackingSystem.Models;
-using DeliveryTrackingSystem.ViewModels;
+﻿using Cargobell.Data;
+using Cargobell.Shared.Models;
+using Cargobell.Shared.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;  
 using Microsoft.AspNetCore.Authorization;
 
 namespace DeliveryTrackingSystem.Controllers

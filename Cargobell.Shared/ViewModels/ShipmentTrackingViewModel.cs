@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using DeliveryTrackingSystem.Models;
+using Cargobell.Shared.Models;
 
-namespace DeliveryTrackingSystem.ViewModels
+namespace Cargobell.Shared.ViewModels
 {
     public class ShipmentTrackingViewModel
     {
