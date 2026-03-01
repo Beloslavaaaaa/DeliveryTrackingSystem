@@ -25,4 +25,9 @@
     <Folder Include="Areas\Identity\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Cargobell.Services\Cargobell.Services.csproj" />
+    <ProjectReference Include="..\Cargobell.Shared\Cargobell.Shared.csproj" />
+  </ItemGroup>
+
 </Project>
