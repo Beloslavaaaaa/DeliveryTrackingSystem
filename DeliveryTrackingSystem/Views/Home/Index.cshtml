@@ -2,62 +2,110 @@
     ViewData["Title"] = "Cargobell | Your Cargo on the Bell";
 }
 
-<div class="container py-5 mt-lg-5">
-    <div class="text-center mb-5">
-        <h1 class="display-1 fw-bold text-gold mb-0">CARGOBELL</h1>
-        <p class="text-gold opacity-75 mt-0" style="letter-spacing: 8px; font-size: 0.9rem;">YOUR CARGO ON THE BELL</p>
+<style>
+    /* Full-screen background with the truck image */
+    .hero-wrap {
+        background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), url('/images/cargo-bell-bg.jpg'); /* Make sure your image name matches exactly */
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        min-height: 100vh;
+        width: 100%;
+        margin-top: -56px; /* Offsets navbar height if it's fixed */
+        display: flex;
+        align-items: center;
+    }
 
-        <div class="row justify-content-center mt-4">
-            <div class="col-md-6">
-                <p class="fw-light text-secondary" style="line-height: 2;">
-                    The gold standard in global logistics. Enter your manifest tracking ID below to monitor your assets in real-time.
-                </p>
+    /* Gold Theme Colors */
+    .text-gold {
+        color: #D4AF37 !important;
+    }
+
+    .btn-gold {
+        background-color: #D4AF37;
+        color: #000;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+        .btn-gold:hover {
+            background-color: #f1c40f;
+            transform: translateY(-2px);
+        }
+
+    .btn-outline-gold {
+        border: 1px solid #D4AF37;
+        color: #D4AF37;
+    }
+
+        .btn-outline-gold:hover {
+            background-color: #D4AF37;
+            color: #000;
+        }
+
+    .border-gold {
+        border-color: #D4AF37 !important;
+    }
+</style>
+
+<div class="hero-wrap">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h1 class="display-1 fw-bold text-gold mb-0">CARGOBELL</h1>
+            <p class="text-gold opacity-75 mt-0" style="letter-spacing: 8px; font-size: 0.9rem;">YOUR CARGO ON THE BELL</p>
+
+            <div class="row justify-content-center mt-4">
+                <div class="col-md-6">
+                    <p class="fw-light text-white-50" style="line-height: 2;">
+                        The gold standard in global logistics. Enter your manifest tracking ID below to monitor your assets in real-time.
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="row justify-content-center mb-5">
-        <div class="col-md-8">
-            <div class="card p-2 shadow-lg" style="background: rgba(255,255,255,0.02); backdrop-filter: blur(10px); border: 1px solid #2a2a2a;">
-                <form asp-controller="Shipments" asp-action="Details" method="get">
-                    <div class="input-group">
-                        <input type="text" name="trackingCode" 
-                               class="form-control form-control-lg bg-transparent text-white border-0 py-4 ps-4" 
-                               placeholder="TRACKING CODE" 
-                               style="letter-spacing: 4px; font-family: 'Cinzel', serif;" required />
-                        <button type="submit" class="btn btn-gold px-5">TRACK</button>
-                    </div>
-                </form>
-            </div>
-            @if (TempData["Error"] != null)
-            {
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-8">
+                <div class="card p-2 shadow-lg" style="background: rgba(0,0,0,0.4); backdrop-filter: blur(15px); border: 1px solid #D4AF37;">
+                    <form asp-controller="Shipments" asp-action="Details" method="get">
+                        <div class="input-group">
+                            <input type="text" name="trackingCode"
+                                   class="form-control form-control-lg bg-transparent text-white border-0 py-4 ps-4"
+                                   placeholder="TRACKING CODE"
+                                   style="letter-spacing: 4px;" required />
+                            <button type="submit" class="btn btn-gold px-5">TRACK</button>
+                        </div>
+                    </form>
+                </div>
+                @if (TempData["Error"] != null)
+                {
                     <p class="text-center text-danger mt-3 small fw-bold">@TempData["Error"]</p>
-            }
-        </div>
-    </div>
-
-    <div class="row g-5 mt-5 text-center">
-        <div class="col-md-4">
-            <div class="p-4 border border-secondary rounded h-100 d-flex flex-column bg-dark" style="background: #111 !important;">
-                <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Contact Us</h5>
-                <p class="small text-secondary fw-light mb-4">Reach out to our global concierge for support.</p>
-                <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-gold px-4 mt-auto py-2">Open Inquiry</a>
+                }
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="p-4 border border-gold rounded h-100 d-flex flex-column shadow-lg" style="background: rgba(212, 175, 55, 0.08); transform: scale(1.05);">
-                <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Pricing</h5>
-                <p class="small text-secondary fw-light mb-4">Calculate shipping rates for domestic and international.</p>
-                <a asp-controller="Home" asp-action="Pricing" class="btn btn-gold px-4 mt-auto py-2">View Rates</a>
+        <div class="row g-5 mt-5 text-center">
+            <div class="col-md-4">
+                <div class="p-4 border border-secondary rounded h-100 d-flex flex-column" style="background: rgba(0,0,0,0.6);">
+                    <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Contact Us</h5>
+                    <p class="small text-secondary fw-light mb-4">Reach out to our global concierge for support.</p>
+                    <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-gold px-4 mt-auto py-2">Open Inquiry</a>
+                </div>
             </div>
-        </div>
 
-        <div class="col-md-4">
-            <div class="p-4 border border-secondary rounded h-100 d-flex flex-column bg-dark" style="background: #111 !important;">
-                <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Privacy Policy</h5>
-                <p class="small text-secondary fw-light mb-4">Learn about our data security and cargo protection.</p>
-                <a asp-controller="Home" asp-action="Privacy" class="btn btn-outline-gold px-4 mt-auto py-2">Read Policy</a>
+            <div class="col-md-4">
+                <div class="p-4 border border-gold rounded h-100 d-flex flex-column shadow-lg" style="background: rgba(212, 175, 55, 0.15); transform: scale(1.05); backdrop-filter: blur(5px);">
+                    <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Pricing</h5>
+                    <p class="small text-white fw-light mb-4">Calculate shipping rates for domestic and international.</p>
+                    <a asp-controller="Home" asp-action="Pricing" class="btn btn-gold px-4 mt-auto py-2">View Rates</a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="p-4 border border-secondary rounded h-100 d-flex flex-column" style="background: rgba(0,0,0,0.6);">
+                    <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Privacy Policy</h5>
+                    <p class="small text-secondary fw-light mb-4">Learn about our data security and cargo protection.</p>
+                    <a asp-controller="Home" asp-action="Privacy" class="btn btn-outline-gold px-4 mt-auto py-2">Read Policy</a>
+                </div>
             </div>
         </div>
     </div>
