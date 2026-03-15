@@ -22,6 +22,13 @@ namespace DeliveryTrackingSystem.Controllers
             _context = context;
             _userManager = userManager;
         }
+        public async Task<IActionResult> Profile()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+
+            return View(user);
+        }
 
         [HttpGet("/Dashboard")]
         public async Task<IActionResult> Index()

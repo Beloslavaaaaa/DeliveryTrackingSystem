@@ -16,37 +16,41 @@
             --rich-black: #050505;
         }
 
-        body { 
-            background-color: var(--rich-black) !important; 
-            color: #ffffff !important; 
+        body {
+            background-color: var(--rich-black) !important;
+            color: #ffffff !important;
             font-family: 'Montserrat', sans-serif;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
 
-        main { flex: 1; }
+        main {
+            flex: 1;
+        }
 
-        .navbar { 
-            background-color: #000000 !important; 
-            border-bottom: 1px solid var(--gold-solid); 
+        .navbar {
+            background-color: #000000 !important;
+            border-bottom: 1px solid var(--gold-solid);
             padding: 1rem 0;
         }
 
-        .text-gold { 
-            background: var(--gold-gradient); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-            font-weight: bold; 
+        .text-gold {
+            background: var(--gold-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
         }
 
-        .nav-link { 
-            color: #ffffff !important; 
+        .nav-link {
+            color: #ffffff !important;
             font-weight: 600 !important;
             transition: 0.3s;
         }
 
-        .nav-link:hover { color: var(--gold-solid) !important; }
+            .nav-link:hover {
+                color: var(--gold-solid) !important;
+            }
 
         .btn-gold {
             background: var(--gold-gradient) !important;
@@ -69,10 +73,10 @@
             font-family: 'Cinzel', serif;
         }
 
-        .btn-gold:hover, .btn-outline-gold:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
-        }
+            .btn-gold:hover, .btn-outline-gold:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
+            }
 
         .search-container {
             border: 1px solid #333;
@@ -82,9 +86,9 @@
             transition: 0.3s;
         }
 
-        .search-container:focus-within {
-            border-color: var(--gold-solid);
-        }
+            .search-container:focus-within {
+                border-color: var(--gold-solid);
+            }
 
         .search-input {
             background: transparent;
@@ -102,19 +106,11 @@
             box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
         }
 
-        input:-webkit-autofill,
-        input:-webkit-autofill:hover, 
-        input:-webkit-autofill:focus {
-            -webkit-text-fill-color: white !important;
-            -webkit-box-shadow: 0 0 0px 1000px #050505 inset !important;
-            transition: background-color 5000s ease-in-out 0s;
-        }
-
-        footer { 
-            border-top: 1px solid #222; 
-            margin-top: 5rem; 
-            padding: 3rem 0; 
-            background: #000; 
+        footer {
+            border-top: 1px solid #222;
+            margin-top: 5rem;
+            padding: 3rem 0;
+            background: #000;
         }
 
         .footer-link {
@@ -125,16 +121,23 @@
             transition: 0.3s;
         }
 
-        .footer-link:hover {
-            color: var(--gold-solid);
-        }
+            .footer-link:hover {
+                color: var(--gold-solid);
+            }
     </style>
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark shadow mb-5">
             <div class="container">
-                <a class="navbar-brand fs-2 text-gold" asp-controller="Home" asp-action="Index">CARGOBELL</a>
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <span class="navbar-brand fs-2 text-gold" style="cursor: default;">CARGOBELL</span>
+                }
+                else
+                {
+                    <a class="navbar-brand fs-2 text-gold" asp-controller="Home" asp-action="Index">CARGOBELL</a>
+                }
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                     <span class="navbar-toggler-icon"></span>
@@ -144,38 +147,43 @@
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         @if (User.Identity.IsAuthenticated)
                         {
-                                <li class="nav-item">
-                                    <a class="nav-link text-uppercase small text-gold" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-uppercase small" asp-controller="Shipments" asp-action="History">Manifests</a>
-                                </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-uppercase small text-gold" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-uppercase small" asp-controller="Shipments" asp-action="History">Manifests</a>
+                            </li>
                         }
                     </ul>
 
                     <div class="d-flex align-items-center gap-3">
                         @if (User.Identity.IsAuthenticated)
                         {
-                                <form class="search-container d-flex align-items-center" asp-controller="Shipments" asp-action="Details" method="get">
-                                    <input type="text" name="trackingCode" class="search-input" placeholder="TRACK ORDER CODE">
-                                    <button type="submit" class="btn btn-link text-gold p-0 ms-2"><i class="bi bi-search"></i></button>
-                                </form>
+                            <form class="search-container d-flex align-items-center" asp-controller="Shipments" asp-action="Details" method="get">
+                                <input type="text" name="trackingCode" class="search-input" placeholder="TRACK ORDER CODE">
+                                <button type="submit" class="btn btn-link text-gold p-0 ms-2"><i class="bi bi-search"></i></button>
+                            </form>
                         }
 
                         <ul class="navbar-nav align-items-center">
                             @if (User.Identity.IsAuthenticated)
                             {
-                                    <li class="nav-item me-3"><span class="nav-link small text-secondary">@User.Identity.Name</span></li>
-                                    <li class="nav-item">
-                                        <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
-                                            <button type="submit" class="nav-link btn btn-link text-uppercase small text-white border-0" style="text-decoration:none; cursor: pointer;">Exit</button>
-                                        </form>
-                                    </li>
+                                <li class="nav-item me-3">
+                                    <a class="nav-link small text-gold d-flex align-items-center gap-2" asp-controller="Dashboard" asp-action="Profile">
+                                        <i class="bi bi-person-circle"></i>
+                                        <span>@User.Identity.Name?.Split('@')[0]</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                                        <button type="submit" class="nav-link btn btn-link text-uppercase small text-white border-0" style="text-decoration:none; cursor: pointer;">Exit</button>
+                                    </form>
+                                </li>
                             }
                             else
                             {
-                                    <li class="nav-item"><a class="nav-link text-uppercase small me-3" asp-area="" asp-controller="Account" asp-action="Login">Sign In</a></li>
-                                    <li class="nav-item"><a class="btn btn-gold px-4 py-2" asp-area="" asp-controller="Account" asp-action="Register">Register</a></li>
+                                <li class="nav-item"><a class="nav-link text-uppercase small me-3" asp-area="" asp-controller="Account" asp-action="Login">Sign In</a></li>
+                                <li class="nav-item"><a class="btn btn-gold px-4 py-2" asp-area="" asp-controller="Account" asp-action="Register">Register</a></li>
                             }
                         </ul>
                     </div>
