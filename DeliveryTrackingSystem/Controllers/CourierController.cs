@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Cargobell.Data;
 using Cargobell.Shared.Models;
+using Cargobell.Shared.ViewModels;
+using Cargobell.Data.Data;
 
 namespace DeliveryTrackingSystem.Controllers
 {

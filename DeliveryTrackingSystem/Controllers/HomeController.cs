@@ -2,6 +2,7 @@
 using Cargobell.Shared.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Cargobell.Data.Data;
 
 namespace DeliveryTrackingSystem.Controllers
 {

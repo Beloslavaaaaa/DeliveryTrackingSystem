@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;  
 using Microsoft.AspNetCore.Authorization;
+using Cargobell.Data.Data;
 
 namespace DeliveryTrackingSystem.Controllers
 {

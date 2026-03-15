@@ -1,5 +1,6 @@
-﻿using Cargobell.Data;
+﻿using Cargobell.Data.Data;
 using Cargobell.Shared.Models;
+using Cargobell.Shared.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +32,7 @@ namespace DeliveryTrackingSystem.Controllers
                 .OrderByDescending(s => s.CreatedAt)
                 .ToListAsync();
 
-            var model = new ViewModels.UserProfileViewModel
+            var model = new Cargobell.Shared.ViewModels.UserProfileViewModel
             {
                 User = await _userManager.GetUserAsync(User),
                 Shipments = shipments

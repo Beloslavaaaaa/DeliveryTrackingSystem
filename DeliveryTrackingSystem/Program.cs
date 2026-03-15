@@ -1,5 +1,5 @@
 using Cargobell.Data;
-using Cargobell.Data.Data.Seed;
+using Cargobell.Data.Data;
 using Cargobell.Shared.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +10,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString,
+    x => x.MigrationsAssembly("Cargobell.Data")));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
@@ -68,7 +69,6 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
-
 
 if (app.Environment.IsDevelopment())
 {
