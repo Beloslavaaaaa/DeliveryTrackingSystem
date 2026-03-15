@@ -1,0 +1,51 @@
+﻿@model Cargobell.Shared.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Account Settings";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg bg-black" style="border: 1px solid #D4AF37;">
+                <div class="card-header bg-dark border-bottom border-gold p-4">
+                    <h4 class="text-gold mb-0 fw-bold">ACCOUNT MODIFICATION</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="UpdateProfile" method="post">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="text-gold small fw-bold">FIRST NAME</label>
+                                <input asp-for="FirstName" class="form-control bg-transparent text-white border-secondary" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-gold small fw-bold">LAST NAME</label>
+                                <input asp-for="LastName" class="form-control bg-transparent text-white border-secondary" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-gold small fw-bold">EMAIL</label>
+                                <input name="NewEmail" value="@Model.Email" class="form-control bg-transparent text-white border-secondary" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-gold small fw-bold">PHONE</label>
+                                <input asp-for="PhoneNumber" class="form-control bg-transparent text-white border-secondary" />
+                            </div>
+                            <div class="col-md-8">
+                                <label class="text-gold small fw-bold">BIRTH DATE</label>
+                                <input asp-for="DateOfBirth" type="date" class="form-control bg-transparent text-white border-secondary" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="text-gold small fw-bold">AGE</label>
+                                <input value="@Model.Age" class="form-control bg-dark text-muted border-0" readonly />
+                            </div>
+                        </div>
+
+                        <div class="mt-5 d-grid gap-3">
+                            <button type="submit" class="btn btn-gold py-3 fw-bold">COMMIT CHANGES</button>
+                            <a asp-action="Profile" class="btn btn-outline-secondary py-2">CANCEL</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

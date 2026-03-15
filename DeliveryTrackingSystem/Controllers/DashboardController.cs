@@ -26,10 +26,43 @@ namespace DeliveryTrackingSystem.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return NotFound();
-
             return View(user);
         }
 
+        public async Task<IActionResult> Settings()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+            return View(user);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateProfile(ApplicationUser model, string NewEmail)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+
+            user.FirstName = model.FirstName;
+            user.LastName = model.LastName;
+            user.DateOfBirth = model.DateOfBirth;
+            user.PhoneNumber = model.PhoneNumber;
+
+            if (!string.IsNullOrEmpty(NewEmail) && user.Email != NewEmail)
+            {
+                user.Email = NewEmail;
+                user.UserName = NewEmail;
+                user.NormalizedEmail = NewEmail.ToUpper();
+                user.NormalizedUserName = NewEmail.ToUpper();
+            }
+
+            var result = await _userManager.UpdateAsync(user);
+            if (result.Succeeded)
+            {
+                return RedirectToAction("Profile");
+            }
+            return View("Settings", user);
+        }
         [HttpGet("/Dashboard")]
         public async Task<IActionResult> Index()
         {
