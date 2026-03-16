@@ -24,6 +24,7 @@ namespace DeliveryTrackingSystem.Controllers
         public async Task<IActionResult> Index()
         {
             var userId = _userManager.GetUserId(User);
+            var user = await _userManager.GetUserAsync(User);
             var stats = new
             {
                 MyActive = await _context.Shipments.CountAsync(s => s.CourierId == userId && s.Status.Name != "Delivered"),
@@ -33,7 +34,7 @@ namespace DeliveryTrackingSystem.Controllers
                     .SumAsync(s => s.DeliveryRoute.Price)
             };
             ViewBag.Stats = stats;
-            return View();
+            return View(user);
         }
 
         [HttpGet("Shipments")]

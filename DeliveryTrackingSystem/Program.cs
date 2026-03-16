@@ -79,8 +79,8 @@ using (var scope = app.Services.CreateScope())
         {
             UserName = courierEmail,
             Email = courierEmail,
-            FirstName = "EXECUTIVE",
-            LastName = "COURIER",
+            FirstName = "Bella",
+            LastName = "Belova",
             DateOfBirth = new DateTime(1990, 1, 1),
             EmailConfirmed = true
         };
