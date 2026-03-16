@@ -17,7 +17,7 @@ namespace Cargobell.Data.Data
         public DbSet<StatusHistory> StatusHistories { get; set; }
         public DbSet<Rating> Ratings { get; set; }
         public DbSet<CourierRequest> CourierRequests { get; set; }
-        
+        public DbSet<Office> Offices { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

@@ -119,14 +119,13 @@ namespace DeliveryTrackingSystem.Controllers
         [HttpGet("CreateShipment")]
         public async Task<IActionResult> CreateShipment(string prefillId)
         {
-            var courierUsers = await _userManager.GetUsersInRoleAsync("Courier");
-            var courierIdList = courierUsers.Select(c => c.Id).ToList();
-
             ViewBag.PrefillId = prefillId;
             ViewBag.Routes = await _context.DeliveryRoutes.ToListAsync();
-            ViewBag.Users = await _userManager.Users
-                .Where(u => !courierIdList.Contains(u.Id))
-                .ToListAsync();
+            ViewBag.Offices = await _context.Offices.Where(o => o.IsActive).ToListAsync(); // Load Offices
+
+            var courierUsers = await _userManager.GetUsersInRoleAsync("Courier");
+            var courierIdList = courierUsers.Select(c => c.Id).ToList();
+            ViewBag.Users = await _userManager.Users.Where(u => !courierIdList.Contains(u.Id)).ToListAsync();
 
             return View();
         }

@@ -1,5 +1,6 @@
 using Cargobell.Data;
 using Cargobell.Data.Data;
+using Cargobell.Data.Data.Seed;
 using Cargobell.Shared.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -63,6 +64,8 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var context = services.GetRequiredService<ApplicationDbContext>();
+    await SeedData.SeedOffices(context);
 
     if (!await roleManager.RoleExistsAsync("Courier"))
     {
