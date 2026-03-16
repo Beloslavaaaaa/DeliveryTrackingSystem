@@ -46,3 +46,45 @@
     <p class="text-secondary small px-5">All logistical data transmitted through this terminal is encrypted and logged for auditing purposes.</p>
     <a asp-action="ManageShipments" asp-route-filter="available" class="btn btn-gold mt-3 px-5 py-2 fw-bold">ACCESS CARGO BOARD</a>
 </div>
+
+<div class="modal fade" id="idCardModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-black border-gold" style="border-width: 2px; border-radius: 15px;">
+            <div class="modal-body p-0">
+                <div class="p-4 position-relative overflow-hidden" style="background: linear-gradient(145deg, #111, #000); border-radius: 13px;">
+
+                    <div class="d-flex justify-content-between mb-4">
+                        <div>
+                            <h5 class="text-gold fw-bold mb-0">CARGOBELL</h5>
+                            <span class="text-muted small" style="font-size: 0.6rem; letter-spacing: 2px;">LOGISTICS DIVISION</span>
+                        </div>
+                        <span class="badge bg-danger text-white align-self-start px-2" style="font-size: 0.6rem;">ACTIVE DUTY</span>
+                    </div>
+
+                    <div class="row align-items-center">
+                        <div class="col-5">
+                            <div class="border border-gold p-1 bg-black text-center" style="height: 120px; display: flex; align-items: center; justify-content: center;">
+                                <i class="bi bi-person-bounding-box text-secondary" style="font-size: 4rem;"></i>
+                            </div>
+                        </div>
+                        <div class="col-7">
+                            <label class="text-muted small d-block text-uppercase" style="font-size: 0.6rem;">Legal Name</label>
+                            <h5 class="text-white fw-bold mb-2">@User.Identity.Name.Split('@')[0].ToUpper()</h5>
+
+                            <label class="text-muted small d-block text-uppercase" style="font-size: 0.6rem;">Personnel ID</label>
+                            <p class="text-gold font-monospace mb-2" style="font-size: 0.8rem;">#OP-992-SECURE</p>
+
+                            <label class="text-muted small d-block text-uppercase" style="font-size: 0.6rem;">Clearance</label>
+                            <p class="text-white small mb-0">LEVEL 3 COURIER</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top border-secondary d-flex justify-content-between align-items-center">
+                        <i class="bi bi-qr-code text-gold fs-3"></i>
+                        <button type="button" class="btn btn-sm btn-outline-secondary text-uppercase fw-bold" style="font-size: 0.7rem;" data-bs-dismiss="modal">Close Terminal</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
