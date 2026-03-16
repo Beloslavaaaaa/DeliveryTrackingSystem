@@ -104,7 +104,7 @@ namespace DeliveryTrackingSystem.Controllers
                 LastName = lastName,
                 PhoneNumber = phone,
                 EmailConfirmed = true,
-                DateOfBirth = DateTime.Now.AddYears(-20) // Default to 20 years ago to pass validation
+                DateOfBirth = DateTime.Now.AddYears(-20) 
             };
 
             var result = await _userManager.CreateAsync(user, "CargobellTemporary123!");
@@ -114,6 +114,41 @@ namespace DeliveryTrackingSystem.Controllers
                 return Json(new { success = true, userId = user.Id, fullName = $"{user.FirstName} {user.LastName}" });
             }
             return Json(new { success = false, message = "Error creating user profile." });
+        }
+        [HttpGet("CreateShipment")]
+        public async Task<IActionResult> CreateShipment(string prefillId)
+        {
+            ViewBag.PrefillId = prefillId;
+
+            ViewBag.Routes = await _context.DeliveryRoutes.ToListAsync();
+            ViewBag.Users = await _userManager.Users.ToListAsync();
+
+            return View();
+        }
+
+        [HttpPost("CreateShipment")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateShipment(Shipment model)
+        {
+            var courier = await _userManager.GetUserAsync(User);
+
+            model.TrackingCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
+            model.CreatedAt = DateTime.UtcNow;
+            model.CourierId = courier.Id;
+
+            var initialStatus = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
+            model.StatusId = initialStatus?.StatusId ?? 1;
+
+            if (ModelState.IsValid)
+            {
+                _context.Shipments.Add(model);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("ManageShipments", new { filter = "active" });
+            }
+
+            ViewBag.Routes = await _context.DeliveryRoutes.ToListAsync();
+            ViewBag.Users = await _userManager.Users.ToListAsync();
+            return View(model);
         }
     }
 }
