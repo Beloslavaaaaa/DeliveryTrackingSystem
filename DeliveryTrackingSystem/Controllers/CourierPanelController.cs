@@ -116,7 +116,6 @@ namespace DeliveryTrackingSystem.Controllers
 
             return View(await query.ToListAsync());
         }
-
         [HttpGet("CreateShipment")]
         public async Task<IActionResult> CreateShipment(string prefillId)
         {
