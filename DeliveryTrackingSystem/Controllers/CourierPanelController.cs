@@ -59,11 +59,7 @@ namespace DeliveryTrackingSystem.Controllers
         {
             var userId = _userManager.GetUserId(User);
 
-            var query = _context.Shipments
-                .Where(s => s.CourierId == userId)
-                .SelectMany(s => new[] { s.Sender, s.Receiver })
-                .Distinct()
-                .Where(u => u != null);
+            var query = _context.Users.AsQueryable();
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
@@ -73,7 +69,8 @@ namespace DeliveryTrackingSystem.Controllers
                                          u.PhoneNumber.Contains(searchTerm));
             }
 
-            return View(await query.ToListAsync());
+            var users = await query.ToListAsync();
+            return View(users);
         }
 
         [HttpPost("UpdateStatus")]
