@@ -10,15 +10,15 @@
             { "49", "Germany" },
             { "33", "France" },
             { "971", "United Arab Emirates" },
-            { "41", "Switzerland" },
-            { "31", "Netherlands" },
-            { "34", "Spain" }
+            { "41", "Switzerland" }
         };
 
         public static string GetCitizenship(string? fullPhoneNumber)
         {
-            if (string.IsNullOrEmpty(fullPhoneNumber)) return "Global Citizen";
-            string clean = fullPhoneNumber.StartsWith("+") ? fullPhoneNumber.Substring(1) : fullPhoneNumber;
+            if (string.IsNullOrWhiteSpace(fullPhoneNumber)) return "Global Citizen";
+
+            string clean = new string(fullPhoneNumber.Where(char.IsDigit).ToArray());
+
             for (int i = 3; i >= 1; i--)
             {
                 if (clean.Length >= i)

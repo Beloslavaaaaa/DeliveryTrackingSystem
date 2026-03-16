@@ -45,7 +45,6 @@ namespace DeliveryTrackingSystem.Controllers
 
             user.FirstName = model.FirstName;
             user.LastName = model.LastName;
-            user.DateOfBirth = model.DateOfBirth;
             user.PhoneNumber = model.PhoneNumber;
 
             if (!string.IsNullOrEmpty(NewEmail) && user.Email != NewEmail)
@@ -63,6 +62,7 @@ namespace DeliveryTrackingSystem.Controllers
             }
             return View("Settings", user);
         }
+
         [HttpGet("/Dashboard")]
         public async Task<IActionResult> Index()
         {

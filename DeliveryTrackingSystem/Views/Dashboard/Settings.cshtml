@@ -29,11 +29,12 @@
                                 <label class="text-gold small fw-bold">PHONE</label>
                                 <input asp-for="PhoneNumber" class="form-control bg-transparent text-white border-secondary" />
                             </div>
-                            <div class="col-md-8">
-                                <label class="text-gold small fw-bold">BIRTH DATE</label>
-                                <input asp-for="DateOfBirth" type="date" class="form-control bg-transparent text-white border-secondary" />
+                            <div class="col-md-6">
+                                <label class="text-gold small fw-bold">DATE OF BIRTH (LOCKED)</label>
+                                <input value="@Model.DateOfBirth?.ToString("yyyy-MM-dd")" class="form-control bg-dark text-muted border-0" readonly />
+                                <input type="hidden" asp-for="DateOfBirth" />
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 <label class="text-gold small fw-bold">AGE</label>
                                 <input value="@Model.Age" class="form-control bg-dark text-muted border-0" readonly />
                             </div>

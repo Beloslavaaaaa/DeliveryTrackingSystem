@@ -1,4 +1,7 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using Cargobell.Shared.Models
+@inject UserManager<ApplicationUser> UserManager
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -168,10 +171,13 @@
                         <ul class="navbar-nav align-items-center">
                             @if (User.Identity.IsAuthenticated)
                             {
+                                var user = await UserManager.GetUserAsync(User);
+                                var headerName = user?.FirstName ?? User.Identity.Name?.Split('@')[0];
+
                                 <li class="nav-item me-3">
                                     <a class="nav-link small text-gold d-flex align-items-center gap-2" asp-controller="Dashboard" asp-action="Profile">
                                         <i class="bi bi-person-circle"></i>
-                                        <span>@User.Identity.Name?.Split('@')[0]</span>
+                                        <span class="text-uppercase" style="letter-spacing: 1px;">@headerName</span>
                                     </a>
                                 </li>
                                 <li class="nav-item">
