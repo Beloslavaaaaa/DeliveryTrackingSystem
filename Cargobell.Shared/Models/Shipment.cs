@@ -35,5 +35,7 @@ namespace Cargobell.Shared.Models
         public ICollection<Rating> Ratings { get; set; }
         public bool IsCashOnDelivery { get; set; }
         public decimal CodAmount { get; set; }
+        public bool IsFragile { get; set; }
+        public string Notes { get; set; }
     }
 }

@@ -132,13 +132,20 @@ namespace DeliveryTrackingSystem.Controllers
 
         [HttpPost("CreateShipment")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateShipment(Shipment model)
+        public async Task<IActionResult> CreateShipment(Shipment model, bool IsFragile)
         {
             var courier = await _userManager.GetUserAsync(User);
+            var route = await _context.DeliveryRoutes.FindAsync(model.DeliveryRouteId);
 
             model.TrackingCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
             model.CreatedAt = DateTime.UtcNow;
             model.CourierId = courier.Id;
+            model.IsFragile = IsFragile;
+
+            if (route != null)
+            {
+                model.EstimatedDelivery = DateTime.UtcNow.AddHours(route.EstimatedTimeHours);
+            }
 
             var status = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
             model.StatusId = status?.StatusId ?? 1;
@@ -150,10 +157,6 @@ namespace DeliveryTrackingSystem.Controllers
                 return RedirectToAction("ManageShipments", new { filter = "active" });
             }
 
-            var courierUsers = await _userManager.GetUsersInRoleAsync("Courier");
-            var courierIdList = courierUsers.Select(c => c.Id).ToList();
-            ViewBag.Routes = await _context.DeliveryRoutes.ToListAsync();
-            ViewBag.Users = await _userManager.Users.Where(u => !courierIdList.Contains(u.Id)).ToListAsync();
             return View(model);
         }
     }
