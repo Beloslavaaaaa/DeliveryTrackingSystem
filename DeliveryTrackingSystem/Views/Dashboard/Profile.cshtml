@@ -23,7 +23,11 @@
                             <p class="text-white mb-4 fs-5">@CountryHelper.GetCitizenship(Model.PhoneNumber)</p>
 
                             <label class="text-gold small d-block">STATUS</label>
-                            <p><span class="badge border border-gold text-gold bg-transparent px-3 py-2">ACTIVE ELITE</span></p>
+                            <p>
+                                <span class="badge border border-gold text-gold bg-transparent px-3 py-2">
+                                    @(Model.EmailConfirmed ? "VERIFIED ELITE" : "PROVISIONAL MEMBER")
+                                </span>
+                            </p>
                         </div>
                         <div class="col-md-6">
                             <label class="text-gold small d-block">CONTACT</label>

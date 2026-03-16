@@ -12,37 +12,53 @@
                 </div>
                 <div class="card-body p-4">
                     <form asp-action="UpdateProfile" method="post">
-                        <div class="row g-4">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="All" class="text-danger mb-4 small"></div>
+
+                        <h6 class="text-gold mb-3 border-bottom border-dark pb-2" style="letter-spacing: 2px;">GENERAL INFORMATION</h6>
+                        <div class="row g-4 mb-5">
                             <div class="col-md-6">
                                 <label class="text-gold small fw-bold">FIRST NAME</label>
-                                <input asp-for="FirstName" class="form-control bg-transparent text-white border-secondary" />
+                                <input asp-for="FirstName" class="form-control bg-transparent text-white border-secondary py-2"
+                                       onkeydown="return /[a-zA-Z\s]/i.test(event.key) || event.key === 'Backspace' || event.key === 'Tab'" />
                             </div>
                             <div class="col-md-6">
                                 <label class="text-gold small fw-bold">LAST NAME</label>
-                                <input asp-for="LastName" class="form-control bg-transparent text-white border-secondary" />
+                                <input asp-for="LastName" class="form-control bg-transparent text-white border-secondary py-2"
+                                       onkeydown="return /[a-zA-Z\s]/i.test(event.key) || event.key === 'Backspace' || event.key === 'Tab'" />
                             </div>
                             <div class="col-md-6">
-                                <label class="text-gold small fw-bold">EMAIL</label>
-                                <input name="NewEmail" value="@Model.Email" class="form-control bg-transparent text-white border-secondary" />
+                                <label class="text-gold small fw-bold">EMAIL ADDRESS</label>
+                                <input name="NewEmail" value="@Model.Email" class="form-control bg-transparent text-white border-secondary py-2" />
                             </div>
                             <div class="col-md-6">
-                                <label class="text-gold small fw-bold">PHONE</label>
-                                <input asp-for="PhoneNumber" class="form-control bg-transparent text-white border-secondary" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-gold small fw-bold">DATE OF BIRTH (LOCKED)</label>
-                                <input value="@Model.DateOfBirth?.ToString("yyyy-MM-dd")" class="form-control bg-dark text-muted border-0" readonly />
-                                <input type="hidden" asp-for="DateOfBirth" />
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-gold small fw-bold">AGE</label>
-                                <input value="@Model.Age" class="form-control bg-dark text-muted border-0" readonly />
+                                <label class="text-gold small fw-bold">PHONE NUMBER</label>
+                                <input asp-for="PhoneNumber" class="form-control bg-transparent text-white border-secondary py-2"
+                                       onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 43" />
                             </div>
                         </div>
 
-                        <div class="mt-5 d-grid gap-3">
-                            <button type="submit" class="btn btn-gold py-3 fw-bold">COMMIT CHANGES</button>
-                            <a asp-action="Profile" class="btn btn-outline-secondary py-2">CANCEL</a>
+                        <h6 class="text-gold mb-3 border-bottom border-dark pb-2" style="letter-spacing: 2px;">SECURITY PROTOCOL</h6>
+                        <div class="row g-4">
+                            <div class="col-md-12">
+                                <label class="text-gold small fw-bold">CURRENT PASSWORD (REQUIRED TO SAVE CHANGES)</label>
+                                <input type="password" name="CurrentPassword" class="form-control bg-transparent text-white border-secondary py-2" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-gold small fw-bold">NEW PASSWORD (OPTIONAL)</label>
+                                <input type="password" name="NewPassword" class="form-control bg-transparent text-white border-secondary py-2" placeholder="Leave blank to keep current" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-gold small fw-bold">CONFIRM NEW PASSWORD</label>
+                                <input type="password" name="ConfirmNewPassword" class="form-control bg-transparent text-white border-secondary py-2" />
+                            </div>
+                        </div>
+
+                        <div class="mt-5 d-flex gap-3">
+                            <button type="submit" class="btn btn-gold flex-grow-1 py-3 fw-bold text-uppercase" style="letter-spacing: 2px;">
+                                Commit Changes
+                            </button>
+                            <a asp-action="Profile" class="btn btn-outline-secondary px-4 py-3 text-uppercase small">Cancel</a>
                         </div>
                     </form>
                 </div>

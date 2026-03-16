@@ -6,19 +6,29 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
 
 <style>
-    .iti { width: 100%; }
-    .iti__country-list { 
-        background-color: #0a0a0a !important; 
-        border: 1px solid #D4AF37 !important; 
-        color: white !important; 
+    .iti {
+        width: 100%;
+    }
+
+    .iti__country-list {
+        background-color: #0a0a0a !important;
+        border: 1px solid #D4AF37 !important;
+        color: white !important;
         box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
-    .iti__country:hover { background-color: #1a1a1a !important; }
-    .iti__selected-flag { 
-        background-color: rgba(255,255,255,0.05) !important; 
-        border-radius: 4px 0 0 4px; 
+
+    .iti__country:hover {
+        background-color: #1a1a1a !important;
     }
-    .iti__arrow { border-top-color: #D4AF37 !important; }
+
+    .iti__selected-flag {
+        background-color: rgba(255,255,255,0.05) !important;
+        border-radius: 4px 0 0 4px;
+    }
+
+    .iti__arrow {
+        border-top-color: #D4AF37 !important;
+    }
 
     input[type="date"]::-webkit-calendar-picker-indicator {
         filter: invert(1);
@@ -44,15 +54,21 @@
                     @Html.AntiForgeryToken()
                     <div asp-validation-summary="All" class="text-danger small mb-3"></div>
 
+                    <input type="hidden" id="fullPhone" name="PhoneNumber" />
+
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <label asp-for="FirstName" class="form-label small text-gold">FIRST NAME</label>
-                            <input asp-for="FirstName" class="form-control bg-dark text-white border-secondary py-3" placeholder="John" style="background-color: #111 !important; color: white !important;" required />
+                            <input asp-for="FirstName" class="form-control bg-dark text-white border-secondary py-3"
+                                   placeholder="John" style="background-color: #111 !important; color: white !important;"
+                                   onkeydown="return /[a-zA-Z\s]/i.test(event.key) || event.key === 'Backspace' || event.key === 'Tab'" required />
                             <span asp-validation-for="FirstName" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6 mb-4">
                             <label asp-for="LastName" class="form-label small text-gold">LAST NAME</label>
-                            <input asp-for="LastName" class="form-control bg-dark text-white border-secondary py-3" placeholder="Doe" style="background-color: #111 !important; color: white !important;" required />
+                            <input asp-for="LastName" class="form-control bg-dark text-white border-secondary py-3"
+                                   placeholder="Doe" style="background-color: #111 !important; color: white !important;"
+                                   onkeydown="return /[a-zA-Z\s]/i.test(event.key) || event.key === 'Backspace' || event.key === 'Tab'" required />
                             <span asp-validation-for="LastName" class="text-danger small"></span>
                         </div>
                     </div>
@@ -65,10 +81,10 @@
 
                     <div class="mb-4">
                         <label asp-for="PhoneNumber" class="form-label small text-gold d-block">PHONE NUMBER</label>
-                        <input asp-for="PhoneNumber" id="phone" type="tel" 
-                               class="form-control bg-dark text-white border-secondary py-3" 
+                        <input id="phone" type="tel"
+                               class="form-control bg-dark text-white border-secondary py-3"
                                style="background-color: #111 !important; color: white !important;"
-                               onkeypress="return (event.charCode >= 48 && event.charCode <= 57) || event.charCode == 43" required />
+                               onkeypress="return (event.charCode >= 48 && event.charCode <= 57)" required />
                         <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                     </div>
 
@@ -102,21 +118,23 @@
 </div>
 
 @section Scripts {
-        <partial name="_ValidationScriptsPartial" />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
-        <script>
-            const phoneInputField = document.querySelector("#phone");
-            const phoneInput = window.intlTelInput(phoneInputField, {
-                preferredCountries: ["us", "gb", "de"],
-                separateDialCode: true, 
-                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
-            });
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <script>
+        const phoneInputField = document.querySelector("#phone");
+        const phoneInput = window.intlTelInput(phoneInputField, {
+            preferredCountries: ["bg", "us", "gb", "de"],
+            separateDialCode: true,
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+        });
 
-            phoneInputField.addEventListener('input', function (e) {
-                this.value = this.value.replace(/[^0-9+]/g, '');
-            });
+        phoneInputField.addEventListener('input', function (e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
 
-            document.getElementById("registerForm").addEventListener("submit", function() {
-            });
-        </script>
+        document.getElementById("registerForm").addEventListener("submit", function(e) {
+            const fullNumber = phoneInput.getNumber();
+            document.querySelector("#fullPhone").value = fullNumber;
+        });
+    </script>
 }

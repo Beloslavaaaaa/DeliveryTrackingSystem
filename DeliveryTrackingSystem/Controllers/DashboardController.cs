@@ -16,12 +16,18 @@ namespace DeliveryTrackingSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
-        public DashboardController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public DashboardController(
+            ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager)
         {
             _context = context;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
+
         public async Task<IActionResult> Profile()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -38,10 +44,30 @@ namespace DeliveryTrackingSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateProfile(ApplicationUser model, string NewEmail)
+        public async Task<IActionResult> UpdateProfile(ApplicationUser model, string NewEmail, string CurrentPassword, string NewPassword, string ConfirmNewPassword)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return NotFound();
+
+            ModelState.Remove("DateOfBirth");
+            ModelState.Remove("Age");
+
+            var passwordCheck = await _userManager.CheckPasswordAsync(user, CurrentPassword);
+            if (!passwordCheck)
+            {
+                ModelState.AddModelError(string.Empty, "Current password verification failed.");
+                return View("Settings", user);
+            }
+
+            if (!string.IsNullOrEmpty(NewPassword))
+            {
+                if (NewPassword != ConfirmNewPassword)
+                {
+                    ModelState.AddModelError("ConfirmNewPassword", "New password confirmation does not match.");
+                }
+            }
+
+            if (!ModelState.IsValid) return View("Settings", user);
 
             user.FirstName = model.FirstName;
             user.LastName = model.LastName;
@@ -58,9 +84,39 @@ namespace DeliveryTrackingSystem.Controllers
             var result = await _userManager.UpdateAsync(user);
             if (result.Succeeded)
             {
+                if (!string.IsNullOrEmpty(NewPassword))
+                {
+                    var passResult = await _userManager.ChangePasswordAsync(user, CurrentPassword, NewPassword);
+                    if (!passResult.Succeeded)
+                    {
+                        foreach (var err in passResult.Errors) ModelState.AddModelError(string.Empty, err.Description);
+                        return View("Settings", user);
+                    }
+                }
+
+                await _signInManager.RefreshSignInAsync(user);
                 return RedirectToAction("Profile");
             }
+
             return View("Settings", user);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+
+            var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+
+            if (result.Succeeded)
+            {
+                await _signInManager.RefreshSignInAsync(user);
+                return RedirectToAction("Profile", new { message = "Password Updated" });
+            }
+
+            return View("Settings", user); 
         }
 
         [HttpGet("/Dashboard")]
@@ -79,7 +135,7 @@ namespace DeliveryTrackingSystem.Controllers
 
             var model = new DashboardViewModel
             {
-                UserName = user.Email.Split('@')[0].ToUpper(),
+                UserName = (!string.IsNullOrEmpty(user.FirstName) ? user.FirstName : user.Email.Split('@')[0]).ToUpper(),
                 TotalSpent = await _context.Shipments
                     .Where(s => s.SenderId == user.Id)
                     .SumAsync(s => s.DeliveryRoute != null ? s.DeliveryRoute.Price : 0),
