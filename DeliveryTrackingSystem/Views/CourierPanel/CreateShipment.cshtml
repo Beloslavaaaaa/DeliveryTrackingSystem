@@ -33,9 +33,8 @@
                             <option value="">Select Destination Entity...</option>
                             @foreach (var user in ViewBag.Users)
                             {
-                                <! -- This line checks if this user is the one we clicked 'Assign' on -->
                                 <option value="@user.Id" selected="@(user.Id == ViewBag.PrefillId ? "selected" : null)">
-                                    @user.FirstName @user.LastName
+                                    @user.FirstName @user.LastName (@user.Email)
                                 </option>
                             }
                         </select>

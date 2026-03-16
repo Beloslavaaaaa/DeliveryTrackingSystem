@@ -54,25 +54,6 @@ namespace DeliveryTrackingSystem.Controllers
             return View(await query.ToListAsync());
         }
 
-        [HttpGet("Users")]
-        public async Task<IActionResult> UserDirectory(string searchTerm)
-        {
-            var userId = _userManager.GetUserId(User);
-
-            var query = _context.Users.AsQueryable();
-
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                searchTerm = searchTerm.ToUpper();
-                query = query.Where(u => u.FirstName.ToUpper().Contains(searchTerm) ||
-                                         u.LastName.ToUpper().Contains(searchTerm) ||
-                                         u.PhoneNumber.Contains(searchTerm));
-            }
-
-            var users = await query.ToListAsync();
-            return View(users);
-        }
-
         [HttpPost("UpdateStatus")]
         public async Task<IActionResult> UpdateStatus(int shipmentId, string statusName)
         {
@@ -115,13 +96,38 @@ namespace DeliveryTrackingSystem.Controllers
             }
             return Json(new { success = false, message = "Error creating user profile." });
         }
+        [HttpGet("Users")]
+        public async Task<IActionResult> UserDirectory(string searchTerm)
+        {
+            var courierUsers = await _userManager.GetUsersInRoleAsync("Courier");
+            var courierIdList = courierUsers.Select(c => c.Id).ToList();
+
+            var query = _userManager.Users
+                .Where(u => !courierIdList.Contains(u.Id));
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                searchTerm = searchTerm.ToUpper();
+                query = query.Where(u => u.FirstName.ToUpper().Contains(searchTerm) ||
+                                         u.LastName.ToUpper().Contains(searchTerm) ||
+                                         u.PhoneNumber.Contains(searchTerm) ||
+                                         u.Email.ToUpper().Contains(searchTerm));
+            }
+
+            return View(await query.ToListAsync());
+        }
+
         [HttpGet("CreateShipment")]
         public async Task<IActionResult> CreateShipment(string prefillId)
         {
-            ViewBag.PrefillId = prefillId;
+            var courierUsers = await _userManager.GetUsersInRoleAsync("Courier");
+            var courierIdList = courierUsers.Select(c => c.Id).ToList();
 
+            ViewBag.PrefillId = prefillId;
             ViewBag.Routes = await _context.DeliveryRoutes.ToListAsync();
-            ViewBag.Users = await _userManager.Users.ToListAsync();
+            ViewBag.Users = await _userManager.Users
+                .Where(u => !courierIdList.Contains(u.Id))
+                .ToListAsync();
 
             return View();
         }
@@ -136,8 +142,8 @@ namespace DeliveryTrackingSystem.Controllers
             model.CreatedAt = DateTime.UtcNow;
             model.CourierId = courier.Id;
 
-            var initialStatus = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
-            model.StatusId = initialStatus?.StatusId ?? 1;
+            var status = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
+            model.StatusId = status?.StatusId ?? 1;
 
             if (ModelState.IsValid)
             {
@@ -146,8 +152,10 @@ namespace DeliveryTrackingSystem.Controllers
                 return RedirectToAction("ManageShipments", new { filter = "active" });
             }
 
+            var courierUsers = await _userManager.GetUsersInRoleAsync("Courier");
+            var courierIdList = courierUsers.Select(c => c.Id).ToList();
             ViewBag.Routes = await _context.DeliveryRoutes.ToListAsync();
-            ViewBag.Users = await _userManager.Users.ToListAsync();
+            ViewBag.Users = await _userManager.Users.Where(u => !courierIdList.Contains(u.Id)).ToListAsync();
             return View(model);
         }
     }
