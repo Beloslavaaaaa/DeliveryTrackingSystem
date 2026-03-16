@@ -30,10 +30,13 @@
                     <div class="col-md-6">
                         <label class="text-gold small fw-bold mb-2">RECEIVER</label>
                         <select asp-for="ReceiverId" class="form-select bg-black text-white border-secondary py-2">
-                            <option value="">Select Destination...</option>
+                            <option value="">Select Destination Entity...</option>
                             @foreach (var user in ViewBag.Users)
                             {
-                                <option value="@user.Id">@user.FirstName @user.LastName</option>
+                                <! -- This line checks if this user is the one we clicked 'Assign' on -->
+                                <option value="@user.Id" selected="@(user.Id == ViewBag.PrefillId ? "selected" : null)">
+                                    @user.FirstName @user.LastName
+                                </option>
                             }
                         </select>
                     </div>
