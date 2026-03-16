@@ -24,38 +24,26 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
 })
+.AddRoles<IdentityRole>() 
 .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.ExpireTimeSpan = TimeSpan.FromMinutes(1);
+    options.ExpireTimeSpan = TimeSpan.FromMinutes(60); // Increased for testing
     options.SlidingExpiration = true;
 
-    options.LoginPath = "/Views/Account/Login";
-    options.LogoutPath = "/Account/Logout";
-
+    options.LoginPath = "/Identity/Account/Login";
+    options.LogoutPath = "/Identity/Account/Logout";
     options.AccessDeniedPath = "/Error/403";
 
     options.Events.OnRedirectToLogin = context =>
     {
         if (context.Request.Path.StartsWithSegments("/Dashboard") ||
             context.Request.Path.StartsWithSegments("/Shipments") ||
-            context.Request.Path.StartsWithSegments("/Couriers"))
+            context.Request.Path.StartsWithSegments("/Couriers") ||
+            context.Request.Path.StartsWithSegments("/Courier/Portal"))
         {
             context.Response.Redirect(context.RedirectUri + "&message=expired");
-        }
-        else
-        {
-            context.Response.Redirect(context.RedirectUri);
-        }
-        return Task.CompletedTask;
-    };
-
-    options.Events.OnRedirectToReturnUrl = context =>
-    {
-        if (context.RedirectUri.EndsWith("/") || string.IsNullOrEmpty(context.RedirectUri))
-        {
-            context.Response.Redirect("/Dashboard");
         }
         else
         {
@@ -70,6 +58,41 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+    if (!await roleManager.RoleExistsAsync("Courier"))
+    {
+        await roleManager.CreateAsync(new IdentityRole("Courier"));
+    }
+
+    string courierEmail = "courier@cargobell.com";
+    string courierPass = "Courier123!";
+
+    var user = await userManager.FindByEmailAsync(courierEmail);
+    if (user == null)
+    {
+        var newCourier = new ApplicationUser
+        {
+            UserName = courierEmail,
+            Email = courierEmail,
+            FirstName = "EXECUTIVE",
+            LastName = "COURIER",
+            DateOfBirth = new DateTime(1990, 1, 1),
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(newCourier, courierPass);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(newCourier, "Courier");
+        }
+    }
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseMigrationsEndPoint();
@@ -81,10 +104,8 @@ else
 }
 
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
 
 app.UseAuthentication();

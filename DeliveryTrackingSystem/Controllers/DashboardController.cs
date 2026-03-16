@@ -124,6 +124,13 @@ namespace DeliveryTrackingSystem.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
+            if (user == null) return Challenge();
+
+            // If the user is a Courier, send them to their specific portal
+            if (await _userManager.IsInRoleAsync(user, "Courier"))
+            {
+                return RedirectToAction("Index", "CourierPanel");
+            }
 
             var userShipments = await _context.Shipments
                 .Include(s => s.Status)

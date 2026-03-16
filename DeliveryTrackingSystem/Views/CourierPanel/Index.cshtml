@@ -1,0 +1,48 @@
+﻿@model dynamic
+@{
+    Layout = "_CourierLayout";
+    ViewData["Title"] = "Operations Overview";
+    var stats = ViewBag.Stats;
+}
+
+<div class="mb-5">
+    <h2 class="text-gold fw-bold mb-1">TERMINAL OVERVIEW</h2>
+    <p class="text-secondary small text-uppercase">Operational Status: Online</p>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="terminal-border p-4">
+            <span class="text-secondary small text-uppercase">Active Manifest</span>
+            <h2 class="text-white fw-bold mt-2">@stats.MyActive</h2>
+            <div class="progress mt-3" style="height: 2px; background: #222;">
+                <div class="progress-bar bg-gold" style="width: 65%"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="terminal-border p-4">
+            <span class="text-secondary small text-uppercase">Unassigned Cargo</span>
+            <h2 class="text-gold fw-bold mt-2">@stats.Available</h2>
+            <div class="progress mt-3" style="height: 2px; background: #222;">
+                <div class="progress-bar bg-gold" style="width: 30%"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="terminal-border p-4">
+            <span class="text-secondary small text-uppercase">COD Liquidated</span>
+            <h2 class="text-white fw-bold mt-2">$@stats.TotalCollected.ToString("N2")</h2>
+            <div class="progress mt-3" style="height: 2px; background: #222;">
+                <div class="progress-bar bg-success" style="width: 100%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="terminal-border p-5 text-center">
+    <i class="bi bi-shield-lock text-gold display-1 mb-4"></i>
+    <h4 class="text-white fw-bold">SECURE CHANNEL ACTIVE</h4>
+    <p class="text-secondary small px-5">All logistical data transmitted through this terminal is encrypted and logged for auditing purposes.</p>
+    <a asp-action="ManageShipments" asp-route-filter="available" class="btn btn-gold mt-3 px-5 py-2 fw-bold">ACCESS CARGO BOARD</a>
+</div>

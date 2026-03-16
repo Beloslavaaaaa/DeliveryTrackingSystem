@@ -70,6 +70,13 @@ namespace DeliveryTrackingSystem.Controllers
 
                 if (result.Succeeded)
                 {
+                    var user = await _userManager.FindByEmailAsync(model.Email);
+
+                    if (user != null && await _userManager.IsInRoleAsync(user, "Courier"))
+                    {
+                        return RedirectToAction("Index", "CourierPanel");
+                    }
+
                     return RedirectToAction("Index", "Dashboard");
                 }
 
