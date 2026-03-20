@@ -124,22 +124,43 @@ namespace DeliveryTrackingSystem.Controllers
         public async Task<IActionResult> CreateShipment(Shipment model, string SenderManualName, string ReceiverManualName, bool IsFragile, string Notes)
         {
             var courier = await _userManager.GetUserAsync(User);
+
             model.TrackingCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
             model.CreatedAt = DateTime.UtcNow;
             model.CourierId = courier.Id;
+            model.IsFragile = IsFragile;
 
-            string manualInfo = "";
-            if (string.IsNullOrEmpty(model.SenderId)) manualInfo += $"[UNREGISTERED SENDER: {SenderManualName}] ";
-            if (string.IsNullOrEmpty(model.ReceiverId)) manualInfo += $"[UNREGISTERED RECEIVER: {ReceiverManualName}] ";
+            string identityLog = "";
 
-            model.Notes = manualInfo + (IsFragile ? "FRAGILE CARGO. " : "") + Notes;
-            var status = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
-            model.StatusId = status?.StatusId ?? 1;
+            if (string.IsNullOrEmpty(model.SenderId))
+            {
+                identityLog += $"[SENDER: {SenderManualName ?? "UNNAMED"}] ";
+            }
+
+            if (string.IsNullOrEmpty(model.ReceiverId))
+            {
+                identityLog += $"[RECEIVER: {ReceiverManualName ?? "UNNAMED"}] ";
+            }
+
+            model.Notes = $"{identityLog} | Internal Notes: {Notes}";
+
+            var initialStatus = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
+            model.StatusId = initialStatus?.StatusId ?? 1;
 
             if (ModelState.IsValid)
             {
                 _context.Shipments.Add(model);
                 await _context.SaveChangesAsync();
+
+                _context.StatusHistories.Add(new StatusHistory
+                {
+                    ShipmentId = model.ShipmentId,
+                    StatusId = model.StatusId,
+                    Timestamp = DateTime.UtcNow,
+                    Note = "Manifest authorized at terminal. Cargo in transit."
+                });
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction("ManageShipments", new { filter = "active" });
             }
 

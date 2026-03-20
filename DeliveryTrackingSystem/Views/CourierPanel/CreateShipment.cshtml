@@ -13,6 +13,7 @@
     @Html.AntiForgeryToken()
 
     <div class="row g-5">
+        @* SENDER SECTION *@
         <div class="col-md-6 border-end border-secondary">
             <h5 class="text-gold mb-4"><i class="bi bi-box-arrow-up me-2"></i>SENDER DATA</h5>
 
@@ -25,12 +26,14 @@
                 <input type="hidden" asp-for="SenderId" id="senderId">
             </div>
 
-            <div id="senderManual" class="mt-3">
-                <label class="text-muted small fw-bold">FULL NAME (MANUAL ENTRY)</label>
-                <input type="text" id="senderManualName" name="SenderManualName" class="form-control bg-transparent text-white border-secondary mb-2" placeholder="Enter name if new user...">
+            <div id="senderManual" class="mt-3 d-none">
+                <p class="text-warning small mb-1"><i class="bi bi-exclamation-triangle me-1"></i> NEW ENTITY - MANUAL ENTRY REQUIRED</p>
+                <label class="text-muted small fw-bold">FULL NAME</label>
+                <input type="text" id="senderManualName" name="SenderManualName" class="form-control bg-transparent text-white border-secondary mb-2" placeholder="Enter sender's full name">
             </div>
         </div>
 
+        @* RECEIVER SECTION *@
         <div class="col-md-6">
             <h5 class="text-gold mb-4"><i class="bi bi-box-arrow-in-down me-2"></i>RECEIVER DATA</h5>
 
@@ -43,9 +46,10 @@
                 <input type="hidden" asp-for="ReceiverId" id="receiverId">
             </div>
 
-            <div id="receiverManual" class="mt-3">
-                <label class="text-muted small fw-bold">FULL NAME (MANUAL ENTRY)</label>
-                <input type="text" id="receiverManualName" name="ReceiverManualName" class="form-control bg-transparent text-white border-secondary mb-2" placeholder="Enter name if new user...">
+            <div id="receiverManual" class="mt-3 d-none">
+                <p class="text-warning small mb-1"><i class="bi bi-exclamation-triangle me-1"></i> NEW ENTITY - MANUAL ENTRY REQUIRED</p>
+                <label class="text-muted small fw-bold">FULL NAME</label>
+                <input type="text" id="receiverManualName" name="ReceiverManualName" class="form-control bg-transparent text-white border-secondary mb-2" placeholder="Enter receiver's full name">
             </div>
         </div>
 
@@ -76,6 +80,11 @@
                 <label class="form-check-label text-danger ms-2 fw-bold">FRAGILE CARGO</label>
             </div>
         </div>
+
+        <div class="col-md-12 mt-3">
+            <label class="text-gold small fw-bold mb-2">MANIFEST NOTES</label>
+            <textarea asp-for="Notes" class="form-control bg-transparent text-white border-secondary" rows="2"></textarea>
+        </div>
     </div>
 
     <button type="submit" class="btn btn-gold w-100 mt-5 py-4 fw-bold text-uppercase fs-5">Authorize Manifest</button>
@@ -85,24 +94,44 @@
     <script>
         $(document).ready(function() {
             function lookupUser(phone, prefix) {
-                if (phone.length > 5) {
+                if (phone.length >= 8) { // Optimized for standard phone lengths
                     $.get('/CourierPanel/GetUserByPhone', { phone: phone }, function(user) {
                         if (user) {
                             $(`#${prefix}Details`).removeClass('d-none');
                             $(`#${prefix}Manual`).addClass('d-none');
-                            $(`#${prefix}DisplayName`).text(`${user.firstName} ${user.lastName} (${user.email})`);
+                            $(`#${prefix}ManualName`).val('').prop('required', false);
+                            $(`#${prefix}DisplayName`).text(`${user.firstName} ${user.lastName} [${user.email}]`);
                             $(`#${prefix}Id`).val(user.id);
                         } else {
                             $(`#${prefix}Details`).addClass('d-none');
                             $(`#${prefix}Manual`).removeClass('d-none');
+                            $(`#${prefix}ManualName`).prop('required', true);
                             $(`#${prefix}Id`).val('');
                         }
                     });
+                } else {
+                    $(`#${prefix}Details`).addClass('d-none');
+                    $(`#${prefix}Manual`).addClass('d-none');
+                    $(`#${prefix}ManualName`).prop('required', false);
                 }
             }
 
-            $('#senderPhone').on('input', function() { lookupUser($(this).val(), 'sender'); });
-            $('#receiverPhone').on('input', function() { lookupUser($(this).val(), 'receiver'); });
+            // Trigger on Enter key
+            $('#senderPhone, #receiverPhone').on('keypress', function(e) {
+                if (e.which == 13) {
+                    e.preventDefault();
+                    let prefix = this.id === 'senderPhone' ? 'sender' : 'receiver';
+                    lookupUser($(this).val(), prefix);
+                }
+            });
+
+            // Fallback: lookup when courier stops typing
+            let timeout = null;
+            $('#senderPhone, #receiverPhone').on('keyup', function() {
+                clearTimeout(timeout);
+                let prefix = this.id === 'senderPhone' ? 'sender' : 'receiver';
+                timeout = setTimeout(() => lookupUser($(this).val(), prefix), 800);
+            });
         });
     </script>
 }
