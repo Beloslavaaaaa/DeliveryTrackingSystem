@@ -1,19 +1,16 @@
 ﻿@model IEnumerable<Cargobell.Shared.Models.Shipment>
 @{
-    Layout = "_CourierLayout";
-    ViewData["Title"] = "Cargo Management";
+    Layout = "_CourierLayout"; ViewData["Title"] = "Cargo Management";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-5">
     <div>
         <h2 class="text-gold fw-bold mb-1">LOGISTICS CONTROL</h2>
-        <p class="text-secondary small text-uppercase">Sector: @ViewContext.RouteData.Values["filter"] Manifests</p>
+        <p class="text-secondary small text-uppercase">Sector: @Context.Request.Query["filter"] Manifests</p>
     </div>
     <div class="btn-group border border-gold rounded">
-        <a asp-action="ManageShipments" asp-route-filter="available"
-           class="btn @(Context.Request.Query["filter"] == "available" ? "btn-gold" : "btn-outline-gold")">AVAILABLE</a>
-        <a asp-action="ManageShipments" asp-route-filter="active"
-           class="btn @(Context.Request.Query["filter"] == "active" ? "btn-gold" : "btn-outline-gold")">MY MANIFEST</a>
+        <a href="/CourierPanel/Shipments?filter=available" class="btn @(Context.Request.Query["filter"] == "available" ? "btn-gold" : "btn-outline-gold")">AVAILABLE</a>
+        <a href="/CourierPanel/Shipments?filter=active" class="btn @(Context.Request.Query["filter"] == "active" ? "btn-gold" : "btn-outline-gold")">MY MANIFEST</a>
     </div>
 </div>
 
@@ -26,24 +23,11 @@
                     <span class="text-gold fw-bold small">#@item.TrackingCode</span>
                     <span class="badge border border-secondary text-secondary">@item.Status?.Name</span>
                 </div>
-
                 <h5 class="text-white mb-3">@item.DeliveryRoute?.StartLocation <i class="bi bi-arrow-right mx-2 text-gold"></i> @item.DeliveryRoute?.EndLocation</h5>
-
-                <div class="row g-0 mb-4 small">
-                    <div class="col-6 border-end border-dark pe-2">
-                        <label class="text-muted d-block text-uppercase" style="font-size: 0.65rem;">Recipient</label>
-                        <span class="text-white">@item.Receiver?.FirstName @item.Receiver?.LastName</span>
-                    </div>
-                    <div class="col-6 ps-2">
-                        <label class="text-muted d-block text-uppercase" style="font-size: 0.65rem;">Terminal Fee</label>
-                        <span class="text-gold">@item.DeliveryRoute?.Price.ToString("C")</span>
-                    </div>
-                </div>
-
                 <div class="d-grid gap-2">
                     @if (item.CourierId == null)
                     {
-                        <form asp-action="ClaimShipment" method="post">
+                        <form action="/CourierPanel/ClaimShipment" method="post">
                             <input type="hidden" name="shipmentId" value="@item.ShipmentId" />
                             <button type="submit" class="btn btn-gold w-100 py-2 fw-bold">CLAIM ASSIGNMENT</button>
                         </form>
@@ -51,9 +35,7 @@
                     else
                     {
                         <div class="dropdown">
-                            <button class="btn btn-outline-gold w-100 dropdown-toggle" data-bs-toggle="dropdown">
-                                UPDATE STATUS
-                            </button>
+                            <button class="btn btn-outline-gold w-100 dropdown-toggle" data-bs-toggle="dropdown">UPDATE STATUS</button>
                             <ul class="dropdown-menu dropdown-menu-dark w-100 border-gold">
                                 <li><a class="dropdown-item" href="#" onclick="updateStatus(@item.ShipmentId, 'In Transit')">SET IN TRANSIT</a></li>
                                 <li><a class="dropdown-item" href="#" onclick="updateStatus(@item.ShipmentId, 'Out For Delivery')">OUT FOR DELIVERY</a></li>
@@ -70,9 +52,7 @@
 @section Scripts {
     <script>
         function updateStatus(id, status) {
-            $.post('/Courier/Portal/UpdateStatus', { shipmentId: id, statusName: status }, function() {
-                location.reload();
-            });
+            $.post('/CourierPanel/UpdateStatus', { shipmentId: id, statusName: status }, function() { location.reload(); });
         }
     </script>
 }

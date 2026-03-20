@@ -3,115 +3,62 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Courier Terminal</title>
+    <title>@ViewData["Title"] - Cargobell Terminal</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        body {
-            background-color: #050505;
-            color: #fff;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        .sidebar {
-            width: 280px;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 0;
-            background: #000;
-            border-right: 1px solid #D4AF37;
-            padding: 2rem 1.5rem;
-            z-index: 1000;
-        }
-
-        .main-content {
-            margin-left: 280px;
-            padding: 3rem;
-        }
-
-        .nav-link {
-            color: #888;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            transition: 0.3s;
-            cursor: pointer;
-        }
-
-            .nav-link:hover, .nav-link.active {
-                background: rgba(212, 175, 55, 0.1);
-                color: #D4AF37;
-            }
-
-            .nav-link i {
-                margin-right: 15px;
-                font-size: 1.2rem;
-            }
-
-        .terminal-border {
-            border: 1px solid #333;
-            border-radius: 12px;
-            background: rgba(20,20,20,0.5);
-        }
-
-        .text-gold {
-            color: #D4AF37 !important;
-        }
-
-        .btn-gold {
-            background-color: #D4AF37;
-            color: #000;
-            border: none;
-        }
-
-            .btn-gold:hover {
-                background-color: #b8952e;
-                color: #000;
-            }
+        body { background-color: #050505; color: #e0e0e0; font-family: 'Segoe UI', monospace; }
+        .sidebar { min-height: 100vh; border-right: 1px solid #D4AF37; background: #0a0a0a; position: fixed; }
+        .nav-link { color: #888; border-left: 3px solid transparent; transition: 0.3s; margin-bottom: 5px; text-transform: uppercase; font-size: 0.85rem; }
+        .nav-link:hover, .nav-link.active { color: #D4AF37; background: rgba(212, 175, 55, 0.05); border-left: 3px solid #D4AF37; }
+        .terminal-border { border: 1px solid #333; border-radius: 0; }
+        .text-gold { color: #D4AF37; }
+        .btn-gold { background: #D4AF37; color: black; border-radius: 0; font-weight: bold; }
+        main { margin-left: 16.666667%; }
+        .animate-fade-in { animation: fadeIn 0.5s; }
+        @Html.Raw("@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }")
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="mb-5 text-center">
-            <h3 class="text-gold fw-bold mb-0">CARGOBELL</h3>
-            <span class="text-secondary small">OPS TERMINAL v3.1</span>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 sidebar py-4">
+                <div class="px-3 mb-5">
+                    <h4 class="text-gold fw-bold mb-0">CARGOBELL</h4>
+                    <span class="small text-secondary">COURIER TERMINAL v3.1</span>
+                </div>
+                <div class="nav flex-column">
+                    <a class="nav-link py-3" href="/CourierPanel">DASHBOARD</a>
+                    <a class="nav-link py-3" href="/CourierPanel/CreateShipment">NEW MANIFEST</a>
+                    <a class="nav-link py-3" href="/CourierPanel/Shipments?filter=active">ACTIVE CARGO</a>
+                    <a class="nav-link py-3" href="/CourierPanel/Shipments?filter=available">FIND PICKUPS</a>
+                    <a class="nav-link py-3" href="/CourierPanel/Users">DIRECTORY</a>
+                    <hr class="border-secondary mx-3">
+                    <form asp-area="Identity" asp-page="/Account/Logout" method="post">
+                        <button type="submit" class="nav-link py-3 bg-transparent border-0 w-100 text-start text-danger">LOGOUT</button>
+                    </form>
+                </div>
+            </nav>
+
+            <main class="col-md-10 px-md-5 py-5">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="position-fixed top-0 end-0 p-4" style="z-index: 1050;">
+                        <div class="terminal-border bg-black p-3 animate-fade-in" style="border-left: 5px solid #28a745;">
+                            <strong class="text-success d-block small fw-bold">SYSTEM CONFIRMATION</strong>
+                            <span class="text-white small">@TempData["SuccessMessage"]</span>
+                        </div>
+                    </div>
+                }
+                @RenderBody()
+            </main>
         </div>
-
-        <nav class="nav flex-column">
-            <a class="nav-link active" asp-controller="CourierPanel" asp-action="Index">
-                <i class="bi bi-speedometer2"></i> Overview
-            </a>
-            <a class="nav-link" asp-controller="CourierPanel" asp-action="ManageShipments" asp-route-filter="available">
-                <i class="bi bi-search"></i> Cargo Board
-            </a>
-            <a class="nav-link" asp-controller="CourierPanel" asp-action="ManageShipments" asp-route-filter="active">
-                <i class="bi bi-box-seam"></i> Active Manifest
-            </a>
-            <a class="nav-link" asp-controller="CourierPanel" asp-action="UserDirectory">
-                <i class="bi bi-people"></i> Entity Lookup
-            </a>
-            <a class="nav-link" data-bs-toggle="modal" data-bs-target="#idCardModal">
-                <i class="bi bi-person-badge"></i> ID Card
-            </a>
-            <hr class="border-secondary mt-4" />
-            <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
-                <button type="submit" class="nav-link border-0 bg-transparent w-100 text-start text-danger">
-                    <i class="bi bi-power"></i> System Logoff
-                </button>
-            </form>
-        </nav>
     </div>
-
-    <main class="main-content">
-        @RenderBody()
-    </main>
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        setTimeout(function() { $('.animate-fade-in').fadeOut(); }, 4000);
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
