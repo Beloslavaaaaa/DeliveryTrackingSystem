@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Cargobell.Shared.Models;
 using Cargobell.Shared.ViewModels;
-using Cargobell.Data.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace DeliveryTrackingSystem.Controllers
 {
@@ -28,6 +28,20 @@ namespace DeliveryTrackingSystem.Controllers
         {
             if (ModelState.IsValid)
             {
+                var existingEmail = await _userManager.FindByEmailAsync(model.Email);
+                if (existingEmail != null)
+                {
+                    ModelState.AddModelError("Email", "Registration failed: This email is already in the system.");
+                    return View(model);
+                }
+
+                var existingPhone = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == model.PhoneNumber);
+                if (existingPhone != null)
+                {
+                    ModelState.AddModelError("PhoneNumber", "Registration failed: This phone number is already linked to an account.");
+                    return View(model);
+                }
+
                 var user = new ApplicationUser
                 {
                     UserName = model.Email,
@@ -35,7 +49,7 @@ namespace DeliveryTrackingSystem.Controllers
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     DateOfBirth = model.DateOfBirth,
-                    PhoneNumber = model.PhoneNumber 
+                    PhoneNumber = model.PhoneNumber
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
@@ -53,6 +67,7 @@ namespace DeliveryTrackingSystem.Controllers
             }
             return View(model);
         }
+
         [HttpGet]
         public IActionResult Login() => View();
 

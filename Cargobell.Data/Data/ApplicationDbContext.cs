@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Cargobell.Shared.Models;
 
-
 namespace Cargobell.Data.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
@@ -22,6 +21,10 @@ namespace Cargobell.Data.Data
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<ApplicationUser>()
+                .HasIndex(u => u.PhoneNumber)
+                .IsUnique();
 
             builder.Entity<Shipment>()
                 .HasIndex(s => s.TrackingCode)

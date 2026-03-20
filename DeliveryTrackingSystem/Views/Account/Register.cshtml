@@ -15,6 +15,7 @@
         border: 1px solid #D4AF37 !important;
         color: white !important;
         box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        z-index: 100;
     }
 
     .iti__country:hover {
@@ -39,6 +40,12 @@
         border-color: #D4AF37 !important;
         box-shadow: 0 0 10px rgba(212, 175, 55, 0.3) !important;
     }
+
+    .text-danger.small {
+        font-size: 0.75rem;
+        margin-top: 5px;
+        display: block;
+    }
 </style>
 
 <div class="container py-5 mt-5">
@@ -52,7 +59,13 @@
 
                 <form asp-controller="Account" asp-action="Register" method="post" id="registerForm">
                     @Html.AntiForgeryToken()
-                    <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+
+                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey(string.Empty))
+                    {
+                        <div class="alert alert-danger bg-transparent border-danger text-danger small mb-4">
+                            <div asp-validation-summary="ModelOnly"></div>
+                        </div>
+                    }
 
                     <input type="hidden" id="fullPhone" name="PhoneNumber" />
 
@@ -60,14 +73,14 @@
                         <div class="col-md-6 mb-4">
                             <label asp-for="FirstName" class="form-label small text-gold">FIRST NAME</label>
                             <input asp-for="FirstName" class="form-control bg-dark text-white border-secondary py-3"
-                                   placeholder="John" style="background-color: #111 !important; color: white !important;"
+                                   placeholder="John" style="background-color: #111 !important;"
                                    onkeydown="return /[a-zA-Z\s]/i.test(event.key) || event.key === 'Backspace' || event.key === 'Tab'" required />
                             <span asp-validation-for="FirstName" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6 mb-4">
                             <label asp-for="LastName" class="form-label small text-gold">LAST NAME</label>
                             <input asp-for="LastName" class="form-control bg-dark text-white border-secondary py-3"
-                                   placeholder="Doe" style="background-color: #111 !important; color: white !important;"
+                                   placeholder="Doe" style="background-color: #111 !important;"
                                    onkeydown="return /[a-zA-Z\s]/i.test(event.key) || event.key === 'Backspace' || event.key === 'Tab'" required />
                             <span asp-validation-for="LastName" class="text-danger small"></span>
                         </div>
@@ -75,38 +88,38 @@
 
                     <div class="mb-4">
                         <label asp-for="Email" class="form-label small text-gold">EMAIL ADDRESS</label>
-                        <input asp-for="Email" class="form-control bg-dark text-white border-secondary py-3" placeholder="name@cargobell.com" style="background-color: #111 !important; color: white !important;" required />
+                        <input asp-for="Email" class="form-control bg-dark text-white border-secondary py-3" placeholder="name@cargobell.com" style="background-color: #111 !important;" required />
                         <span asp-validation-for="Email" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-4">
-                        <label asp-for="PhoneNumber" class="form-label small text-gold d-block">PHONE NUMBER</label>
+                        <label class="form-label small text-gold d-block">PHONE NUMBER</label>
                         <input id="phone" type="tel"
                                class="form-control bg-dark text-white border-secondary py-3"
-                               style="background-color: #111 !important; color: white !important;"
+                               style="background-color: #111 !important;"
                                onkeypress="return (event.charCode >= 48 && event.charCode <= 57)" required />
                         <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-4">
                         <label asp-for="DateOfBirth" class="form-label small text-gold">DATE OF BIRTH</label>
-                        <input asp-for="DateOfBirth" type="date" class="form-control bg-dark text-white border-secondary py-3" style="background-color: #111 !important; color: white !important;" required />
+                        <input asp-for="DateOfBirth" type="date" class="form-control bg-dark text-white border-secondary py-3" style="background-color: #111 !important;" required />
                         <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-4">
                         <label asp-for="Password" class="form-label small text-gold">PASSWORD</label>
-                        <input asp-for="Password" type="password" class="form-control bg-dark text-white border-secondary py-3" placeholder="••••••••" style="background-color: #111 !important; color: white !important;" required />
+                        <input asp-for="Password" type="password" class="form-control bg-dark text-white border-secondary py-3" placeholder="••••••••" style="background-color: #111 !important;" required />
                         <span asp-validation-for="Password" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-4">
                         <label asp-for="ConfirmPassword" class="form-label small text-gold">CONFIRM PASSWORD</label>
-                        <input asp-for="ConfirmPassword" type="password" class="form-control bg-dark text-white border-secondary py-3" placeholder="••••••••" style="background-color: #111 !important; color: white !important;" required />
+                        <input asp-for="ConfirmPassword" type="password" class="form-control bg-dark text-white border-secondary py-3" placeholder="••••••••" style="background-color: #111 !important;" required />
                         <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
                     </div>
 
-                    <button type="submit" class="btn btn-gold w-100 py-3 mb-4">REGISTER MEMBERSHIP</button>
+                    <button type="submit" class="btn btn-gold w-100 py-3 mb-4 fw-bold">REGISTER MEMBERSHIP</button>
 
                     <div class="text-center mt-3">
                         <a asp-controller="Account" asp-action="Login" class="text-secondary small text-decoration-none">Already a member? <span class="text-gold fw-bold">Sign In</span></a>
