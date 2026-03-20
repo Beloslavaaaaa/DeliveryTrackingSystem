@@ -1,15 +1,16 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Cargobell.Data;
-using Cargobell.Shared.Models;
+﻿using Cargobell.Data;
 using Cargobell.Data.Data;
+using Cargobell.Shared.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace DeliveryTrackingSystem.Controllers
 {
     [Authorize(Roles = "Courier")]
-    [Route("Courier/Portal")]
+    [Route("CourierPanel")]
     public class CourierPanelController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -21,19 +22,23 @@ namespace DeliveryTrackingSystem.Controllers
             _userManager = userManager;
         }
 
+        [HttpGet("")]
+        [HttpGet("Index")]
         public async Task<IActionResult> Index()
         {
             var userId = _userManager.GetUserId(User);
             var user = await _userManager.GetUserAsync(User);
-            var stats = new
-            {
-                MyActive = await _context.Shipments.CountAsync(s => s.CourierId == userId && s.Status.Name != "Delivered"),
-                Available = await _context.Shipments.CountAsync(s => s.CourierId == null && s.Status.Name == "Ready For Pickup"),
-                TotalCollected = await _context.Shipments
-                    .Where(s => s.CourierId == userId && s.Status.Name == "Delivered" && s.IsCashOnDelivery)
-                    .SumAsync(s => s.DeliveryRoute.Price)
-            };
-            ViewBag.Stats = stats;
+
+            var myActive = await _context.Shipments.CountAsync(s => s.CourierId == userId && s.Status.Name != "Delivered");
+            var available = await _context.Shipments.CountAsync(s => s.CourierId == null && s.Status.Name == "Ready For Pickup");
+            var collected = await _context.Shipments
+                .Where(s => s.CourierId == userId && s.Status.Name == "Delivered" && s.IsCashOnDelivery)
+                .SumAsync(s => s.CodAmount);
+
+            ViewBag.MyActive = myActive;
+            ViewBag.Available = available;
+            ViewBag.TotalCollected = collected;
+
             return View(user);
         }
 
@@ -68,42 +73,20 @@ namespace DeliveryTrackingSystem.Controllers
                     ShipmentId = shipmentId,
                     StatusId = status.StatusId,
                     Timestamp = DateTime.UtcNow,
-                    Note = $"Operational update via Courier Terminal."
+                    Note = "Operational update via Courier Terminal."
                 });
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction(nameof(ManageShipments));
         }
-        [HttpPost("QuickRegister")]
-        public async Task<IActionResult> QuickRegister(string firstName, string lastName, string email, string phone)
-        {
-            var user = new ApplicationUser
-            {
-                UserName = email,
-                Email = email,
-                FirstName = firstName,
-                LastName = lastName,
-                PhoneNumber = phone,
-                EmailConfirmed = true,
-                DateOfBirth = DateTime.Now.AddYears(-20) 
-            };
 
-            var result = await _userManager.CreateAsync(user, "CargobellTemporary123!");
-
-            if (result.Succeeded)
-            {
-                return Json(new { success = true, userId = user.Id, fullName = $"{user.FirstName} {user.LastName}" });
-            }
-            return Json(new { success = false, message = "Error creating user profile." });
-        }
         [HttpGet("Users")]
         public async Task<IActionResult> UserDirectory(string searchTerm)
         {
             var courierUsers = await _userManager.GetUsersInRoleAsync("Courier");
             var courierIdList = courierUsers.Select(c => c.Id).ToList();
 
-            var query = _userManager.Users
-                .Where(u => !courierIdList.Contains(u.Id));
+            var query = _userManager.Users.Where(u => !courierIdList.Contains(u.Id));
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
@@ -116,37 +99,40 @@ namespace DeliveryTrackingSystem.Controllers
 
             return View(await query.ToListAsync());
         }
+
+        [HttpGet("GetUserByPhone")]
+        public async Task<IActionResult> GetUserByPhone(string phone)
+        {
+            var user = await _context.Users
+                .Where(u => u.PhoneNumber == phone)
+                .Select(u => new { u.Id, u.FirstName, u.LastName, u.Email })
+                .FirstOrDefaultAsync();
+
+            return Json(user);
+        }
+
         [HttpGet("CreateShipment")]
         public async Task<IActionResult> CreateShipment(string prefillId)
         {
             ViewBag.PrefillId = prefillId;
             ViewBag.Routes = await _context.DeliveryRoutes.ToListAsync();
-            ViewBag.Offices = await _context.Offices.Where(o => o.IsActive).ToListAsync(); // Load Offices
-
-            var courierUsers = await _userManager.GetUsersInRoleAsync("Courier");
-            var courierIdList = courierUsers.Select(c => c.Id).ToList();
-            ViewBag.Users = await _userManager.Users.Where(u => !courierIdList.Contains(u.Id)).ToListAsync();
-
             return View();
         }
 
         [HttpPost("CreateShipment")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateShipment(Shipment model, bool IsFragile)
+        public async Task<IActionResult> CreateShipment(Shipment model, string SenderManualName, string ReceiverManualName, bool IsFragile, string Notes)
         {
             var courier = await _userManager.GetUserAsync(User);
-            var route = await _context.DeliveryRoutes.FindAsync(model.DeliveryRouteId);
-
             model.TrackingCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
             model.CreatedAt = DateTime.UtcNow;
             model.CourierId = courier.Id;
-            model.IsFragile = IsFragile;
 
-            if (route != null)
-            {
-                model.EstimatedDelivery = DateTime.UtcNow.AddHours(route.EstimatedTimeHours);
-            }
+            string manualInfo = "";
+            if (string.IsNullOrEmpty(model.SenderId)) manualInfo += $"[UNREGISTERED SENDER: {SenderManualName}] ";
+            if (string.IsNullOrEmpty(model.ReceiverId)) manualInfo += $"[UNREGISTERED RECEIVER: {ReceiverManualName}] ";
 
+            model.Notes = manualInfo + (IsFragile ? "FRAGILE CARGO. " : "") + Notes;
             var status = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
             model.StatusId = status?.StatusId ?? 1;
 
@@ -157,6 +143,7 @@ namespace DeliveryTrackingSystem.Controllers
                 return RedirectToAction("ManageShipments", new { filter = "active" });
             }
 
+            ViewBag.Routes = await _context.DeliveryRoutes.ToListAsync();
             return View(model);
         }
     }

@@ -1,20 +1,22 @@
-﻿@model dynamic
+﻿@model Cargobell.Shared.Models.ApplicationUser
 @{
     Layout = "_CourierLayout";
     ViewData["Title"] = "Operations Overview";
-    var stats = ViewBag.Stats;
+    var myActive = ViewBag.MyActive ?? 0;
+    var available = ViewBag.Available ?? 0;
+    var collected = ViewBag.TotalCollected ?? 0.00m;
 }
 
 <div class="mb-5">
     <h2 class="text-gold fw-bold mb-1">TERMINAL OVERVIEW</h2>
-    <p class="text-secondary small text-uppercase">Operational Status: Online</p>
+    <p class="text-secondary small text-uppercase">Operational Status: Online | Personnel: @Model.FirstName @Model.LastName</p>
 </div>
 
 <div class="row g-4 mb-5">
     <div class="col-md-4">
         <div class="terminal-border p-4">
             <span class="text-secondary small text-uppercase">Active Manifest</span>
-            <h2 class="text-white fw-bold mt-2">@stats.MyActive</h2>
+            <h2 class="text-white fw-bold mt-2">@myActive</h2>
             <div class="progress mt-3" style="height: 2px; background: #222;">
                 <div class="progress-bar bg-gold" style="width: 65%"></div>
             </div>
@@ -23,7 +25,7 @@
     <div class="col-md-4">
         <div class="terminal-border p-4">
             <span class="text-secondary small text-uppercase">Unassigned Cargo</span>
-            <h2 class="text-gold fw-bold mt-2">@stats.Available</h2>
+            <h2 class="text-gold fw-bold mt-2">@available</h2>
             <div class="progress mt-3" style="height: 2px; background: #222;">
                 <div class="progress-bar bg-gold" style="width: 30%"></div>
             </div>
@@ -32,7 +34,7 @@
     <div class="col-md-4">
         <div class="terminal-border p-4">
             <span class="text-secondary small text-uppercase">COD Liquidated</span>
-            <h2 class="text-white fw-bold mt-2">$@stats.TotalCollected.ToString("N2")</h2>
+            <h2 class="text-white fw-bold mt-2">$@collected.ToString("N2")</h2>
             <div class="progress mt-3" style="height: 2px; background: #222;">
                 <div class="progress-bar bg-success" style="width: 100%"></div>
             </div>
@@ -52,7 +54,6 @@
         <div class="modal-content bg-black border-gold" style="border-width: 2px; border-radius: 15px;">
             <div class="modal-body p-0">
                 <div class="p-4 position-relative overflow-hidden" style="background: linear-gradient(145deg, #111, #000); border-radius: 13px;">
-
                     <div class="d-flex justify-content-between mb-4">
                         <div>
                             <h5 class="text-gold fw-bold mb-0">CARGOBELL</h5>
@@ -60,7 +61,6 @@
                         </div>
                         <span class="badge bg-danger text-white align-self-start px-2" style="font-size: 0.6rem;">ACTIVE DUTY</span>
                     </div>
-
                     <div class="row align-items-center">
                         <div class="col-5">
                             <div class="border border-gold p-1 bg-black text-center" style="height: 140px; display: flex; align-items: center; justify-content: center;">
@@ -69,16 +69,13 @@
                         </div>
                         <div class="col-7">
                             <label class="text-muted small d-block text-uppercase" style="font-size: 0.6rem;">Personnel Name</label>
-                            <h5 class="text-white fw-bold mb-2">@User.Identity.Name.Split('@')[0].ToUpper()</h5>
-
+                            <h5 class="text-white fw-bold mb-2">@Model.FirstName @Model.LastName</h5>
                             <label class="text-muted small d-block text-uppercase" style="font-size: 0.6rem;">Sector Email</label>
-                            <p class="text-gold font-monospace mb-2" style="font-size: 0.8rem;">@User.Identity.Name</p>
-
+                            <p class="text-gold font-monospace mb-2" style="font-size: 0.8rem;">@Model.Email</p>
                             <label class="text-muted small d-block text-uppercase" style="font-size: 0.6rem;">Clearance</label>
                             <p class="text-white small mb-0">LEVEL 3 COURIER</p>
                         </div>
                     </div>
-
                     <div class="mt-4 pt-3 border-top border-secondary d-flex justify-content-between align-items-center">
                         <div>
                             <i class="bi bi-qr-code text-gold fs-3"></i>
