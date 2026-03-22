@@ -11,17 +11,16 @@
             background-color: #050505;
             color: #e0e0e0;
             font-family: 'Courier New', monospace;
-            overflow-x: hidden;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
-        /* Reduced sidebar width from 16% to 200px for better scaling */
+        /* Fixed Sidebar with Luxury Gold Border */
         .sidebar {
             min-height: 100vh;
             border-right: 1px solid #D4AF37;
             background: #0a0a0a;
             position: fixed;
-            width: 200px;
+            width: 190px;
             z-index: 100;
         }
 
@@ -30,7 +29,7 @@
             border-left: 3px solid transparent;
             text-transform: uppercase;
             font-size: 0.75rem;
-            padding: 12px 15px;
+            padding: 12px 20px;
             letter-spacing: 1px;
         }
 
@@ -38,40 +37,60 @@
                 color: #D4AF37;
                 border-left: 3px solid #D4AF37;
                 background: #111;
+                text-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
             }
 
+        /* Main Content Spacing */
+        main {
+            margin-left: 190px;
+            padding: 30px 40px !important;
+        }
+
         .terminal-border {
-            border: 1px solid #222;
+            border: 1px solid #333;
         }
 
         .text-gold {
             color: #D4AF37;
         }
 
-        /* Adjusted main margin to match fixed sidebar width */
-        main {
-            margin-left: 200px;
-            padding: 40px !important;
-        }
-
+        /* Luxury Gold Button */
         .btn-gold {
             background: #D4AF37;
-            color: black;
+            color: #000;
             border-radius: 0;
             font-weight: bold;
-            border: none;
+            border: 1px solid #D4AF37;
+            font-size: 0.75rem;
+            transition: 0.3s;
+        }
+
+            .btn-gold:hover {
+                background: #b8962d;
+                color: #000;
+            }
+
+        /* Compact Table Styling */
+        .table-luxury {
+            background: #0a0a0a;
+            border: 1px solid #333;
             font-size: 0.8rem;
         }
 
-        .alert {
-            border-radius: 0;
-            font-size: 0.8rem;
-        }
+            .table-luxury thead {
+                background: #111;
+                color: #D4AF37;
+            }
 
-        h1 {
-            font-size: 2.5rem;
+            .table-luxury td {
+                padding: 10px 15px !important;
+                border-bottom: 1px solid #222;
+            }
+
+        h2 {
+            font-size: 1.6rem !important;
+            letter-spacing: 2px;
         }
-        /* Slightly smaller headers */
     </style>
 </head>
 <body>

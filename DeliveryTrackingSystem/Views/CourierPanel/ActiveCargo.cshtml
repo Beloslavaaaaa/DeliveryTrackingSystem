@@ -1,49 +1,92 @@
 ﻿@model IEnumerable<Cargobell.Shared.Models.Shipment>
 @{
-    Layout = "_CourierLayout"; ViewData["Title"] = "Active Cargo";
+    Layout = "_CourierLayout";
 }
 
-<div class="mb-5 d-flex justify-content-between align-items-end">
+<div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="text-gold fw-bold mb-1">ACTIVE CARGO</h2>
-        <p class="text-secondary small text-uppercase">Manifests currently in transit</p>
+        <h2 class="text-gold fw-bold mb-0">ACTIVE CARGO</h2>
+        <span class="text-muted small text-uppercase">Manifests in Terminal Transit</span>
     </div>
+
+    <a href="/CourierPanel/CreateShipment" class="btn btn-gold px-4 py-2">
+        <i class="bi bi-plus-square me-2"></i>CREATE NEW MANIFEST
+    </a>
+</div>
+
+<div class="mb-4">
     <form method="get" action="/CourierPanel/Active" class="d-flex gap-2 w-50">
-        <input type="text" name="searchTerm" class="form-control bg-black text-white border-secondary" placeholder="SEARCH PHONE / CODE...">
-        <button type="submit" class="btn btn-outline-gold">FILTER</button>
+        <input type="text" name="searchTerm" class="form-control bg-black text-white border-secondary rounded-0"
+               placeholder="SEARCH TRACKING # OR PHONE..." value="@Context.Request.Query["searchTerm"]">
+        <button type="submit" class="btn btn-outline-gold px-4 rounded-0">FILTER</button>
     </form>
 </div>
 
-<div class="row g-4">
-    @if (!Model.Any())
-    {
-        <div class="col-12 text-center py-5 terminal-border">
-            <span class="text-muted small">NO ACTIVE CARGO ASSIGNED TO THIS UNIT.</span>
-        </div>
-    }
-    @foreach (var item in Model)
-    {
-        <div class="col-md-6">
-            <div class="terminal-border p-4 bg-dark" style="border-top: 2px solid #D4AF37;">
-                <div class="d-flex justify-content-between mb-3">
-                    <span class="text-gold fw-bold">#@item.TrackingCode</span>
-                    <span class="badge border border-gold text-gold">@item.Status?.Name</span>
+<div class="terminal-border overflow-hidden">
+    <table class="table table-dark table-luxury mb-0">
+        <thead>
+            <tr class="text-uppercase small">
+                <th class="ps-4">ID</th>
+                <th>RECEIVER</th>
+                <th>HUB</th>
+                <th>COD</th>
+                <th class="text-end pe-4">ACTION</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="5" class="text-center py-4 text-muted small">NO ACTIVE MANIFESTS FOUND.</td></tr>
+            }
+            @foreach (var item in Model)
+            {
+                <tr style="cursor: pointer;" onclick="showDetailModal('@item.TrackingCode', '@item.Receiver?.FirstName @item.Receiver?.LastName', '@item.Receiver?.PhoneNumber', '@item.DeliveryRoute?.EndLocation', '@item.CodAmount')">
+                    <td class="ps-4 text-gold fw-bold">@item.TrackingCode</td>
+                    <td>@item.Receiver?.FirstName<br /><span class="text-muted small">@item.Receiver?.PhoneNumber</span></td>
+                    <td>@item.DeliveryRoute?.EndLocation</td>
+                    <td class="text-success fw-bold">$@item.CodAmount</td>
+                    <td class="text-end pe-4">
+                        <form action="/CourierPanel/MarkDelivered" method="post" class="d-inline">
+                            <input type="hidden" name="shipmentId" value="@item.ShipmentId" />
+                            <button type="submit" class="btn btn-sm btn-outline-success rounded-0 py-0" onclick="event.stopPropagation();">DELIVER</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-black border border-gold rounded-0">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-gold fw-bold">MANIFEST READOUT</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="text-muted small d-block">TRACKING CODE</label>
+                    <span id="mCode" class="text-white fs-5 fw-bold"></span>
                 </div>
-                <div class="row mb-4">
-                    <div class="col-6">
-                        <label class="text-muted small d-block uppercase">Receiver</label>
-                        <span class="text-white">@item.Receiver?.PhoneNumber</span>
-                    </div>
-                    <div class="col-6 text-end">
-                        <label class="text-muted small d-block uppercase">COD Due</label>
-                        <span class="text-success fw-bold">$@item.CodAmount</span>
-                    </div>
+                <div class="row mb-3">
+                    <div class="col-6"><label class="text-muted small d-block">RECEIVER</label><span id="mName" class="text-white"></span></div>
+                    <div class="col-6"><label class="text-muted small d-block">PHONE</label><span id="mPhone" class="text-white"></span></div>
                 </div>
-                <form action="/CourierPanel/MarkDelivered" method="post">
-                    <input type="hidden" name="shipmentId" value="@item.ShipmentId" />
-                    <button type="submit" class="btn btn-gold w-100">CONFIRM DELIVERY</button>
-                </form>
+                <div><label class="text-muted small d-block">DESTINATION HUB</label><span id="mHub" class="text-white"></span></div>
             </div>
         </div>
-    }
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        function showDetailModal(code, name, phone, hub, cod) {
+            $('#mCode').text(code);
+            $('#mName').text(name);
+            $('#mPhone').text(phone);
+            $('#mHub').text(hub);
+            new bootstrap.Modal(document.getElementById('detailModal')).show();
+        }
+    </script>
+}

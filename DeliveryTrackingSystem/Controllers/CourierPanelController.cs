@@ -42,12 +42,17 @@ namespace DeliveryTrackingSystem.Controllers
         {
             var userId = _userManager.GetUserId(User);
             var query = _context.Shipments
-                .Include(s => s.Status).Include(s => s.Sender).Include(s => s.Receiver)
+                .Include(s => s.Status)
+                .Include(s => s.Sender)
+                .Include(s => s.Receiver)
+                .Include(s => s.DeliveryRoute) 
                 .Where(s => s.CourierId == userId && s.Status.Name != "Delivered");
 
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                query = query.Where(s => s.TrackingCode.Contains(searchTerm) || s.Receiver.PhoneNumber.Contains(searchTerm));
+                query = query.Where(s => s.TrackingCode.Contains(searchTerm) ||
+                                         s.Receiver.PhoneNumber.Contains(searchTerm) ||
+                                         s.Receiver.FirstName.Contains(searchTerm));
             }
 
             return View(await query.OrderByDescending(s => s.CreatedAt).ToListAsync());

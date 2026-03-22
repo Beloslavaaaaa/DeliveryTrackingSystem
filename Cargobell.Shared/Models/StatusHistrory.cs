@@ -13,6 +13,6 @@ namespace Cargobell.Shared.Models
 
         public DateTime Timestamp { get; set; } = DateTime.UtcNow;
         public string Location { get; set; }
-        public string Note { get; set; }
+        public string Note { get; set; } 
     }
 }
