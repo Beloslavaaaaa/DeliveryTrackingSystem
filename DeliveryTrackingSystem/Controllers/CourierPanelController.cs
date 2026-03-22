@@ -45,7 +45,7 @@ namespace DeliveryTrackingSystem.Controllers
                 .Include(s => s.Status)
                 .Include(s => s.Sender)
                 .Include(s => s.Receiver)
-                .Include(s => s.DeliveryRoute) 
+                .Include(s => s.DeliveryRoute)
                 .Where(s => s.CourierId == userId && s.Status.Name != "Delivered");
 
             if (!string.IsNullOrEmpty(searchTerm))
@@ -123,19 +123,95 @@ namespace DeliveryTrackingSystem.Controllers
         [HttpPost("ApproveRequest")]
         public async Task<IActionResult> ApproveRequest(int requestId)
         {
+            var req = await _context.CourierRequests
+                .Include(r => r.User)
+                .FirstOrDefaultAsync(r => r.CourierRequestId == requestId);
+
+            if (req == null) return NotFound();
+
+            // 1. SELF-HEALING STATUS (With Description Fix)
+            var status = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit")
+                         ?? await _context.Statuses.FirstOrDefaultAsync();
+
+            if (status == null)
+            {
+                status = new Status
+                {
+                    Name = "In Transit",
+                    Description = "Shipment is currently moving between nodes." // FIXED: Added non-null description
+                };
+                _context.Statuses.Add(status);
+                await _context.SaveChangesAsync();
+            }
+
+            // 2. SELF-HEALING ROUTE
+            var route = await _context.DeliveryRoutes.FirstOrDefaultAsync();
+            if (route == null)
+            {
+                route = new DeliveryRoute
+                {
+                    StartLocation = "Origin",
+                    EndLocation = "Destination",
+                    Price = 10.00m,
+                    DistanceKm = 1.0,
+                    EstimatedTimeHours = 1.0
+                };
+                _context.DeliveryRoutes.Add(route);
+                await _context.SaveChangesAsync();
+            }
+
+            // 3. CREATE SHIPMENT
+            var newShipment = new Shipment
+            {
+                TrackingCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
+                CreatedAt = DateTime.UtcNow,
+                CourierId = _userManager.GetUserId(User),
+                SenderId = req.UserId,
+                ReceiverId = req.UserId, // Placeholder FK
+                StatusId = status.StatusId,
+                DeliveryRouteId = route.DeliveryRouteId,
+                IsFragile = false,
+                IsCashOnDelivery = false,
+                CodAmount = 0,
+                Notes = $"[REQ #{req.CourierRequestId}] DEST: {req.DropoffAddress} | DESC: {req.PackageDescription}",
+                EstimatedDelivery = DateTime.UtcNow.AddDays(2)
+            };
+
+            try
+            {
+                _context.Shipments.Add(newShipment);
+
+                req.Status = "Approved";
+                req.IsCompleted = true;
+                _context.Entry(req).State = EntityState.Modified;
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] = "SYSTEM CLEARED: Shipment Active.";
+                return RedirectToAction("Active");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "SQL VALIDATION ERROR: " + (ex.InnerException?.Message ?? ex.Message);
+                return RedirectToAction("UserDirectory");
+            }
+        }
+
+        [HttpPost("RejectRequest")]
+        public async Task<IActionResult> RejectRequest(int requestId)
+        {
             var req = await _context.CourierRequests.FindAsync(requestId);
             if (req != null)
             {
-                req.Status = "Approved";
+                req.Status = "Rejected";
                 req.IsCompleted = true;
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "REQUEST APPROVED.";
+                TempData["SuccessMessage"] = "REQUEST REJECTED.";
             }
-            return RedirectToAction("Users");
+            return RedirectToAction("UserDirectory");
         }
-
         [HttpGet("CreateShipment")]
-        public async Task<IActionResult> CreateShipment(string prefillId)
+        public async Task<IActionResult> CreateShipment(string prefillId, int? requestId)
         {
             ViewBag.Offices = await _context.Offices.Where(o => o.IsActive).ToListAsync();
             ViewBag.DefaultOfficeId = await _context.Offices
@@ -144,10 +220,25 @@ namespace DeliveryTrackingSystem.Controllers
                 .FirstOrDefaultAsync();
 
             var model = new Shipment();
-            if (!string.IsNullOrEmpty(prefillId))
+
+            if (requestId.HasValue)
+            {
+                var req = await _context.CourierRequests.FindAsync(requestId.Value);
+                if (req != null)
+                {
+                    req.Status = "Approved";
+                    req.IsCompleted = true;
+                    await _context.SaveChangesAsync();
+
+                    model.SenderId = req.UserId;
+                    model.Notes = $"[AUTO-PREFILL] Description: {req.PackageDescription} | To: {req.DropoffAddress}";
+                }
+            }
+            else if (!string.IsNullOrEmpty(prefillId))
             {
                 model.SenderId = prefillId;
             }
+
             return View(model);
         }
 

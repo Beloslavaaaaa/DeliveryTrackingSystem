@@ -4,13 +4,17 @@
     var allRequests = (List<Cargobell.Shared.Models.CourierRequest>)ViewBag.AllRequests;
 }
 
-<a href="/CourierPanel/CreateShipment" class="btn-create-floating">
-    + NEW MANIFEST
-</a>
-
 <div class="mb-4">
     <h1 class="text-gold mb-0" style="font-size: 1.8rem;">ENTITY DIRECTORY</h1>
     <p class="text-muted small text-uppercase" style="letter-spacing: 2px;">Operational Node Overview</p>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger rounded-0">@TempData["ErrorMessage"]</div>
+    }
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success rounded-0">@TempData["SuccessMessage"]</div>
+    }
 </div>
 
 <div class="mb-5">
@@ -23,50 +27,94 @@
     {
         <div class="node-item">
             <div class="node-card">
-                <div>
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <h6 class="fw-bold text-uppercase m-0">@vm.User.FirstName @vm.User.LastName</h6>
-                        @if (vm.RequestCount > 0)
-                        {
-                            <span class="text-gold fw-bold" style="font-size: 0.7rem;">[ @vm.RequestCount ACTIVE ]</span>
-                        }
-                    </div>
-                    <div class="text-muted small mb-4" style="font-family: monospace;">TEL // @vm.User.PhoneNumber</div>
-
-                    <div class="request-list">
-                        @foreach (var req in allRequests.Where(r => r.UserId == vm.User.Id))
-                        {
-                            <div class="p-2 mb-2" style="background: rgba(255,255,255,0.03); border-left: 2px solid var(--gold-solid);">
-                                <div class="text-white small fw-bold mb-1">@req.PackageDescription</div>
-                                <div class="text-muted mb-2" style="font-size: 0.6rem;">TO // @req.DropoffAddress</div>
-
-                                <div class="d-flex gap-2">
-                                    <a href="/CourierPanel/CreateShipment?requestId=@req.CourierRequestId"
-                                       class="btn btn-sm btn-gold w-100 py-0" style="font-size: 0.6rem; border-radius: 0;">APPROVE</a>
-
-                                    <form action="/CourierPanel/RejectRequest" method="post" class="m-0">
-                                        <input type="hidden" name="requestId" value="@req.CourierRequestId" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0 py-0"><i class="bi bi-x"></i></button>
-                                    </form>
-                                </div>
-                            </div>
-                        }
-                    </div>
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h6 class="fw-bold text-uppercase m-0">@vm.User.FirstName @vm.User.LastName</h6>
+                    @if (vm.RequestCount > 0)
+                    {
+                        <span class="text-gold fw-bold" style="font-size: 0.7rem;">[ @vm.RequestCount ACTIVE ]</span>
+                    }
                 </div>
+                <div class="text-muted small mb-4" style="font-family: monospace;">TEL // @vm.User.PhoneNumber</div>
 
-                @if (vm.RequestCount == 0)
-                {
-                    <div class="mt-auto pt-3 border-top border-secondary opacity-25 text-center">
-                        <span class="small text-muted">STATION IDLE</span>
-                    </div>
-                }
+                <div class="request-list">
+                    @foreach (var req in allRequests.Where(r => r.UserId == vm.User.Id))
+                    {
+                        <div class="p-2 mb-2" style="background: rgba(255,255,255,0.03); border-left: 2px solid #ffc107;">
+                            <div class="text-white small fw-bold mb-1">@req.PackageDescription</div>
+                            <div class="text-muted mb-2" style="font-size: 0.6rem;">TO // @req.DropoffAddress</div>
+
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-warning w-100 py-1 fw-bold" style="font-size: 0.7rem; border-radius: 0;"
+                                        onclick="openApproveModal('@req.CourierRequestId', '@req.PackageDescription', '@req.PickupAddress', '@req.DropoffAddress', '@vm.User.FirstName @vm.User.LastName')">
+                                    INSPECT
+                                </button>
+                                <form asp-action="RejectRequest" method="post" class="m-0">
+                                    <input type="hidden" name="requestId" value="@req.CourierRequestId" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0 py-0"><i class="bi bi-x"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
             </div>
         </div>
     }
 </div>
 
+<div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-warning text-white rounded-0">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-warning fw-bold">REQUEST INSPECTION</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="text-muted small d-block">SENDER</label>
+                    <span id="modalSender" class="fw-bold text-white"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small d-block">DESCRIPTION</label>
+                    <span id="modalDesc" class="text-white"></span>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <label class="text-muted small d-block">PICKUP</label>
+                        <span id="modalPickup" class="small text-white"></span>
+                    </div>
+                    <div class="col-6">
+                        <label class="text-muted small d-block">DROPOFF</label>
+                        <span id="modalDropoff" class="small text-white"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-secondary">
+                <form asp-action="ApproveRequest" method="post" class="w-100">
+                    <input type="hidden" name="requestId" id="modalId">
+                    <button type="submit" class="btn btn-warning btn-lg w-100 rounded-0 fw-bold text-dark">
+                        APPROVE & GENERATE MANIFEST
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
+        function openApproveModal(id, desc, pickup, dropoff, user) {
+            // Set values in the modal
+            document.getElementById('modalId').value = id;
+            document.getElementById('modalSender').innerText = user;
+            document.getElementById('modalDesc').innerText = desc;
+            document.getElementById('modalPickup').innerText = pickup;
+            document.getElementById('modalDropoff').innerText = dropoff;
+
+            // Open the modal
+            var myModal = new bootstrap.Modal(document.getElementById('approveModal'));
+            myModal.show();
+        }
+
         document.getElementById('nodeFilter').addEventListener('keyup', function() {
             let val = this.value.toLowerCase();
             document.querySelectorAll('.node-item').forEach(el => {
