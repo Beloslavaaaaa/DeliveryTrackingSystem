@@ -8,94 +8,77 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
         :root {
-            --gold-gradient: linear-gradient(45deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
-            --gold-solid: #D4AF37;
-            --rich-black: #050505;
+            --gold-gradient: linear-gradient(135deg, #D4AF37 0%, #f7ef8a 50%, #ae8625 100%);
+            --glass-bg: rgba(10, 10, 10, 0.9);
+            --border-gold: rgba(212, 175, 55, 0.4);
         }
 
         body {
-            background-color: var(--rich-black) !important;
-            color: #ffffff !important;
+            background: #000 !important;
             font-family: 'Montserrat', sans-serif;
-            font-size: 0.85rem; /* Shrunk for panel fit */
+            color: #fff;
+            overflow-x: hidden;
+            height: 100vh; /* Lock height to the screen */
         }
 
-        /* Fixed Sidebar adjusted to luxury style */
+        /* Scaling Sidebar */
         .sidebar {
-            width: 200px;
+            width: 15vw; /* Scales with screen width */
+            min-width: 180px;
+            background: #000;
+            border-right: 1px solid var(--border-gold);
             position: fixed;
             height: 100vh;
-            background: #000;
-            border-right: 1px solid var(--gold-solid);
             z-index: 1000;
         }
 
+        /* Scaling Main Content */
         main {
-            margin-left: 200px;
-            padding: 30px !important;
+            margin-left: 15vw;
+            padding: 3vh 3vw !important; /* Vertical and horizontal scaling padding */
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        /* The "Elite" Card - Sizing Adjusted */
+        .node-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--border-gold);
+            padding: 1.5rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: 间-between;
+        }
+
+        /* Floating Gold Button */
+        .btn-create-floating {
+            position: fixed;
+            top: 3vh;
+            right: 3vw;
+            background: var(--gold-gradient);
+            color: #000 !important;
+            font-family: 'Cinzel', serif;
+            font-weight: 900;
+            padding: 10px 25px;
+            text-decoration: none;
+            z-index: 1100;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
         }
 
         .text-gold {
             background: var(--gold-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-weight: bold;
             font-family: 'Cinzel', serif;
         }
 
-        /* Table Styling */
-        .table-luxury {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 8px;
-        }
-
-            .table-luxury th {
-                color: var(--gold-solid);
-                text-transform: uppercase;
-                font-size: 0.75rem;
-                letter-spacing: 1px;
-                border-bottom: 1px solid #333;
-                padding: 10px;
-            }
-
-            .table-luxury td {
-                background: rgba(255,255,255,0.03);
-                border-top: 1px solid #222;
-                border-bottom: 1px solid #222;
-                padding: 12px;
-            }
-
-        .btn-gold {
-            background: var(--gold-gradient) !important;
-            color: #000 !important;
-            font-weight: 700;
-            border: none;
-            transition: 0.4s;
-            font-family: 'Cinzel', serif;
-            font-size: 0.75rem;
-            border-radius: 2px;
-        }
-
-        .btn-outline-gold {
-            border: 1px solid var(--gold-solid) !important;
-            color: var(--gold-solid) !important;
-            background: transparent;
-            font-family: 'Cinzel', serif;
-            font-size: 0.7rem;
-            border-radius: 2px;
-        }
-
-            .btn-gold:hover, .btn-outline-gold:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
-            }
-
-        .request-box {
-            border-left: 2px solid var(--gold-solid);
-            background: rgba(212, 175, 55, 0.05);
-            margin-bottom: 5px;
-            padding: 8px 12px;
+        /* High-Density Grid */
+        .row-cols-custom {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
     </style>
 </head>

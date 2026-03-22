@@ -1,69 +1,77 @@
 ﻿@model IEnumerable<DeliveryTrackingSystem.Controllers.UserRequestViewModel>
 @{
     Layout = "_CourierLayout";
+    var allRequests = (List<Cargobell.Shared.Models.CourierRequest>)ViewBag.AllRequests;
 }
 
-<div class="d-flex justify-content-between align-items-end mb-4">
-    <div>
-        <h2 class="text-gold mb-0">ENTITY DIRECTORY</h2>
-        <p class="text-secondary small text-uppercase mb-0">System Manifests & Active Service Requests</p>
-    </div>
+<a href="/CourierPanel/CreateShipment" class="btn-create-floating">
+    + NEW MANIFEST
+</a>
+
+<div class="mb-4">
+    <h1 class="text-gold mb-0" style="font-size: 1.8rem;">ENTITY DIRECTORY</h1>
+    <p class="text-muted small text-uppercase" style="letter-spacing: 2px;">Operational Node Overview</p>
 </div>
 
-<div class="mb-4 d-flex gap-2">
-    <div class="search-container d-flex align-items-center flex-grow-1" style="max-width: 400px; border: 1px solid #444; background: rgba(255,255,255,0.05); padding: 5px 15px;">
-        <i class="bi bi-search text-muted me-2"></i>
-        <input type="text" class="search-input w-100" style="background:transparent; border:none; color:white; outline:none;" placeholder="SEARCH ENTITY...">
-    </div>
-    <button class="btn btn-outline-gold px-4">FILTER</button>
+<div class="mb-5">
+    <input type="text" id="nodeFilter" class="form-control bg-transparent border-secondary text-white rounded-0 w-25"
+           placeholder="TYPE TO FILTER NODES..." style="border-width: 0 0 1px 0; font-size: 0.8rem;">
 </div>
 
-<div class="table-responsive">
-    <table class="table-luxury">
-        <thead>
-            <tr>
-                <th style="width: 30%">ENTITY</th>
-                <th style="width: 70%">PENDING REQUESTS</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var vm in Model)
-            {
-                <tr>
-                    <td class="align-top">
-                        <div class="fw-bold text-white mb-1">@vm.User.FirstName @vm.User.LastName</div>
-                        <div class="text-muted small">@vm.User.PhoneNumber</div>
-                    </td>
-                    <td>
+<div class="row-cols-custom" id="nodeGrid">
+    @foreach (var vm in Model)
+    {
+        <div class="node-item">
+            <div class="node-card">
+                <div>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h6 class="fw-bold text-uppercase m-0">@vm.User.FirstName @vm.User.LastName</h6>
                         @if (vm.RequestCount > 0)
                         {
-                            @foreach (var req in (List<Cargobell.Shared.Models.CourierRequest>)ViewBag.AllRequests)
-                            {
-                                if (req.UserId == vm.User.Id)
-                                {
-                                    <div class="request-box d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <span class="text-white small fw-bold d-block">@req.PackageDescription</span>
-                                            <span class="text-muted" style="font-size: 0.7rem;">FROM: @req.PickupAddress → TO: @req.DropoffAddress</span>
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <a href="/CourierPanel/CreateShipment?requestId=@req.CourierRequestId" class="btn btn-gold btn-sm py-1">APPROVE</a>
-                                            <form action="/CourierPanel/RejectRequest" method="post" class="d-inline">
-                                                <input type="hidden" name="requestId" value="@req.CourierRequestId" />
-                                                <button type="submit" class="btn btn-outline-danger btn-sm border-0" style="font-size: 1.1rem;"><i class="bi bi-x-circle"></i></button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                }
-                            }
+                            <span class="text-gold fw-bold" style="font-size: 0.7rem;">[ @vm.RequestCount ACTIVE ]</span>
                         }
-                        else
+                    </div>
+                    <div class="text-muted small mb-4" style="font-family: monospace;">TEL // @vm.User.PhoneNumber</div>
+
+                    <div class="request-list">
+                        @foreach (var req in allRequests.Where(r => r.UserId == vm.User.Id))
                         {
-                            <span class="text-muted small opacity-50">NO ACTIVE SERVICE REQUESTS</span>
+                            <div class="p-2 mb-2" style="background: rgba(255,255,255,0.03); border-left: 2px solid var(--gold-solid);">
+                                <div class="text-white small fw-bold mb-1">@req.PackageDescription</div>
+                                <div class="text-muted mb-2" style="font-size: 0.6rem;">TO // @req.DropoffAddress</div>
+
+                                <div class="d-flex gap-2">
+                                    <a href="/CourierPanel/CreateShipment?requestId=@req.CourierRequestId"
+                                       class="btn btn-sm btn-gold w-100 py-0" style="font-size: 0.6rem; border-radius: 0;">APPROVE</a>
+
+                                    <form action="/CourierPanel/RejectRequest" method="post" class="m-0">
+                                        <input type="hidden" name="requestId" value="@req.CourierRequestId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger border-0 py-0"><i class="bi bi-x"></i></button>
+                                    </form>
+                                </div>
+                            </div>
                         }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                    </div>
+                </div>
+
+                @if (vm.RequestCount == 0)
+                {
+                    <div class="mt-auto pt-3 border-top border-secondary opacity-25 text-center">
+                        <span class="small text-muted">STATION IDLE</span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 </div>
+
+@section Scripts {
+    <script>
+        document.getElementById('nodeFilter').addEventListener('keyup', function() {
+            let val = this.value.toLowerCase();
+            document.querySelectorAll('.node-item').forEach(el => {
+                el.style.display = el.innerText.toLowerCase().includes(val) ? '' : 'none';
+            });
+        });
+    </script>
+}
