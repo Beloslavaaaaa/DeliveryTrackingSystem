@@ -1,151 +1,125 @@
 ﻿@model Cargobell.Shared.Models.Shipment
 @{
     Layout = "_CourierLayout";
-    ViewData["Title"] = "New Manifest";
 }
 
 <div class="mb-5">
     <h2 class="text-gold fw-bold mb-1">RAPID IN-TAKE</h2>
-    <p class="text-secondary small text-uppercase">Input Entity Phone Number to Begin</p>
+    <p class="text-secondary small text-uppercase">Input Phone Number and Press Enter to Search</p>
 </div>
 
-<form action="/CourierPanel/CreateShipment" method="post" class="terminal-border p-5">
+<form id="manifestForm" asp-action="CreateShipment" method="post" class="terminal-border p-5">
     @Html.AntiForgeryToken()
+
     <input type="hidden" asp-for="SenderId" id="senderId" />
+    <input type="hidden" asp-for="ReceiverId" id="receiverId" />
+    <input type="hidden" asp-for="DeliveryRouteId" id="finalRouteId" />
 
     <div class="row g-5">
         <div class="col-md-6 border-end border-secondary">
             <h5 class="text-gold mb-4"><i class="bi bi-box-arrow-up me-2"></i>SENDER DATA</h5>
             <label class="text-muted small fw-bold">PHONE NUMBER</label>
-            <input type="text" id="senderPhone" name="SenderPhone" class="form-control bg-black text-white border-gold mb-3" placeholder="Search..." autocomplete="off">
+            <input type="text" id="senderPhone" class="form-control bg-black text-white border-gold mb-3" placeholder="Search phone...">
 
             <div id="senderDetails" class="mt-3 p-3 bg-dark rounded d-none">
-                <p class="text-success small mb-1"><i class="bi bi-check-circle me-1"></i> ENTITY RECOGNIZED</p>
+                <p class="text-success small mb-1"><i class="bi bi-check-circle me-1"></i> REGISTERED USER</p>
                 <h6 id="senderDisplayName" class="text-white fw-bold mb-0"></h6>
             </div>
 
-            <div id="senderManual" class="mt-3 d-none">
-                <label class="text-muted small fw-bold">FULL NAME (NEW ENTITY)</label>
-                <input type="text" id="senderManualName" name="SenderManualName" class="form-control bg-transparent text-white border-secondary mb-2">
+            <div id="senderManual" class="mt-3">
+                <label class="text-muted small fw-bold">NAME (FOR UNREGISTERED/MANUAL)</label>
+                <input type="text" name="SenderManualName" id="SenderManualName" class="form-control bg-transparent text-white border-secondary">
             </div>
         </div>
 
         <div class="col-md-6">
             <h5 class="text-gold mb-4"><i class="bi bi-box-arrow-in-down me-2"></i>RECEIVER DATA</h5>
             <label class="text-muted small fw-bold">PHONE NUMBER</label>
-            <input type="text" id="receiverPhone" name="ReceiverPhone" class="form-control bg-black text-white border-gold mb-3" placeholder="Search..." required autocomplete="off">
+            <input type="text" id="receiverPhone" class="form-control bg-black text-white border-gold mb-3" placeholder="Search phone...">
 
             <div id="receiverDetails" class="mt-3 p-3 bg-dark rounded d-none">
-                <p class="text-success small mb-1"><i class="bi bi-check-circle me-1"></i> ENTITY RECOGNIZED</p>
+                <p class="text-success small mb-1"><i class="bi bi-check-circle me-1"></i> REGISTERED USER</p>
                 <h6 id="receiverDisplayName" class="text-white fw-bold mb-0"></h6>
-                <input type="hidden" asp-for="ReceiverId" id="receiverId">
             </div>
 
-            <div id="receiverManual" class="mt-3 d-none">
-                <label class="text-muted small fw-bold">FULL NAME (NEW ENTITY)</label>
-                <input type="text" id="receiverManualName" name="ReceiverManualName" class="form-control bg-transparent text-white border-secondary mb-2">
+            <div id="receiverManual" class="mt-3">
+                <label class="text-muted small fw-bold">NAME (FOR UNREGISTERED/MANUAL)</label>
+                <input type="text" name="ReceiverManualName" id="ReceiverManualName" class="form-control bg-transparent text-white border-secondary">
             </div>
         </div>
 
         <hr class="border-secondary">
 
         <div class="col-md-12">
-            <h5 class="text-gold mb-4"><i class="bi bi-geo-alt me-2"></i>LOGISTICS ROUTE</h5>
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="text-muted small fw-bold">ORIGIN OFFICE</label>
-                    <select id="startOffice" class="form-select bg-black text-white border-gold py-3">
-                        <option value="">-- SELECT ORIGIN --</option>
+                    <label class="text-muted small fw-bold">ORIGIN</label>
+                    <select id="startOffice" class="form-select bg-black text-white border-gold">
                         @foreach (var office in (IEnumerable<Cargobell.Shared.Models.Office>)ViewBag.Offices)
                         {
-                            <option value="@office.OfficeId" selected="@(office.OfficeId == ViewBag.DefaultOfficeId ? "selected" : null)">@office.Name [@office.CodeName]</option>
+                            <option value="@office.OfficeId">@office.Name</option>
                         }
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="text-muted small fw-bold">DESTINATION HUB</label>
-                    <select id="endOffice" class="form-select bg-black text-white border-gold py-3">
-                        <option value="">-- SELECT DESTINATION --</option>
+                    <label class="text-muted small fw-bold">DESTINATION</label>
+                    <select id="endOffice" class="form-select bg-black text-white border-gold">
+                        <option value="">-- SELECT --</option>
                         @foreach (var office in (IEnumerable<Cargobell.Shared.Models.Office>)ViewBag.Offices)
                         {
-                            <option value="@office.OfficeId">@office.Name [@office.CodeName]</option>
+                            <option value="@office.OfficeId">@office.Name</option>
                         }
                     </select>
                 </div>
             </div>
-
-            <div id="routePreview" class="mt-3 p-3 terminal-border bg-dark d-none">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <span class="text-gold small d-block">MANIFEST ROUTE</span>
-                        <h6 id="routeText" class="text-white fw-bold mb-0"></h6>
-                    </div>
-                    <div class="text-end">
-                        <span class="text-gold small d-block">SERVICE FEE</span>
-                        <h6 id="routePrice" class="text-success fw-bold mb-0"></h6>
-                    </div>
-                </div>
-                <input type="hidden" asp-for="DeliveryRouteId" id="finalRouteId" required />
-            </div>
         </div>
 
-        <div class="col-md-4">
-            <label class="text-gold small fw-bold mb-2">COD AMOUNT</label>
-            <input asp-for="CodAmount" type="number" step="0.01" class="form-control bg-transparent text-white border-secondary py-2">
-        </div>
-
-        <div class="col-md-8 d-flex align-items-end gap-4 pb-1">
-            <div class="form-check form-switch">
-                <input asp-for="IsCashOnDelivery" class="form-check-input" type="checkbox">
-                <label class="form-check-label text-white ms-2">COD PROTOCOL</label>
-            </div>
-            <div class="form-check form-switch">
-                <input name="IsFragile" class="form-check-input" type="checkbox" value="true">
-                <label class="form-check-label text-danger ms-2 fw-bold">FRAGILE</label>
-            </div>
+        <div class="col-md-12">
+            <label class="text-gold small fw-bold">NOTES</label>
+            <textarea name="Notes" class="form-control bg-transparent text-white border-secondary" rows="2"></textarea>
         </div>
     </div>
 
-    <button type="submit" class="btn btn-gold w-100 mt-5 py-4 fw-bold text-uppercase fs-5">Authorize Manifest</button>
+    <button type="submit" class="btn btn-gold w-100 mt-5 py-3 fw-bold">AUTHORIZE MANIFEST</button>
 </form>
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
+            // Prevent Enter from submitting form, use it for search instead
+            $('#manifestForm').on('keydown', function (e) {
+                if (e.keyCode == 13) {
+                    e.preventDefault();
+                    if (e.target.id === 'senderPhone') lookupUser($(e.target).val(), 'sender');
+                    if (e.target.id === 'receiverPhone') lookupUser($(e.target).val(), 'receiver');
+                    return false;
+                }
+            });
+
             function lookupUser(phone, prefix) {
                 if (phone.length >= 8) {
-                    $.get('/CourierPanel/GetUserByPhone', { phone: phone }, function(user) {
+                    $.get('/CourierPanel/GetUserByPhone', { phone: phone }, function (user) {
                         if (user) {
                             $(`#${prefix}Details`).removeClass('d-none');
-                            $(`#${prefix}Manual`).addClass('d-none');
-                            $(`#${prefix}ManualName`).prop('required', false);
-                            $(`#${prefix}DisplayName`).text(`${user.firstName} ${user.lastName}`);
+                            $(`#${prefix}DisplayName`).text(user.firstName + " " + user.lastName);
                             $(`#${prefix}Id`).val(user.id);
+                            // Hide manual name field if user found
+                            $(`#${prefix}Manual`).addClass('d-none');
                         } else {
+                            alert("No registered user found with this phone. Please enter name manually.");
                             $(`#${prefix}Details`).addClass('d-none');
-                            $(`#${prefix}Manual`).removeClass('d-none');
-                            $(`#${prefix}ManualName`).prop('required', true);
                             $(`#${prefix}Id`).val('');
+                            $(`#${prefix}Manual`).removeClass('d-none');
                         }
                     });
                 }
             }
 
-            $('#senderPhone, #receiverPhone').on('keypress', function(e) {
-                if (e.which == 13) {
-                    e.preventDefault();
-                    lookupUser($(this).val(), this.id.replace('Phone', ''));
-                }
-            });
-
-            $('#startOffice, #endOffice').on('change', function() {
+            $('#startOffice, #endOffice').on('change', function () {
                 let sId = $('#startOffice').val();
                 let eId = $('#endOffice').val();
                 if (sId && eId) {
-                    $.get('/CourierPanel/GetRouteDetails', { startId: sId, endId: eId }, function(data) {
-                        $('#routePreview').removeClass('d-none');
-                        $('#routeText').text(data.display);
-                        $('#routePrice').text('$' + data.price.toFixed(2));
+                    $.get('/CourierPanel/GetRouteDetails', { startId: sId, endId: eId }, function (data) {
                         $('#finalRouteId').val(data.id);
                     });
                 }

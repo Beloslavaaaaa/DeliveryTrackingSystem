@@ -92,7 +92,6 @@ namespace DeliveryTrackingSystem.Controllers
         [HttpGet("Users")]
         public async Task<IActionResult> UserDirectory(string searchTerm)
         {
-            var usersQuery = _context.Users.AsQueryable();
             var users = await _context.Users
          .Select(u => new UserRequestViewModel
          {
@@ -129,7 +128,6 @@ namespace DeliveryTrackingSystem.Controllers
 
             if (req == null) return NotFound();
 
-            // 1. SELF-HEALING STATUS (With Description Fix)
             var status = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit")
                          ?? await _context.Statuses.FirstOrDefaultAsync();
 
@@ -138,13 +136,12 @@ namespace DeliveryTrackingSystem.Controllers
                 status = new Status
                 {
                     Name = "In Transit",
-                    Description = "Shipment is currently moving between nodes." // FIXED: Added non-null description
+                    Description = "Shipment is currently moving between nodes."
                 };
                 _context.Statuses.Add(status);
                 await _context.SaveChangesAsync();
             }
 
-            // 2. SELF-HEALING ROUTE
             var route = await _context.DeliveryRoutes.FirstOrDefaultAsync();
             if (route == null)
             {
@@ -160,14 +157,13 @@ namespace DeliveryTrackingSystem.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            // 3. CREATE SHIPMENT
             var newShipment = new Shipment
             {
                 TrackingCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
                 CreatedAt = DateTime.UtcNow,
                 CourierId = _userManager.GetUserId(User),
                 SenderId = req.UserId,
-                ReceiverId = req.UserId, // Placeholder FK
+                ReceiverId = req.UserId,
                 StatusId = status.StatusId,
                 DeliveryRouteId = route.DeliveryRouteId,
                 IsFragile = false,
@@ -180,13 +176,10 @@ namespace DeliveryTrackingSystem.Controllers
             try
             {
                 _context.Shipments.Add(newShipment);
-
                 req.Status = "Approved";
                 req.IsCompleted = true;
                 _context.Entry(req).State = EntityState.Modified;
-
                 await _context.SaveChangesAsync();
-
                 TempData["SuccessMessage"] = "SYSTEM CLEARED: Shipment Active.";
                 return RedirectToAction("Active");
             }
@@ -210,6 +203,7 @@ namespace DeliveryTrackingSystem.Controllers
             }
             return RedirectToAction("UserDirectory");
         }
+
         [HttpGet("CreateShipment")]
         public async Task<IActionResult> CreateShipment(string prefillId, int? requestId)
         {
@@ -229,7 +223,6 @@ namespace DeliveryTrackingSystem.Controllers
                     req.Status = "Approved";
                     req.IsCompleted = true;
                     await _context.SaveChangesAsync();
-
                     model.SenderId = req.UserId;
                     model.Notes = $"[AUTO-PREFILL] Description: {req.PackageDescription} | To: {req.DropoffAddress}";
                 }
@@ -244,24 +237,43 @@ namespace DeliveryTrackingSystem.Controllers
 
         [HttpPost("CreateShipment")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateShipment(Shipment model, string SenderManualName, string ReceiverManualName, bool IsFragile, string Notes)
+        public async Task<IActionResult> CreateShipment(Shipment model, string? SenderManualName, string? ReceiverManualName, bool IsFragile, string? Notes)
         {
-            var courier = await _userManager.GetUserAsync(User);
             model.TrackingCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
             model.CreatedAt = DateTime.UtcNow;
-            model.CourierId = courier.Id;
-            model.IsFragile = IsFragile;
-            model.Notes = $"[S: {SenderManualName}] [R: {ReceiverManualName}] | {Notes}";
+            model.CourierId = _userManager.GetUserId(User);
 
             var status = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
             model.StatusId = status?.StatusId ?? 1;
 
+            ModelState.Remove("TrackingCode");
+            ModelState.Remove("Sender");
+            ModelState.Remove("Receiver");
+            ModelState.Remove("Courier");
+            ModelState.Remove("Status");
+            ModelState.Remove("DeliveryRoute");
+            ModelState.Remove("StatusHistory");
+            ModelState.Remove("Ratings");
+            ModelState.Remove("SenderManualName");
+            ModelState.Remove("ReceiverManualName");
+            ModelState.Remove("Notes");
+
+            model.IsFragile = IsFragile;
+            model.Notes = $"[S: {SenderManualName}] [R: {ReceiverManualName}] | {Notes}";
+
             if (ModelState.IsValid)
             {
-                _context.Shipments.Add(model);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"MANIFEST {model.TrackingCode} AUTHORIZED.";
-                return RedirectToAction("Active");
+                try
+                {
+                    _context.Shipments.Add(model);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Shipment Created Successfully!";
+                    return RedirectToAction("Active");
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Database Error: " + ex.Message);
+                }
             }
 
             ViewBag.Offices = await _context.Offices.Where(o => o.IsActive).ToListAsync();
