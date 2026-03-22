@@ -1,41 +1,111 @@
 ﻿@model IEnumerable<Cargobell.Shared.Models.Shipment>
 @{
-    Layout = "_CourierLayout"; ViewData["Title"] = "Package History";
+    Layout = "_CourierLayout";
+    ViewData["Title"] = "Archived Manifests";
 }
 
-<div class="mb-5 d-flex justify-content-between align-items-end">
+<div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h2 class="text-gold fw-bold mb-1">ARCHIVED MANIFESTS</h2>
-        <p class="text-secondary small text-uppercase">Complete Historical Record</p>
+        <h2 class="text-gold fw-bold mb-0">MANIFEST HISTORY</h2>
+        <span class="text-muted small text-uppercase">Archived records and settled freight</span>
     </div>
-    <form method="get" class="d-flex gap-2 w-50">
-        <input type="text" name="searchTerm" class="form-control bg-black text-white border-secondary" placeholder="SEARCH HISTORY...">
-        <button type="submit" class="btn btn-outline-gold">FILTER</button>
+    <div class="text-end">
+        <span class="text-gold small d-block">TOTAL ARCHIVED</span>
+        <h4 class="text-white fw-bold mb-0">@Model.Count()</h4>
+    </div>
+</div>
+
+<div class="mb-4">
+    <form method="get" action="/CourierPanel/History" class="d-flex gap-2 w-50">
+        <input type="text" name="searchTerm" class="form-control bg-black text-white border-secondary rounded-0"
+               placeholder="SEARCH BY NAME OR PHONE..." value="@Context.Request.Query["searchTerm"]">
+        <button type="submit" class="btn btn-outline-gold px-4 rounded-0">QUERY</button>
     </form>
 </div>
 
-<div class="table-responsive terminal-border">
-    <table class="table table-dark mb-0">
-        <thead class="text-gold small uppercase">
-            <tr>
-                <th>CODE</th>
-                <th>DELIVERED</th>
-                <th>SENDER</th>
+<div class="terminal-border overflow-hidden">
+    <table class="table table-dark table-luxury mb-0">
+        <thead>
+            <tr class="text-uppercase small text-muted">
+                <th class="ps-4">TRACKING ID</th>
                 <th>RECEIVER</th>
-                <th>PRICE</th>
+                <th>COMPLETED DATE</th>
+                <th>HUB</th>
+                <th class="text-end pe-4">COD SETTLED</th>
             </tr>
         </thead>
         <tbody>
+            @if (!Model.Any())
+            {
+                <tr><td colspan="5" class="text-center py-4 text-muted small">NO ARCHIVED RECORDS FOUND.</td></tr>
+            }
             @foreach (var item in Model)
             {
-                <tr class="border-secondary">
-                    <td class="text-gold fw-bold">@item.TrackingCode</td>
-                    <td class="text-muted small">@item.DeliveredDate?.ToString("g")</td>
-                    <td class="small">@item.Sender?.PhoneNumber</td>
-                    <td class="small">@item.Receiver?.PhoneNumber</td>
-                    <td class="text-success fw-bold">$@item.CodAmount</td>
+                <tr style="cursor: pointer;" onclick="showHistoryDetail('@item.TrackingCode', '@item.Receiver?.FirstName @item.Receiver?.LastName', '@item.Receiver?.PhoneNumber', '@item.DeliveryRoute?.EndLocation', '@item.CodAmount', '@item.DeliveredDate?.ToString("f")')">
+                    <td class="ps-4 text-secondary">@item.TrackingCode</td>
+                    <td>
+                        <span class="text-white">@item.Receiver?.FirstName @item.Receiver?.LastName</span><br />
+                        <span class="text-muted small">@item.Receiver?.PhoneNumber</span>
+                    </td>
+                    <td class="text-muted">@(item.DeliveredDate?.ToString("dd MMM yyyy") ?? "N/A")</td>
+                    <td>@item.DeliveryRoute?.EndLocation</td>
+                    <td class="text-end pe-4 text-success fw-bold">$@item.CodAmount</td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
+
+<div class="modal fade" id="historyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-black border border-gold rounded-0">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-gold fw-bold">ARCHIVE READOUT</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <label class="text-muted small d-block">TRACKING CODE</label>
+                        <span id="hCode" class="text-gold fw-bold"></span>
+                    </div>
+                    <div class="col-6 text-end">
+                        <label class="text-muted small d-block">SETTLEMENT</label>
+                        <span id="hCod" class="text-success fw-bold"></span>
+                    </div>
+                    <div class="col-12 border-top border-secondary pt-2">
+                        <label class="text-muted small d-block">RECEIVER ENTITY</label>
+                        <span id="hName" class="text-white d-block"></span>
+                        <span id="hPhone" class="text-muted"></span>
+                    </div>
+                    <div class="col-12">
+                        <label class="text-muted small d-block">FINAL DESTINATION</label>
+                        <span id="hHub" class="text-white"></span>
+                    </div>
+                    <div class="col-12 border-top border-secondary pt-2">
+                        <label class="text-muted small d-block">COMPLETION TIMESTAMP</label>
+                        <span id="hDate" class="text-white"></span>
+                    </div>
+                </div>
+
+                <div class="alert alert-secondary bg-dark border-secondary rounded-0 mb-0 py-2">
+                    <small class="text-muted">STATUS: FILE IS READ-ONLY</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showHistoryDetail(code, name, phone, hub, cod, date) {
+            $('#hCode').text(code);
+            $('#hName').text(name);
+            $('#hPhone').text(phone);
+            $('#hHub').text(hub);
+            $('#hCod').text('$' + parseFloat(cod).toFixed(2));
+            $('#hDate').text(date);
+            new bootstrap.Modal(document.getElementById('historyModal')).show();
+        }
+    </script>
+}

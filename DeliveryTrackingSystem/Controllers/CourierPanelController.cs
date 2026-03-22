@@ -93,21 +93,20 @@ namespace DeliveryTrackingSystem.Controllers
         public async Task<IActionResult> UserDirectory(string searchTerm)
         {
             var usersQuery = _context.Users.AsQueryable();
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                usersQuery = usersQuery.Where(u => u.PhoneNumber.Contains(searchTerm) || u.FirstName.Contains(searchTerm));
-            }
+            var users = await _context.Users
+         .Select(u => new UserRequestViewModel
+         {
+             User = u,
+             RequestCount = _context.CourierRequests.Count(r => r.UserId == u.Id && !r.IsCompleted)
+         }).ToListAsync();
 
-            var users = await usersQuery.ToListAsync();
-            var viewModelList = new List<UserRequestViewModel>();
+            ViewBag.AllRequests = await _context.CourierRequests
+                .Include(r => r.User)
+                .Where(r => !r.IsCompleted)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
 
-            foreach (var user in users)
-            {
-                var count = await _context.CourierRequests.CountAsync(r => r.UserId == user.Id && !r.IsCompleted);
-                viewModelList.Add(new UserRequestViewModel { User = user, RequestCount = count });
-            }
-
-            return View(viewModelList);
+            return View(users);
         }
 
         [HttpGet("ViewRequests/{userId}")]

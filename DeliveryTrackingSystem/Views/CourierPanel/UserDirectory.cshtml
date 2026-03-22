@@ -1,34 +1,69 @@
 ﻿@model IEnumerable<DeliveryTrackingSystem.Controllers.UserRequestViewModel>
 @{
-    Layout = "_CourierLayout"; ViewData["Title"] = "Directory";
+    Layout = "_CourierLayout";
 }
 
-<div class="mb-5">
-    <h2 class="text-gold fw-bold mb-1">ENTITY DIRECTORY</h2>
-    <p class="text-secondary small text-uppercase">Search Entities & Monitor Service Requests</p>
+<div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+        <h2 class="text-gold mb-0">ENTITY DIRECTORY</h2>
+        <p class="text-secondary small text-uppercase mb-0">System Manifests & Active Service Requests</p>
+    </div>
 </div>
 
-<div class="row g-4">
-    @foreach (var vm in Model)
-    {
-        <div class="col-xl-4 col-md-6">
-            <div class="terminal-border p-4" style="border-left: 3px solid #D4AF37;">
-                <h6 class="text-white fw-bold text-uppercase mb-1">@vm.User.FirstName @vm.User.LastName</h6>
-                <p class="text-muted small mb-3">@vm.User.PhoneNumber</p>
+<div class="mb-4 d-flex gap-2">
+    <div class="search-container d-flex align-items-center flex-grow-1" style="max-width: 400px; border: 1px solid #444; background: rgba(255,255,255,0.05); padding: 5px 15px;">
+        <i class="bi bi-search text-muted me-2"></i>
+        <input type="text" class="search-input w-100" style="background:transparent; border:none; color:white; outline:none;" placeholder="SEARCH ENTITY...">
+    </div>
+    <button class="btn btn-outline-gold px-4">FILTER</button>
+</div>
 
-                @if (vm.RequestCount > 0)
-                {
-                    <a href="/CourierPanel/ViewRequests/@vm.User.Id" class="btn btn-gold w-100 fw-bold">
-                        COURIER REQUESTS (@vm.RequestCount)
-                    </a>
-                }
-                else
-                {
-                    <button class="btn btn-outline-secondary w-100 disabled" style="opacity: 0.4;">
-                        COURIER REQUESTS (0)
-                    </button>
-                }
-            </div>
-        </div>
-    }
+<div class="table-responsive">
+    <table class="table-luxury">
+        <thead>
+            <tr>
+                <th style="width: 30%">ENTITY</th>
+                <th style="width: 70%">PENDING REQUESTS</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var vm in Model)
+            {
+                <tr>
+                    <td class="align-top">
+                        <div class="fw-bold text-white mb-1">@vm.User.FirstName @vm.User.LastName</div>
+                        <div class="text-muted small">@vm.User.PhoneNumber</div>
+                    </td>
+                    <td>
+                        @if (vm.RequestCount > 0)
+                        {
+                            @foreach (var req in (List<Cargobell.Shared.Models.CourierRequest>)ViewBag.AllRequests)
+                            {
+                                if (req.UserId == vm.User.Id)
+                                {
+                                    <div class="request-box d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="text-white small fw-bold d-block">@req.PackageDescription</span>
+                                            <span class="text-muted" style="font-size: 0.7rem;">FROM: @req.PickupAddress → TO: @req.DropoffAddress</span>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <a href="/CourierPanel/CreateShipment?requestId=@req.CourierRequestId" class="btn btn-gold btn-sm py-1">APPROVE</a>
+                                            <form action="/CourierPanel/RejectRequest" method="post" class="d-inline">
+                                                <input type="hidden" name="requestId" value="@req.CourierRequestId" />
+                                                <button type="submit" class="btn btn-outline-danger btn-sm border-0" style="font-size: 1.1rem;"><i class="bi bi-x-circle"></i></button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted small opacity-50">NO ACTIVE SERVICE REQUESTS</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
