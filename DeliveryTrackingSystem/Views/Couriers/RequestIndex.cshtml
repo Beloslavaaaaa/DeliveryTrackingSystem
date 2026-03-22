@@ -27,105 +27,106 @@
     <div class="mt-4">
         @if (activeTab == "active")
         {
-                <div class="row g-4">
+            <div class="row g-4">
                 @if (activeRequests.Any())
                 {
                     @foreach (var req in activeRequests)
                     {
-                                <div class="col-md-6">
-                                    <div class="card bg-dark border-secondary p-3 h-100 shadow">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <span class="badge border border-gold text-gold mb-2" style="font-size: 0.6rem;">@req.Status.ToUpper()</span>
-                                                <h6 class="text-white fw-bold">@req.PackageDescription</h6>
-                                                <p class="text-secondary small mb-1"><i class="bi bi-arrow-up-circle text-gold me-1"></i> @req.PickupAddress</p>
-                                                <p class="text-secondary small mb-3"><i class="bi bi-arrow-down-circle text-info me-1"></i> @req.DropoffAddress</p>
+                        <div class="col-md-6">
+                            <div class="card bg-dark border-secondary p-3 h-100 shadow">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <span class="badge border border-gold text-gold mb-2" style="font-size: 0.6rem;">@req.Status.ToUpper()</span>
+                                        <h6 class="text-white fw-bold">@req.PackageDescription</h6>
+                                        <p class="text-secondary small mb-1"><i class="bi bi-arrow-up-circle text-gold me-1"></i> @req.PickupAddress</p>
+                                        <p class="text-secondary small mb-3"><i class="bi bi-arrow-down-circle text-info me-1"></i> @req.DropoffAddress</p>
 
                                         @if (req.Status == "Pending")
                                         {
-                                                        <form asp-action="Cancel" method="post">
-                                                            <input type="hidden" name="id" value="@req.CourierRequestId" />
-                                                            <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size: 0.7rem;">CANCEL REQUEST</button>
-                                                        </form>
+                                            <form action="/Couriers/Cancel/@req.CourierRequestId" method="post">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size: 0.7rem;">CANCEL REQUEST</button>
+                                            </form>
                                         }
-                                            </div>
-                                            <div class="text-end text-gold small fw-bold">
+                                    </div>
+                                    <div class="text-end text-gold small fw-bold">
                                         @req.PreferredPickupTime.ToString("HH:mm")<br />
-                                                <span class="text-secondary">@req.PreferredPickupTime.ToString("MMM dd")</span>
-                                            </div>
-                                        </div>
+                                        <span class="text-secondary">@req.PreferredPickupTime.ToString("MMM dd")</span>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
                     }
                 }
                 else
                 {
-                        <div class="col-12 text-center py-5 border border-secondary border-dashed rounded" style="border-style: dashed !important;">
-                            <p class="text-secondary mb-0 small uppercase">No active dispatch requests found.</p>
-                        </div>
+                    <div class="col-12 text-center py-5 border border-secondary border-dashed rounded" style="border-style: dashed !important;">
+                        <p class="text-secondary mb-0 small uppercase">No active dispatch requests found.</p>
+                    </div>
                 }
-                </div>
+            </div>
         }
         else if (activeTab == "finished")
         {
             @if (finishedRequests.Any())
             {
-                        <div class="table-responsive border border-secondary rounded">
-                            <table class="table table-dark mb-0 small">
-                                <thead>
-                                    <tr class="text-gold">
-                                        <th class="ps-4 py-3">DATE</th>
-                                        <th>DESCRIPTION</th>
-                                        <th>DESTINATION</th>
-                                        <th class="pe-4 text-end">STATUS</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                <div class="table-responsive border border-secondary rounded">
+                    <table class="table table-dark mb-0 small">
+                        <thead>
+                            <tr class="text-gold">
+                                <th class="ps-4 py-3">DATE</th>
+                                <th>DESCRIPTION</th>
+                                <th>DESTINATION</th>
+                                <th class="pe-4 text-end">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                             @foreach (var req in finishedRequests)
                             {
-                                            <tr>
-                                                <td class="ps-4">@req.CreatedAt.ToString("yyyy-MM-dd")</td>
-                                                <td>@req.PackageDescription</td>
-                                                <td>@req.DropoffAddress</td>
-                                                <td class="pe-4 text-end">
-                                                    <span class="@(req.Status == "Cancelled" ? "text-danger" : "text-success") small uppercase">@req.Status</span>
-                                                </td>
-                                            </tr>
+                                <tr>
+                                    <td class="ps-4">@req.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                    <td>@req.PackageDescription</td>
+                                    <td>@req.DropoffAddress</td>
+                                    <td class="pe-4 text-end">
+                                        <span class="@(req.Status == "Cancelled" ? "text-danger" : "text-success") small uppercase">@req.Status</span>
+                                    </td>
+                                </tr>
                             }
-                                </tbody>
-                            </table>
-                        </div>
+                        </tbody>
+                    </table>
+                </div>
             }
         }
         else if (activeTab == "create")
         {
-                <div class="row justify-content-center">
-                    <div class="col-md-7">
-                        <div class="card bg-dark border-gold p-4">
-                            <form asp-action="Create" method="post">
-                                <div class="mb-3">
-                                    <label class="text-gold small fw-bold mb-2">DESCRIPTION</label>
-                                    <input name="PackageDescription" class="form-control bg-transparent text-white border-secondary" placeholder="What are we moving?" required />
+            <div class="row justify-content-center">
+                <div class="col-md-7">
+                    <div class="card bg-dark border-gold p-4">
+                        <form action="/Couriers/Create" method="post">
+                            @Html.AntiForgeryToken()
+                            <div class="mb-3">
+                                <label class="text-gold small fw-bold mb-2">DESCRIPTION</label>
+                                <input name="PackageDescription" class="form-control bg-transparent text-white border-secondary" placeholder="What are we moving?" required />
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-gold small fw-bold mb-2">PICKUP LOCATION</label>
+                                    <input name="PickupAddress" class="form-control bg-transparent text-white border-secondary" required />
                                 </div>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="text-gold small fw-bold mb-2">PICKUP LOCATION</label>
-                                        <input name="PickupAddress" class="form-control bg-transparent text-white border-secondary" required />
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="text-gold small fw-bold mb-2">DROPOFF LOCATION</label>
-                                        <input name="DropoffAddress" class="form-control bg-transparent text-white border-secondary" required />
-                                    </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-gold small fw-bold mb-2">DROPOFF LOCATION</label>
+                                    <input name="DropoffAddress" class="form-control bg-transparent text-white border-secondary" required />
                                 </div>
-                                <div class="mb-4">
-                                    <label class="text-gold small fw-bold mb-2">PICKUP TIME</label>
-                                    <input name="PreferredPickupTime" type="datetime-local" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" class="form-control bg-transparent text-white border-secondary" required />
-                                </div>
-                                <button type="submit" class="btn btn-gold w-100 py-3 fw-bold">SEND DISPATCH REQUEST</button>
-                            </form>
-                        </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="text-gold small fw-bold mb-2">PICKUP TIME</label>
+                                <input name="PreferredPickupTime" type="datetime-local" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" class="form-control bg-transparent text-white border-secondary" required />
+                            </div>
+                            <button type="submit" class="btn btn-gold w-100 py-3 fw-bold">SEND DISPATCH REQUEST</button>
+                        </form>
                     </div>
                 </div>
+            </div>
         }
     </div>
 </div>
