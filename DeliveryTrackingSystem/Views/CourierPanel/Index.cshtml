@@ -11,38 +11,27 @@
     </div>
 </div>
 
-<div class="row g-4 mb-5">
-    <div class="col-md-4">
-        <div class="p-4 terminal-border bg-dark">
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="p-4 terminal-border bg-dark" style="border-left: 4px solid #D4AF37;">
             <span class="text-secondary small fw-bold text-uppercase">Active Assignments</span>
-            <h1 class="text-gold fw-bold mb-0">@ViewBag.MyActive</h1>
-            <a href="/CourierPanel/Shipments?filter=active" class="btn btn-sm btn-outline-secondary mt-3">VIEW MANIFESTS</a>
+            <h1 class="text-gold fw-bold mb-0">@ViewBag.ActiveCount</h1>
+            <p class="small text-muted mt-2 mb-0">CURRENTLY IN MANIFEST</p>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="p-4 terminal-border bg-dark">
-            <span class="text-secondary small fw-bold text-uppercase">Regional Pickups</span>
-            <h1 class="text-white fw-bold mb-0">@ViewBag.Available</h1>
-            <a href="/CourierPanel/Shipments?filter=available" class="btn btn-sm btn-outline-secondary mt-3">SCAN HUB</a>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="p-4 terminal-border bg-dark">
-            <span class="text-secondary small fw-bold text-uppercase">COD Collected</span>
+
+    <div class="col-md-6">
+        <div class="p-4 terminal-border bg-dark" style="border-left: 4px solid #198754;">
+            <span class="text-secondary small fw-bold text-uppercase">Revenue Collected</span>
             <h1 class="text-success fw-bold mb-0">@ViewBag.TotalCollected.ToString("C")</h1>
-            <span class="small text-muted">PENDING SETTLEMENT</span>
+            <span class="small text-muted">SETTLED FROM COMPLETED DELIVERIES</span>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-12">
-        <div class="p-5 terminal-border bg-black text-center">
-            <h4 class="text-gold mb-3">QUICK ACTIONS</h4>
-            <div class="d-flex justify-content-center gap-3">
-                <a href="/CourierPanel/CreateShipment" class="btn btn-gold px-5 py-3">CREATE NEW SHIPMENT</a>
-                <a href="/CourierPanel/Users" class="btn btn-outline-light px-5 py-3">SEARCH USER DATABASE</a>
-            </div>
-        </div>
-    </div>
+<div class="mt-5 pt-5 border-top border-secondary">
+    <p class="text-muted small">
+        <i class="bi bi-info-circle me-2"></i>
+        USE THE LATERAL NAVIGATION BAR TO ACCESS ACTIVE MANIFESTS OR USER DIRECTORY.
+    </p>
 </div>

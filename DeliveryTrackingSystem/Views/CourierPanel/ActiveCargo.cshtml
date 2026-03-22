@@ -1,0 +1,49 @@
+﻿@model IEnumerable<Cargobell.Shared.Models.Shipment>
+@{
+    Layout = "_CourierLayout"; ViewData["Title"] = "Active Cargo";
+}
+
+<div class="mb-5 d-flex justify-content-between align-items-end">
+    <div>
+        <h2 class="text-gold fw-bold mb-1">ACTIVE CARGO</h2>
+        <p class="text-secondary small text-uppercase">Manifests currently in transit</p>
+    </div>
+    <form method="get" action="/CourierPanel/Active" class="d-flex gap-2 w-50">
+        <input type="text" name="searchTerm" class="form-control bg-black text-white border-secondary" placeholder="SEARCH PHONE / CODE...">
+        <button type="submit" class="btn btn-outline-gold">FILTER</button>
+    </form>
+</div>
+
+<div class="row g-4">
+    @if (!Model.Any())
+    {
+        <div class="col-12 text-center py-5 terminal-border">
+            <span class="text-muted small">NO ACTIVE CARGO ASSIGNED TO THIS UNIT.</span>
+        </div>
+    }
+    @foreach (var item in Model)
+    {
+        <div class="col-md-6">
+            <div class="terminal-border p-4 bg-dark" style="border-top: 2px solid #D4AF37;">
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-gold fw-bold">#@item.TrackingCode</span>
+                    <span class="badge border border-gold text-gold">@item.Status?.Name</span>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <label class="text-muted small d-block uppercase">Receiver</label>
+                        <span class="text-white">@item.Receiver?.PhoneNumber</span>
+                    </div>
+                    <div class="col-6 text-end">
+                        <label class="text-muted small d-block uppercase">COD Due</label>
+                        <span class="text-success fw-bold">$@item.CodAmount</span>
+                    </div>
+                </div>
+                <form action="/CourierPanel/MarkDelivered" method="post">
+                    <input type="hidden" name="shipmentId" value="@item.ShipmentId" />
+                    <button type="submit" class="btn btn-gold w-100">CONFIRM DELIVERY</button>
+                </form>
+            </div>
+        </div>
+    }
+</div>

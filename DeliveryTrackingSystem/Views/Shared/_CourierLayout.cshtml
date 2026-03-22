@@ -3,51 +3,120 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Cargobell Terminal</title>
+    <title>@ViewData["Title"] - Cargobell</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
-        body { background-color: #050505; color: #e0e0e0; font-family: 'Segoe UI', monospace; }
-        .sidebar { min-height: 100vh; border-right: 1px solid #D4AF37; background: #0a0a0a; position: fixed; }
-        .nav-link { color: #888; border-left: 3px solid transparent; transition: 0.3s; margin-bottom: 5px; text-transform: uppercase; font-size: 0.85rem; }
-        .nav-link:hover, .nav-link.active { color: #D4AF37; background: rgba(212, 175, 55, 0.05); border-left: 3px solid #D4AF37; }
-        .terminal-border { border: 1px solid #333; border-radius: 0; }
-        .text-gold { color: #D4AF37; }
-        .btn-gold { background: #D4AF37; color: black; border-radius: 0; font-weight: bold; }
-        main { margin-left: 16.666667%; }
-        .animate-fade-in { animation: fadeIn 0.5s; }
-        @Html.Raw("@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }")
+        body {
+            background-color: #050505;
+            color: #e0e0e0;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+            font-size: 0.9rem;
+        }
+
+        /* Reduced sidebar width from 16% to 200px for better scaling */
+        .sidebar {
+            min-height: 100vh;
+            border-right: 1px solid #D4AF37;
+            background: #0a0a0a;
+            position: fixed;
+            width: 200px;
+            z-index: 100;
+        }
+
+        .nav-link {
+            color: #888;
+            border-left: 3px solid transparent;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            padding: 12px 15px;
+            letter-spacing: 1px;
+        }
+
+            .nav-link:hover, .nav-link.active {
+                color: #D4AF37;
+                border-left: 3px solid #D4AF37;
+                background: #111;
+            }
+
+        .terminal-border {
+            border: 1px solid #222;
+        }
+
+        .text-gold {
+            color: #D4AF37;
+        }
+
+        /* Adjusted main margin to match fixed sidebar width */
+        main {
+            margin-left: 200px;
+            padding: 40px !important;
+        }
+
+        .btn-gold {
+            background: #D4AF37;
+            color: black;
+            border-radius: 0;
+            font-weight: bold;
+            border: none;
+            font-size: 0.8rem;
+        }
+
+        .alert {
+            border-radius: 0;
+            font-size: 0.8rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+        /* Slightly smaller headers */
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <nav class="col-md-2 sidebar py-4">
-                <div class="px-3 mb-5">
-                    <h4 class="text-gold fw-bold mb-0">CARGOBELL</h4>
-                    <span class="small text-secondary">COURIER TERMINAL v3.1</span>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <nav class="sidebar py-4 d-flex flex-column">
+                <div class="px-3 mb-4">
+                    <h5 class="text-gold fw-bold mb-0">CARGOBELL</h5>
+                    <span class="small text-muted" style="font-size: 0.65rem;">TERMINAL v3.5</span>
                 </div>
-                <div class="nav flex-column">
-                    <a class="nav-link py-3" href="/CourierPanel">DASHBOARD</a>
-                    <a class="nav-link py-3" href="/CourierPanel/CreateShipment">NEW MANIFEST</a>
-                    <a class="nav-link py-3" href="/CourierPanel/Shipments?filter=active">ACTIVE CARGO</a>
-                    <a class="nav-link py-3" href="/CourierPanel/Shipments?filter=available">FIND PICKUPS</a>
-                    <a class="nav-link py-3" href="/CourierPanel/Users">DIRECTORY</a>
-                    <hr class="border-secondary mx-3">
-                    <form asp-area="Identity" asp-page="/Account/Logout" method="post">
-                        <button type="submit" class="nav-link py-3 bg-transparent border-0 w-100 text-start text-danger">LOGOUT</button>
+
+                <div class="nav flex-column mb-auto">
+                    @{
+                        var currentPath = Context.Request.Path.Value ?? "";
+                    }
+
+                    <a class="nav-link @(currentPath == "/CourierPanel" ? "active" : "")" href="/CourierPanel">
+                        <i class="bi bi-speedometer2 me-2"></i> DASHBOARD
+                    </a>
+
+                    <a class="nav-link @(currentPath.Contains("/Active") ? "active" : "")" href="/CourierPanel/Active">
+                        <i class="bi bi-box-seam me-2"></i> ACTIVE CARGO
+                    </a>
+
+                    <a class="nav-link @(currentPath.Contains("/History") ? "active" : "")" href="/CourierPanel/History">
+                        <i class="bi bi-clock-history me-2"></i> HISTORY
+                    </a>
+
+                    <a class="nav-link @(currentPath.Contains("/Users") ? "active" : "")" href="/CourierPanel/Users">
+                        <i class="bi bi-people me-2"></i> DIRECTORY
+                    </a>
+                </div>
+
+                <div class="px-3 mt-auto mb-4">
+                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                        <button type="submit" class="btn btn-outline-danger w-100 btn-sm text-uppercase fw-bold" style="font-size: 0.65rem;">Terminate Session</button>
                     </form>
                 </div>
             </nav>
 
-            <main class="col-md-10 px-md-5 py-5">
+            <main>
                 @if (TempData["SuccessMessage"] != null)
                 {
-                    <div class="position-fixed top-0 end-0 p-4" style="z-index: 1050;">
-                        <div class="terminal-border bg-black p-3 animate-fade-in" style="border-left: 5px solid #28a745;">
-                            <strong class="text-success d-block small fw-bold">SYSTEM CONFIRMATION</strong>
-                            <span class="text-white small">@TempData["SuccessMessage"]</span>
-                        </div>
+                    <div class="alert alert-success bg-black text-success border-success mb-4">
+                        SYSTEM: @TempData["SuccessMessage"]
                     </div>
                 }
                 @RenderBody()
@@ -56,9 +125,6 @@
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        setTimeout(function() { $('.animate-fade-in').fadeOut(); }, 4000);
-    </script>
-    @await RenderSectionAsync("Scripts", required: false)
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

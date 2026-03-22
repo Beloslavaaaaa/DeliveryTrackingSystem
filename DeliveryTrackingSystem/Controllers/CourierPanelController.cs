@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Cargobell.Data.Data;
 using Cargobell.Shared.Models;
+using Cargobell.Shared.ViewModels;
 
 namespace DeliveryTrackingSystem.Controllers
 {
@@ -26,8 +27,9 @@ namespace DeliveryTrackingSystem.Controllers
             var userId = _userManager.GetUserId(User);
             var user = await _userManager.GetUserAsync(User);
 
-            ViewBag.MyActive = await _context.Shipments.CountAsync(s => s.CourierId == userId && s.Status.Name != "Delivered");
-            ViewBag.Available = await _context.Shipments.CountAsync(s => s.CourierId == null && s.Status.Name == "Ready For Pickup");
+            ViewBag.ActiveCount = await _context.Shipments
+                .CountAsync(s => s.CourierId == userId && s.Status.Name != "Delivered");
+
             ViewBag.TotalCollected = await _context.Shipments
                 .Where(s => s.CourierId == userId && s.Status.Name == "Delivered" && s.IsCashOnDelivery)
                 .SumAsync(s => s.CodAmount);
@@ -35,109 +37,97 @@ namespace DeliveryTrackingSystem.Controllers
             return View(user);
         }
 
-        [HttpGet("Shipments")]
-        public async Task<IActionResult> ManageShipments(string filter)
+        [HttpGet("Active")]
+        public async Task<IActionResult> ActiveCargo(string searchTerm)
         {
             var userId = _userManager.GetUserId(User);
-            IQueryable<Shipment> query = _context.Shipments
-                .Include(s => s.Status)
-                .Include(s => s.DeliveryRoute)
-                .Include(s => s.Receiver);
+            var query = _context.Shipments
+                .Include(s => s.Status).Include(s => s.Sender).Include(s => s.Receiver)
+                .Where(s => s.CourierId == userId && s.Status.Name != "Delivered");
 
-            if (filter == "active")
+            if (!string.IsNullOrEmpty(searchTerm))
             {
-                query = query.Where(s => s.CourierId == userId && s.Status.Name != "Delivered");
-            }
-            else
-            {
-                query = query.Where(s => s.CourierId == null);
+                query = query.Where(s => s.TrackingCode.Contains(searchTerm) || s.Receiver.PhoneNumber.Contains(searchTerm));
             }
 
-            return View("ManageShipments", await query.ToListAsync());
+            return View(await query.OrderByDescending(s => s.CreatedAt).ToListAsync());
         }
 
-        [HttpPost("ClaimShipment")]
-        public async Task<IActionResult> ClaimShipment(int shipmentId)
+        [HttpGet("History")]
+        public async Task<IActionResult> PackageHistory(string searchTerm)
+        {
+            var userId = _userManager.GetUserId(User);
+            var query = _context.Shipments
+                .Include(s => s.Status).Include(s => s.Sender).Include(s => s.Receiver)
+                .Where(s => s.CourierId == userId && s.Status.Name == "Delivered");
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(s => s.TrackingCode.Contains(searchTerm) || s.Receiver.PhoneNumber.Contains(searchTerm));
+            }
+
+            return View(await query.OrderByDescending(s => s.DeliveredDate ?? s.CreatedAt).ToListAsync());
+        }
+
+        [HttpPost("MarkDelivered")]
+        public async Task<IActionResult> MarkDelivered(int shipmentId)
         {
             var shipment = await _context.Shipments.FindAsync(shipmentId);
-            if (shipment != null)
-            {
-                shipment.CourierId = _userManager.GetUserId(User);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "ASSIGNMENT CLAIMED SUCCESSFULLY.";
-            }
-            return RedirectToAction("ManageShipments", new { filter = "active" });
-        }
-
-        [HttpPost("UpdateStatus")]
-        public async Task<IActionResult> UpdateStatus(int shipmentId, string statusName)
-        {
-            var shipment = await _context.Shipments.Include(s => s.Status).FirstOrDefaultAsync(s => s.ShipmentId == shipmentId);
-            var status = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == statusName);
-
+            var status = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "Delivered");
             if (shipment != null && status != null)
             {
                 shipment.StatusId = status.StatusId;
-                _context.StatusHistories.Add(new StatusHistory
-                {
-                    ShipmentId = shipmentId,
-                    StatusId = status.StatusId,
-                    Timestamp = DateTime.UtcNow,
-                    Note = $"Status updated to {statusName}"
-                });
+                shipment.DeliveredDate = DateTime.UtcNow;
                 await _context.SaveChangesAsync();
-                return Ok();
+                TempData["SuccessMessage"] = "SHIPMENT ARCHIVED TO HISTORY.";
             }
-            return BadRequest();
+            return RedirectToAction("Active");
         }
 
         [HttpGet("Users")]
         public async Task<IActionResult> UserDirectory(string searchTerm)
         {
-            var query = _context.Users.AsQueryable();
+            var usersQuery = _context.Users.AsQueryable();
             if (!string.IsNullOrEmpty(searchTerm))
             {
-                query = query.Where(u => u.FirstName.Contains(searchTerm) || u.LastName.Contains(searchTerm) || u.PhoneNumber.Contains(searchTerm));
+                usersQuery = usersQuery.Where(u => u.PhoneNumber.Contains(searchTerm) || u.FirstName.Contains(searchTerm));
             }
-            return View("UserDirectory", await query.ToListAsync());
-        }
 
-        [HttpGet("GetUserByPhone")]
-        public async Task<IActionResult> GetUserByPhone(string phone)
-        {
-            var user = await _context.Users
-                .Where(u => u.PhoneNumber == phone)
-                .Select(u => new { u.Id, u.FirstName, u.LastName, u.Email })
-                .FirstOrDefaultAsync();
-            return Json(user);
-        }
+            var users = await usersQuery.ToListAsync();
+            var viewModelList = new List<UserRequestViewModel>();
 
-        [HttpGet("GetRouteDetails")]
-        public async Task<IActionResult> GetRouteDetails(int startId, int endId)
-        {
-            var start = await _context.Offices.FindAsync(startId);
-            var end = await _context.Offices.FindAsync(endId);
-
-            if (start == null || end == null) return NotFound();
-
-            var route = await _context.DeliveryRoutes
-                .FirstOrDefaultAsync(r => r.StartLocation == start.Name && r.EndLocation == end.Name);
-
-            if (route == null)
+            foreach (var user in users)
             {
-                route = new DeliveryRoute
-                {
-                    StartLocation = start.Name,
-                    EndLocation = end.Name,
-                    Price = startId == endId ? 5.00m : 15.00m,
-                    DistanceKm = 10.0,
-                    EstimatedTimeHours = 2.0
-                };
-                _context.DeliveryRoutes.Add(route);
-                await _context.SaveChangesAsync();
+                var count = await _context.CourierRequests.CountAsync(r => r.UserId == user.Id && !r.IsCompleted);
+                viewModelList.Add(new UserRequestViewModel { User = user, RequestCount = count });
             }
 
-            return Json(new { id = route.DeliveryRouteId, display = $"{start.Name} to {end.Name}", price = route.Price });
+            return View(viewModelList);
+        }
+
+        [HttpGet("ViewRequests/{userId}")]
+        public async Task<IActionResult> ViewRequests(string userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            var requests = await _context.CourierRequests.Include(r => r.User)
+                .Where(r => r.UserId == userId && !r.IsCompleted).ToListAsync();
+
+            ViewBag.UserName = $"{user?.FirstName} {user?.LastName}";
+            return View(requests);
+        }
+
+        [HttpPost("ApproveRequest")]
+        public async Task<IActionResult> ApproveRequest(int requestId)
+        {
+            var req = await _context.CourierRequests.FindAsync(requestId);
+            if (req != null)
+            {
+                req.Status = "Approved";
+                req.IsCompleted = true;
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "REQUEST APPROVED.";
+            }
+            return RedirectToAction("Users");
         }
 
         [HttpGet("CreateShipment")]
@@ -175,12 +165,48 @@ namespace DeliveryTrackingSystem.Controllers
             {
                 _context.Shipments.Add(model);
                 await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"MANIFEST {model.TrackingCode} AUTHORIZED SUCCESSFULLY.";
-                return RedirectToAction("Index");
+                TempData["SuccessMessage"] = $"MANIFEST {model.TrackingCode} AUTHORIZED.";
+                return RedirectToAction("Active");
             }
 
             ViewBag.Offices = await _context.Offices.Where(o => o.IsActive).ToListAsync();
             return View(model);
+        }
+
+        [HttpGet("GetRouteDetails")]
+        public async Task<IActionResult> GetRouteDetails(int startId, int endId)
+        {
+            var start = await _context.Offices.FindAsync(startId);
+            var end = await _context.Offices.FindAsync(endId);
+            if (start == null || end == null) return NotFound();
+
+            var route = await _context.DeliveryRoutes
+                .FirstOrDefaultAsync(r => r.StartLocation == start.Name && r.EndLocation == end.Name);
+
+            if (route == null)
+            {
+                route = new DeliveryRoute
+                {
+                    StartLocation = start.Name,
+                    EndLocation = end.Name,
+                    Price = startId == endId ? 5.00m : 15.00m,
+                    DistanceKm = 10.0,
+                    EstimatedTimeHours = 2.0
+                };
+                _context.DeliveryRoutes.Add(route);
+                await _context.SaveChangesAsync();
+            }
+            return Json(new { id = route.DeliveryRouteId, display = $"{start.Name} to {end.Name}", price = route.Price });
+        }
+
+        [HttpGet("GetUserByPhone")]
+        public async Task<IActionResult> GetUserByPhone(string phone)
+        {
+            var user = await _context.Users
+                .Where(u => u.PhoneNumber == phone)
+                .Select(u => new { u.Id, u.FirstName, u.LastName, u.Email })
+                .FirstOrDefaultAsync();
+            return Json(user);
         }
     }
 }
