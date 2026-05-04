@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Http; 
+using System.ComponentModel.DataAnnotations;
 
 namespace Cargobell.Shared.ViewModels
 {
@@ -25,13 +26,14 @@ namespace Cargobell.Shared.ViewModels
 
         [Required(ErrorMessage = "Phone number is required")]
         [Phone]
-        [Display(Name = "Phone Number")]
-        [RegularExpression(@"^\+?[0-9]*$", ErrorMessage = "Invalid phone format. Only numbers and '+' allowed.")]
         public string PhoneNumber { get; set; }
 
         [Required]
         [DataType(DataType.Date)]
-        // FIXED: Added basic validation to prevent future dates
         public DateTime DateOfBirth { get; set; }
+
+        // FIXED: Field for the PDF/Image declaration
+        [Display(Name = "Parental Declaration (PDF/Image)")]
+        public IFormFile? DeclarationFile { get; set; }
     }
 }

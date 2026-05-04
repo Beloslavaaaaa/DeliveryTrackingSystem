@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-
+using Cargobell.Shared.Models;
 namespace Cargobell.Shared.ViewModels
 {
     public class DashboardViewModel

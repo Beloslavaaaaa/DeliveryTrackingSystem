@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Access Pending | Cargobell";
+}
+
+<div class="container py-5 mt-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="p-5 border-gold shadow-lg" style="background: rgba(10, 10, 10, 0.9); backdrop-filter: blur(15px); border: 1px solid #D4AF37;">
+                <i class="bi bi-shield-lock display-1 text-gold mb-4"></i>
+                
+                <h2 class="text-gold fw-bold mb-3 text-uppercase" style="letter-spacing: 3px;">Membership Pending</h2>
+                
+                <p class="text-white fs-5 mb-4">
+                    Thank you for joining the Cargobell network. Because you are under 18,
+                    our executive team must verify your parental declaration before your account is activated.
+                </p>
+                
+                <div class="p-3 mb-4 rounded" style="background: rgba(212, 175, 55, 0.1); border: 1px dashed #D4AF37;">
+                    <p class="text-gold small mb-0 text-uppercase" style="letter-spacing: 1px;">
+                        Current Status: <span class="fw-bold">Awaiting Courier Verification</span>
+                    </p>
+                </div>
+
+                <p class="text-secondary small mb-5">
+                    You will receive access to your command center once a courier reviews your documents at your first shipment or online.
+                    Providing false information will lead to immediate terminal lockout.
+                </p>
+
+                <div class="d-flex justify-content-center gap-3">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-gold px-5 py-3 fw-bold">RETURN TO HOME</a>
+                    <a asp-controller="Home" asp-action="Contact" class="btn btn-gold px-5 py-3 fw-bold">CONTACT SUPPORT</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

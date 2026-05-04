@@ -7,22 +7,12 @@
 
 <style>
     .iti { width: 100%; }
-    .iti__country-list {
-        background-color: #0a0a0a !important;
-        border: 1px solid #D4AF37 !important;
-        color: white !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-        z-index: 100;
-    }
+    .iti__country-list { background-color: #0a0a0a !important; border: 1px solid #D4AF37 !important; color: white !important; z-index: 100; }
     .iti__country:hover { background-color: #1a1a1a !important; }
-    .iti__selected-flag { background-color: rgba(255,255,255,0.05) !important; border-radius: 4px 0 0 4px; }
+    .iti__selected-flag { background-color: rgba(255,255,255,0.05) !important; }
     .iti__arrow { border-top-color: #D4AF37 !important; }
     input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
-    .form-control:focus {
-        background-color: #111 !important;
-        border-color: #D4AF37 !important;
-        box-shadow: 0 0 10px rgba(212, 175, 55, 0.3) !important;
-    }
+    .form-control:focus { background-color: #111 !important; border-color: #D4AF37 !important; box-shadow: 0 0 10px rgba(212, 175, 55, 0.3) !important; }
     .text-danger.small { font-size: 0.75rem; margin-top: 5px; display: block; }
 </style>
 
@@ -35,7 +25,7 @@
                     <p class="text-secondary small text-uppercase" style="letter-spacing: 2px;">Join the Global Elite</p>
                 </div>
 
-                <form asp-controller="Account" asp-action="Register" method="post" id="registerForm">
+                <form asp-controller="Account" asp-action="Register" method="post" id="registerForm" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
 
                     @if (!ViewData.ModelState.IsValid)
@@ -50,42 +40,44 @@
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <label asp-for="FirstName" class="form-label small text-gold">FIRST NAME</label>
-                            <input asp-for="FirstName" class="form-control bg-dark text-white border-secondary py-3"
-                                   placeholder="John" style="background-color: #111 !important;"
-                                   onkeydown="return /[a-zA-Z\s]/i.test(event.key) || event.key === 'Backspace' || event.key === 'Tab'" required />
+                            <input asp-for="FirstName" class="form-control bg-dark text-white border-secondary py-3" style="background-color: #111 !important;" required />
                             <span asp-validation-for="FirstName" class="text-danger small"></span>
                         </div>
                         <div class="col-md-6 mb-4">
                             <label asp-for="LastName" class="form-label small text-gold">LAST NAME</label>
-                            <input asp-for="LastName" class="form-control bg-dark text-white border-secondary py-3"
-                                   placeholder="Doe" style="background-color: #111 !important;"
-                                   onkeydown="return /[a-zA-Z\s]/i.test(event.key) || event.key === 'Backspace' || event.key === 'Tab'" required />
+                            <input asp-for="LastName" class="form-control bg-dark text-white border-secondary py-3" style="background-color: #111 !important;" required />
                             <span asp-validation-for="LastName" class="text-danger small"></span>
                         </div>
                     </div>
 
                     <div class="mb-4">
                         <label asp-for="Email" class="form-label small text-gold">EMAIL ADDRESS</label>
-                        <input asp-for="Email" class="form-control bg-dark text-white border-secondary py-3" placeholder="name@cargobell.com" style="background-color: #111 !important;" required />
+                        <input asp-for="Email" class="form-control bg-dark text-white border-secondary py-3" style="background-color: #111 !important;" required />
                         <span asp-validation-for="Email" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-4">
                         <label class="form-label small text-gold d-block">PHONE NUMBER</label>
-                        <input id="phone" type="tel"
-                               class="form-control bg-dark text-white border-secondary py-3"
-                               style="background-color: #111 !important;"
-                               onkeypress="return (event.charCode >= 48 && event.charCode <= 57)" required />
+                        <input id="phone" type="tel" class="form-control bg-dark text-white border-secondary py-3" style="background-color: #111 !important;" required />
                         <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                     </div>
 
-                   <div class="mb-4">
-    <label asp-for="DateOfBirth" class="form-label small text-gold">DATE OF BIRTH</label>
-    <input asp-for="DateOfBirth" type="date" 
-           class="form-control bg-dark text-white border-secondary py-3" 
-           style="background-color: #111 !important;" 
-           max="@DateTime.Now.ToString("yyyy-MM-dd")" required /> <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
-</div>
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <label asp-for="DateOfBirth" class="form-label small text-gold mb-0">DATE OF BIRTH</label>
+                            <i class="bi bi-info-circle ms-2 text-gold" style="cursor:help;" data-bs-toggle="tooltip" data-bs-placement="top" 
+                               title="If you are under 18 you should have a declaration signed by your parents or legal guardians. Entering a false date can be caught by a worker when asking for an id, which will result in terminating the account."></i>
+                        </div>
+                        <input asp-for="DateOfBirth" type="date" id="dobInput" class="form-control bg-dark text-white border-secondary py-3" 
+                               style="background-color: #111 !important;" max="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                        <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                    </div>
+
+                    <div id="declarationSection" style="display:none;" class="mb-4">
+                        <label asp-for="DeclarationFile" class="form-label small text-gold">PARENTAL DECLARATION (PDF/IMAGE)</label>
+                        <input asp-for="DeclarationFile" type="file" class="form-control bg-dark text-white border-secondary py-3" style="background-color: #111 !important;" />
+                        <span asp-validation-for="DeclarationFile" class="text-danger small"></span>
+                    </div>
 
                     <div class="mb-4">
                         <label asp-for="Password" class="form-label small text-gold">PASSWORD</label>
@@ -114,6 +106,12 @@
     <partial name="_ValidationScriptsPartial" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
     <script>
+        // Tooltip Initialization
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
         const phoneInputField = document.querySelector("#phone");
         const phoneInput = window.intlTelInput(phoneInputField, {
             preferredCountries: ["bg", "us", "gb", "de"],
@@ -121,13 +119,23 @@
             utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
         });
 
-        phoneInputField.addEventListener('input', function (e) {
-            this.value = this.value.replace(/[^0-9]/g, '');
+        // Toggle Declaration Section based on Age
+        document.getElementById('dobInput').addEventListener('change', function() {
+            const dob = new Date(this.value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) { age--; }
+
+            if (age < 18 && age >= 0) {
+                $('#declarationSection').slideDown();
+            } else {
+                $('#declarationSection').slideUp();
+            }
         });
 
         document.getElementById("registerForm").addEventListener("submit", function(e) {
-            const fullNumber = phoneInput.getNumber();
-            document.querySelector("#fullPhone").value = fullNumber;
+            document.querySelector("#fullPhone").value = phoneInput.getNumber();
         });
     </script>
 }

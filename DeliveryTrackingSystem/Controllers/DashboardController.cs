@@ -32,6 +32,10 @@ namespace DeliveryTrackingSystem.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return NotFound();
+
+            // FIXED: Check approval status for profile access
+            if (!user.IsApproved) return RedirectToAction("WaitingApproval", "Account");
+
             return View(user);
         }
 
@@ -39,6 +43,10 @@ namespace DeliveryTrackingSystem.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return NotFound();
+
+            // FIXED: Check approval status for settings access
+            if (!user.IsApproved) return RedirectToAction("WaitingApproval", "Account");
+
             return View(user);
         }
 
@@ -116,7 +124,7 @@ namespace DeliveryTrackingSystem.Controllers
                 return RedirectToAction("Profile", new { message = "Password Updated" });
             }
 
-            return View("Settings", user); 
+            return View("Settings", user);
         }
 
         [HttpGet("/Dashboard")]
@@ -124,7 +132,12 @@ namespace DeliveryTrackingSystem.Controllers
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
-            if (user == null) return Challenge();
+
+            // FIXED: If the user is under 18 and not yet approved, send them to the waiting page
+            if (!user.IsApproved)
+            {
+                return RedirectToAction("WaitingApproval", "Account");
+            }
 
             // If the user is a Courier, send them to their specific portal
             if (await _userManager.IsInRoleAsync(user, "Courier"))
