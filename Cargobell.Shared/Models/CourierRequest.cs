@@ -21,9 +21,19 @@ namespace Cargobell.Shared.Models
         [Required]
         public string PackageDescription { get; set; }
 
+        // --- НОВИ ПОЛЕТА ЗА ПРЕЦИЗНОСТ ---
+        [Required]
+        public string PackageType { get; set; } // Envelope, Small, Standard, Heavy
+
+        [Required]
+        public string DestinationZone { get; set; } // Domestic, EU, Global
+
+        public decimal EstimatedPrice { get; set; }
+        public bool IsFragile { get; set; }
+        // --------------------------------
+
         public DateTime PreferredPickupTime { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
         public bool IsCompleted { get; set; }
         public string Status { get; set; } = "Pending";
     }

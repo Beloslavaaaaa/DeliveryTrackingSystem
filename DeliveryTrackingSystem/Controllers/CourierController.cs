@@ -41,11 +41,29 @@ namespace DeliveryTrackingSystem.Controllers
             var userId = _userManager.GetUserId(User);
             if (string.IsNullOrEmpty(userId)) return Challenge();
 
-            courierRequest.UserId = userId;
-            courierRequest.CreatedAt = DateTime.Now;
-            courierRequest.Status = "Pending";
-            courierRequest.IsCompleted = false;
+            // Твоята логика от Pricing страницата:
+            decimal basePrice = courierRequest.PackageType switch
+            {
+                "Envelope" => 5,
+                "Small" => 15,
+                "Standard" => 35,
+                "Heavy" => 70,
+                _ => 5
+            };
 
+            decimal multiplier = courierRequest.DestinationZone switch
+            {
+                "Domestic" => 1,
+                "EU" => 2.5m,
+                "Global" => 5,
+                _ => 1
+            };
+
+            courierRequest.UserId = userId;
+            courierRequest.EstimatedPrice = basePrice * multiplier;
+            courierRequest.Status = "Pending";
+
+            // Премахваме навигационните свойства от проверката
             ModelState.Remove("UserId");
             ModelState.Remove("User");
 
