@@ -28,6 +28,13 @@ namespace DeliveryTrackingSystem.Controllers
         {
             if (ModelState.IsValid)
             {
+                // FIXED: Check if DateOfBirth is in the future
+                if (model.DateOfBirth > DateTime.Now)
+                {
+                    ModelState.AddModelError("DateOfBirth", "Date of birth cannot be in the future.");
+                    return View(model);
+                }
+
                 var existingEmail = await _userManager.FindByEmailAsync(model.Email);
                 if (existingEmail != null)
                 {

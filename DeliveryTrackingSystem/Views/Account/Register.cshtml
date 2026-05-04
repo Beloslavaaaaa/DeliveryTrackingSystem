@@ -79,11 +79,13 @@
                         <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
                     </div>
 
-                    <div class="mb-4">
-                        <label asp-for="DateOfBirth" class="form-label small text-gold">DATE OF BIRTH</label>
-                        <input asp-for="DateOfBirth" type="date" class="form-control bg-dark text-white border-secondary py-3" style="background-color: #111 !important;" required />
-                        <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
-                    </div>
+                   <div class="mb-4">
+    <label asp-for="DateOfBirth" class="form-label small text-gold">DATE OF BIRTH</label>
+    <input asp-for="DateOfBirth" type="date" 
+           class="form-control bg-dark text-white border-secondary py-3" 
+           style="background-color: #111 !important;" 
+           max="@DateTime.Now.ToString("yyyy-MM-dd")" required /> <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+</div>
 
                     <div class="mb-4">
                         <label asp-for="Password" class="form-label small text-gold">PASSWORD</label>

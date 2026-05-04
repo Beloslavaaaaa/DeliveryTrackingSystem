@@ -31,6 +31,7 @@ namespace Cargobell.Shared.ViewModels
 
         [Required]
         [DataType(DataType.Date)]
+        // FIXED: Added basic validation to prevent future dates
         public DateTime DateOfBirth { get; set; }
     }
 }
