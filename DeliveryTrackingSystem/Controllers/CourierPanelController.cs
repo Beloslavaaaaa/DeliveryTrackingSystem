@@ -142,39 +142,31 @@ namespace DeliveryTrackingSystem.Controllers
         [HttpPost("ApproveRequest")]
         public async Task<IActionResult> ApproveRequest(int requestId)
         {
-            var req = await _context.CourierRequests
-                .Include(r => r.User)
-                .FirstOrDefaultAsync(r => r.CourierRequestId == requestId);
-
+            var req = await _context.CourierRequests.FindAsync(requestId);
             if (req == null) return NotFound();
 
-            var status = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit")
-                         ?? await _context.Statuses.FirstOrDefaultAsync();
-
+            var status = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
             var route = await _context.DeliveryRoutes.FirstOrDefaultAsync();
 
             var newShipment = new Shipment
             {
                 TrackingCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
-                CreatedAt = DateTime.UtcNow,
-                CourierId = _userManager.GetUserId(User),
                 SenderId = req.UserId,
-                ReceiverId = req.UserId,
-                StatusId = status?.StatusId ?? 1,
-                DeliveryRouteId = route?.DeliveryRouteId ?? 1,
-                IsFragile = false,
-                IsCashOnDelivery = false,
-                CodAmount = 0,
-                Notes = $"[REQ #{req.CourierRequestId}] DEST: {req.DropoffAddress}",
-                EstimatedDelivery = DateTime.UtcNow.AddDays(2)
+                ReceiverId = req.UserId, // По подразбиране е до самия него, ако не е посочен друг
+                StatusId = status.StatusId,
+                DeliveryRouteId = route.DeliveryRouteId,
+                IsFragile = req.IsFragile,
+                IsCashOnDelivery = true, // Може да се направи на избор в CourierRequest
+                CodAmount = req.EstimatedPrice, // ЦЕНАТА Е ТАЗИ ОТ ЗАЯВКАТА!
+                Notes = $"[TYPE: {req.PackageType}] FROM: {req.PickupAddress} TO: {req.DropoffAddress}. Desc: {req.PackageDescription}",
+                CreatedAt = DateTime.UtcNow
             };
 
             _context.Shipments.Add(newShipment);
-            req.Status = "Approved";
             req.IsCompleted = true;
-            await _context.SaveChangesAsync();
+            req.Status = "Approved";
 
-            TempData["SuccessMessage"] = "SYSTEM CLEARED: Shipment Active.";
+            await _context.SaveChangesAsync();
             return RedirectToAction("Active");
         }
 

@@ -38,8 +38,11 @@
                                     <div>
                                         <span class="badge border border-gold text-gold mb-2" style="font-size: 0.6rem;">@req.Status.ToUpper()</span>
                                         <h6 class="text-white fw-bold">@req.PackageDescription</h6>
-                                        <p class="text-secondary small mb-1"><i class="bi bi-arrow-up-circle text-gold me-1"></i> @req.PickupAddress</p>
-                                        <p class="text-secondary small mb-3"><i class="bi bi-arrow-down-circle text-info me-1"></i> @req.DropoffAddress</p>
+                                        
+                                        <div class="small mb-3">
+                                            <p class="text-secondary mb-1"><i class="bi bi-geo-alt text-gold me-1"></i> FROM: @req.PickupAddress</p>
+                                            <p class="text-secondary mb-1"><i class="bi bi-flag text-info me-1"></i> TO: @req.DropoffAddress</p>
+                                        </div>
 
                                         @if (req.Status == "Pending")
                                         {
@@ -49,9 +52,9 @@
                                             </form>
                                         }
                                     </div>
-                                    <div class="text-end text-gold small fw-bold">
-                                        @req.PreferredPickupTime.ToString("HH:mm")<br />
-                                        <span class="text-secondary">@req.PreferredPickupTime.ToString("MMM dd")</span>
+                                    <div class="text-end">
+                                        <div class="text-gold fw-bold mb-1">€@req.EstimatedPrice.ToString("F2")</div>
+                                        <div class="text-muted" style="font-size: 0.7rem;">@req.PreferredPickupTime.ToString("MMM dd, HH:mm")</div>
                                     </div>
                                 </div>
                             </div>
@@ -76,6 +79,7 @@
                             <tr class="text-gold">
                                 <th class="ps-4 py-3">DATE</th>
                                 <th>DESCRIPTION</th>
+                                <th>PRICE</th>
                                 <th>DESTINATION</th>
                                 <th class="pe-4 text-end">STATUS</th>
                             </tr>
@@ -86,9 +90,10 @@
                                 <tr>
                                     <td class="ps-4">@req.CreatedAt.ToString("yyyy-MM-dd")</td>
                                     <td>@req.PackageDescription</td>
+                                    <td class="text-gold">€@req.EstimatedPrice.ToString("F2")</td>
                                     <td>@req.DropoffAddress</td>
                                     <td class="pe-4 text-end">
-                                        <span class="@(req.Status == "Cancelled" ? "text-danger" : "text-success") small uppercase">@req.Status</span>
+                                        <span class="@(req.Status == "Cancelled" ? "text-danger" : "text-success") small uppercase fw-bold">@req.Status</span>
                                     </td>
                                 </tr>
                             }
@@ -96,33 +101,69 @@
                     </table>
                 </div>
             }
+            else
+            {
+                <div class="text-center py-5 text-muted">HISTORY TERMINAL EMPTY</div>
+            }
         }
         else if (activeTab == "create")
         {
             <div class="row justify-content-center">
-                <div class="col-md-7">
-                    <div class="card bg-dark border-gold p-4">
-                        <form action="/Couriers/Create" method="post">
+                <div class="col-md-8">
+                    <div class="card bg-dark border-gold p-4 shadow-lg">
+                        <form action="/Couriers/Create" method="post" id="dispatchForm">
                             @Html.AntiForgeryToken()
-                            <div class="mb-3">
-                                <label class="text-gold small fw-bold mb-2">DESCRIPTION</label>
-                                <input name="PackageDescription" class="form-control bg-transparent text-white border-secondary" placeholder="What are we moving?" required />
-                            </div>
+                            
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="text-gold small fw-bold mb-2">PICKUP LOCATION</label>
-                                    <input name="PickupAddress" class="form-control bg-transparent text-white border-secondary" required />
+                                    <label class="text-gold small fw-bold mb-2">PACKAGE TYPE</label>
+                                    <select name="PackageType" id="packageType" class="form-control bg-transparent text-white border-secondary select-gold" required>
+                                        <option value="Envelope" data-price="5">Document Envelope (Up to 0.5kg)</option>
+                                        <option value="Small" data-price="15">Small Parcel (Up to 2kg)</option>
+                                        <option value="Standard" data-price="35">Standard Box (Up to 10kg)</option>
+                                        <option value="Heavy" data-price="70">Heavy Freight (Up to 30kg)</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="text-gold small fw-bold mb-2">DROPOFF LOCATION</label>
-                                    <input name="DropoffAddress" class="form-control bg-transparent text-white border-secondary" required />
+                                    <label class="text-gold small fw-bold mb-2">DESTINATION ZONE</label>
+                                    <select name="DestinationZone" id="destZone" class="form-control bg-transparent text-white border-secondary select-gold" required>
+                                        <option value="Domestic" data-mult="1">Domestic (Bulgaria)</option>
+                                        <option value="EU" data-mult="2.5">International (Europe)</option>
+                                        <option value="Global" data-mult="5">International (Global)</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div class="mb-4">
-                                <label class="text-gold small fw-bold mb-2">PICKUP TIME</label>
-                                <input name="PreferredPickupTime" type="datetime-local" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" class="form-control bg-transparent text-white border-secondary" required />
+
+                            <div class="mb-3">
+                                <label class="text-gold small fw-bold mb-2">CONTENT DESCRIPTION</label>
+                                <input name="PackageDescription" class="form-control bg-transparent text-white border-secondary" placeholder="e.g. Fragile Electronics, Legal Documents..." required />
                             </div>
-                            <button type="submit" class="btn btn-gold w-100 py-3 fw-bold">SEND DISPATCH REQUEST</button>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-gold small fw-bold mb-2">PICKUP ADDRESS</label>
+                                    <input name="PickupAddress" class="form-control bg-transparent text-white border-secondary" placeholder="Full address" required />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="text-gold small fw-bold mb-2">DROPOFF ADDRESS</label>
+                                    <input name="DropoffAddress" class="form-control bg-transparent text-white border-secondary" placeholder="Recipient address" required />
+                                </div>
+                            </div>
+
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <label class="text-gold small fw-bold mb-2">PREFERRED PICKUP TIME</label>
+                                    <input name="PreferredPickupTime" type="datetime-local" value="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" class="form-control bg-transparent text-white border-secondary" required />
+                                </div>
+                                <div class="col-md-6 d-flex align-items-end">
+                                    <div class="bg-black border border-secondary p-2 w-100 text-center">
+                                        <small class="text-secondary d-block uppercase" style="font-size: 0.6rem;">Est. Service Fee</small>
+                                        <span id="livePrice" class="text-gold fw-bold fs-4">€5.00</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-gold w-100 py-3 fw-bold">INITIALIZE DISPATCH</button>
                         </form>
                     </div>
                 </div>
@@ -130,3 +171,24 @@
         }
     </div>
 </div>
+
+<style>
+    .select-gold option { background: #000; color: #fff; }
+    .border-dashed { border: 2px dashed #333 !important; }
+    .btn-gold { background: linear-gradient(45deg, #BF953F, #FCF6BA, #B38728); color: #000; border: none; }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            function calculateLivePrice() {
+                var base = parseFloat($('#packageType option:selected').data('price'));
+                var mult = parseFloat($('#destZone option:selected').data('mult'));
+                var total = base * mult;
+                $('#livePrice').text('€' + total.toFixed(2));
+            }
+
+            $('#packageType, #destZone').on('change', calculateLivePrice);
+        });
+    </script>
+}
