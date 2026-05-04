@@ -37,6 +37,37 @@ namespace DeliveryTrackingSystem.Controllers
             return View(user);
         }
 
+        // --- НОВИ МЕТОДИ ЗА УПРАВЛЕНИЕ НА ПОТРЕБИТЕЛИ ---
+
+        [HttpPost("ApproveUser")]
+        public async Task<IActionResult> ApproveUser(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                user.IsApproved = true;
+                await _userManager.UpdateAsync(user);
+                TempData["SuccessMessage"] = $"USER {user.FirstName.ToUpper()} APPROVED SUCCESSFULLY.";
+            }
+            return RedirectToAction("UserDirectory");
+        }
+
+        [HttpPost("RejectUser")]
+        public async Task<IActionResult> RejectUser(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                user.IsApproved = false;
+                user.DeclarationFilePath = "REJECTED";
+                await _userManager.UpdateAsync(user);
+                TempData["SuccessMessage"] = "REGISTRATION REJECTED.";
+            }
+            return RedirectToAction("UserDirectory");
+        }
+
+        // --- КРАЙ НА НОВИТЕ МЕТОДИ ---
+
         [HttpGet("Active")]
         public async Task<IActionResult> ActiveCargo(string searchTerm)
         {
@@ -93,11 +124,11 @@ namespace DeliveryTrackingSystem.Controllers
         public async Task<IActionResult> UserDirectory(string searchTerm)
         {
             var users = await _context.Users
-         .Select(u => new UserRequestViewModel
-         {
-             User = u,
-             RequestCount = _context.CourierRequests.Count(r => r.UserId == u.Id && !r.IsCompleted)
-         }).ToListAsync();
+                .Select(u => new UserRequestViewModel
+                {
+                    User = u,
+                    RequestCount = _context.CourierRequests.Count(r => r.UserId == u.Id && !r.IsCompleted)
+                }).ToListAsync();
 
             ViewBag.AllRequests = await _context.CourierRequests
                 .Include(r => r.User)
@@ -106,17 +137,6 @@ namespace DeliveryTrackingSystem.Controllers
                 .ToListAsync();
 
             return View(users);
-        }
-
-        [HttpGet("ViewRequests/{userId}")]
-        public async Task<IActionResult> ViewRequests(string userId)
-        {
-            var user = await _context.Users.FindAsync(userId);
-            var requests = await _context.CourierRequests.Include(r => r.User)
-                .Where(r => r.UserId == userId && !r.IsCompleted).ToListAsync();
-
-            ViewBag.UserName = $"{user?.FirstName} {user?.LastName}";
-            return View(requests);
         }
 
         [HttpPost("ApproveRequest")]
@@ -131,31 +151,7 @@ namespace DeliveryTrackingSystem.Controllers
             var status = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit")
                          ?? await _context.Statuses.FirstOrDefaultAsync();
 
-            if (status == null)
-            {
-                status = new Status
-                {
-                    Name = "In Transit",
-                    Description = "Shipment is currently moving between nodes."
-                };
-                _context.Statuses.Add(status);
-                await _context.SaveChangesAsync();
-            }
-
             var route = await _context.DeliveryRoutes.FirstOrDefaultAsync();
-            if (route == null)
-            {
-                route = new DeliveryRoute
-                {
-                    StartLocation = "Origin",
-                    EndLocation = "Destination",
-                    Price = 10.00m,
-                    DistanceKm = 1.0,
-                    EstimatedTimeHours = 1.0
-                };
-                _context.DeliveryRoutes.Add(route);
-                await _context.SaveChangesAsync();
-            }
 
             var newShipment = new Shipment
             {
@@ -164,30 +160,22 @@ namespace DeliveryTrackingSystem.Controllers
                 CourierId = _userManager.GetUserId(User),
                 SenderId = req.UserId,
                 ReceiverId = req.UserId,
-                StatusId = status.StatusId,
-                DeliveryRouteId = route.DeliveryRouteId,
+                StatusId = status?.StatusId ?? 1,
+                DeliveryRouteId = route?.DeliveryRouteId ?? 1,
                 IsFragile = false,
                 IsCashOnDelivery = false,
                 CodAmount = 0,
-                Notes = $"[REQ #{req.CourierRequestId}] DEST: {req.DropoffAddress} | DESC: {req.PackageDescription}",
+                Notes = $"[REQ #{req.CourierRequestId}] DEST: {req.DropoffAddress}",
                 EstimatedDelivery = DateTime.UtcNow.AddDays(2)
             };
 
-            try
-            {
-                _context.Shipments.Add(newShipment);
-                req.Status = "Approved";
-                req.IsCompleted = true;
-                _context.Entry(req).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "SYSTEM CLEARED: Shipment Active.";
-                return RedirectToAction("Active");
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = "SQL VALIDATION ERROR: " + (ex.InnerException?.Message ?? ex.Message);
-                return RedirectToAction("UserDirectory");
-            }
+            _context.Shipments.Add(newShipment);
+            req.Status = "Approved";
+            req.IsCompleted = true;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "SYSTEM CLEARED: Shipment Active.";
+            return RedirectToAction("Active");
         }
 
         [HttpPost("RejectRequest")]
@@ -202,118 +190,6 @@ namespace DeliveryTrackingSystem.Controllers
                 TempData["SuccessMessage"] = "REQUEST REJECTED.";
             }
             return RedirectToAction("UserDirectory");
-        }
-
-        [HttpGet("CreateShipment")]
-        public async Task<IActionResult> CreateShipment(string prefillId, int? requestId)
-        {
-            ViewBag.Offices = await _context.Offices.Where(o => o.IsActive).ToListAsync();
-            ViewBag.DefaultOfficeId = await _context.Offices
-                .Where(o => o.CodeName == "BASE-ZERO")
-                .Select(o => o.OfficeId)
-                .FirstOrDefaultAsync();
-
-            var model = new Shipment();
-
-            if (requestId.HasValue)
-            {
-                var req = await _context.CourierRequests.FindAsync(requestId.Value);
-                if (req != null)
-                {
-                    req.Status = "Approved";
-                    req.IsCompleted = true;
-                    await _context.SaveChangesAsync();
-                    model.SenderId = req.UserId;
-                    model.Notes = $"[AUTO-PREFILL] Description: {req.PackageDescription} | To: {req.DropoffAddress}";
-                }
-            }
-            else if (!string.IsNullOrEmpty(prefillId))
-            {
-                model.SenderId = prefillId;
-            }
-
-            return View(model);
-        }
-
-        [HttpPost("CreateShipment")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateShipment(Shipment model, string? SenderManualName, string? ReceiverManualName, bool IsFragile, string? Notes)
-        {
-            model.TrackingCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
-            model.CreatedAt = DateTime.UtcNow;
-            model.CourierId = _userManager.GetUserId(User);
-
-            var status = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
-            model.StatusId = status?.StatusId ?? 1;
-
-            ModelState.Remove("TrackingCode");
-            ModelState.Remove("Sender");
-            ModelState.Remove("Receiver");
-            ModelState.Remove("Courier");
-            ModelState.Remove("Status");
-            ModelState.Remove("DeliveryRoute");
-            ModelState.Remove("StatusHistory");
-            ModelState.Remove("Ratings");
-            ModelState.Remove("SenderManualName");
-            ModelState.Remove("ReceiverManualName");
-            ModelState.Remove("Notes");
-
-            model.IsFragile = IsFragile;
-            model.Notes = $"[S: {SenderManualName}] [R: {ReceiverManualName}] | {Notes}";
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Shipments.Add(model);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Shipment Created Successfully!";
-                    return RedirectToAction("Active");
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("", "Database Error: " + ex.Message);
-                }
-            }
-
-            ViewBag.Offices = await _context.Offices.Where(o => o.IsActive).ToListAsync();
-            return View(model);
-        }
-
-        [HttpGet("GetRouteDetails")]
-        public async Task<IActionResult> GetRouteDetails(int startId, int endId)
-        {
-            var start = await _context.Offices.FindAsync(startId);
-            var end = await _context.Offices.FindAsync(endId);
-            if (start == null || end == null) return NotFound();
-
-            var route = await _context.DeliveryRoutes
-                .FirstOrDefaultAsync(r => r.StartLocation == start.Name && r.EndLocation == end.Name);
-
-            if (route == null)
-            {
-                route = new DeliveryRoute
-                {
-                    StartLocation = start.Name,
-                    EndLocation = end.Name,
-                    Price = startId == endId ? 5.00m : 15.00m,
-                    DistanceKm = 10.0,
-                    EstimatedTimeHours = 2.0
-                };
-                _context.DeliveryRoutes.Add(route);
-                await _context.SaveChangesAsync();
-            }
-            return Json(new { id = route.DeliveryRouteId, display = $"{start.Name} to {end.Name}", price = route.Price });
-        }
-
-        [HttpGet("GetUserByPhone")]
-        public async Task<IActionResult> GetUserByPhone(string phone)
-        {
-            var user = await _context.Users
-                .Where(u => u.PhoneNumber == phone)
-                .Select(u => new { u.Id, u.FirstName, u.LastName, u.Email })
-                .FirstOrDefaultAsync();
-            return Json(user);
         }
     }
 }

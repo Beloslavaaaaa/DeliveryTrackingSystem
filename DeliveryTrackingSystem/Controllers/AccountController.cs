@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Cargobell.Shared.Models;
 using Cargobell.Shared.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace DeliveryTrackingSystem.Controllers
 {
@@ -38,7 +41,7 @@ namespace DeliveryTrackingSystem.Controllers
 
                 string? savedFileName = null;
 
-                // FIXED: Validation and File Saving for Minors
+                // Validation and File Saving for Minors
                 if (age < 18)
                 {
                     if (model.DeclarationFile == null)
@@ -68,19 +71,23 @@ namespace DeliveryTrackingSystem.Controllers
                     DateOfBirth = model.DateOfBirth,
                     PhoneNumber = model.PhoneNumber,
                     DeclarationFilePath = savedFileName,
-                    IsApproved = (age >= 18) // Automatically approved if 18+
+                    // FIXED: Automatic approval for adults
+                    IsApproved = (age >= 18)
                 };
 
                 var result = await _userManager.CreateAsync(user, model.Password);
 
                 if (result.Succeeded)
                 {
+                    // If minor, they stay unapproved and go to waiting page
                     if (!user.IsApproved)
                     {
-                        // Redirect to a specific "Waiting for Approval" page
+                        // We sign them in so the WaitingApproval view can access their data via UserManager
+                        await _signInManager.SignInAsync(user, isPersistent: false);
                         return RedirectToAction("WaitingApproval");
                     }
 
+                    // Adults go straight to dashboard
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", "Dashboard");
                 }
@@ -107,10 +114,21 @@ namespace DeliveryTrackingSystem.Controllers
             {
                 var user = await _userManager.FindByEmailAsync(model.Email);
 
-                if (user != null && !user.IsApproved)
+                if (user != null)
                 {
-                    ModelState.AddModelError(string.Empty, "Your account is pending approval by our staff.");
-                    return View(model);
+                    var isCourier = await _userManager.IsInRoleAsync(user, "Courier");
+
+                    // FIXED LOGIC: 
+                    // Redirect to WaitingApproval ONLY if:
+                    // 1. Not a courier
+                    // 2. Not approved
+                    // 3. Has a file (meaning they are a minor who needs checking) OR is rejected
+                    if (!isCourier && (!user.IsApproved && !string.IsNullOrEmpty(user.DeclarationFilePath)))
+                    {
+                        // Sign in first so the view can check if they are "REJECTED"
+                        await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
+                        return RedirectToAction("WaitingApproval");
+                    }
                 }
 
                 var result = await _signInManager.PasswordSignInAsync(

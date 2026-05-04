@@ -174,5 +174,35 @@ namespace DeliveryTrackingSystem.Controllers
 
             return View(model);
         }
+        [HttpPost("ApproveUser")]
+        public async Task<IActionResult> ApproveUser(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                user.IsApproved = true;
+                // Можем да изтрием файла след одобрение, за да пестим място, или да го пазим за архив
+                await _userManager.UpdateAsync(user);
+                TempData["SuccessMessage"] = $"USER {user.FirstName} {user.LastName} HAS BEEN ACTIVATED.";
+            }
+            return RedirectToAction("UserDirectory");
+        }
+
+        [HttpPost("RejectUser")]
+        public async Task<IActionResult> RejectUser(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user != null)
+            {
+                // Маркираме го като отхвърлен. 
+                // Тук можем да ползваме специално поле или просто да изтрием пътя към файла, 
+                // за да знае системата, че е отказан.
+                user.IsApproved = false;
+                user.DeclarationFilePath = "REJECTED"; // Сигнал за Front-end-а
+                await _userManager.UpdateAsync(user);
+                TempData["SuccessMessage"] = "REGISTRATION DENIED.";
+            }
+            return RedirectToAction("UserDirectory");
+        }
     }
 }

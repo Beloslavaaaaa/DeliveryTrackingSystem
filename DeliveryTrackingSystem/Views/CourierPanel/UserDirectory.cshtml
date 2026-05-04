@@ -4,16 +4,45 @@
     var allRequests = (List<Cargobell.Shared.Models.CourierRequest>)ViewBag.AllRequests;
 }
 
+<style>
+    .animate-pulse {
+        animation: pulse-gold 2s infinite;
+        border: 1px solid #D4AF37;
+    }
+
+   @@keyframes pulse-gold {
+        0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+    }
+
+    .btn-outline-gold {
+        border: 1px solid #D4AF37;
+        color: #D4AF37;
+        background: transparent;
+        transition: 0.3s;
+    }
+
+    .btn-outline-gold:hover {
+        background: #D4AF37;
+        color: #000;
+    }
+
+    .border-approval {
+        border: 1px solid #D4AF37 !important;
+        background: rgba(212, 175, 55, 0.05) !important;
+    }
+</style>
+
 <div class="mb-4">
     <h1 class="text-gold mb-0" style="font-size: 1.8rem;">ENTITY DIRECTORY</h1>
     <p class="text-muted small text-uppercase" style="letter-spacing: 2px;">Operational Node Overview</p>
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger rounded-0">@TempData["ErrorMessage"]</div>
-    }
+    
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success rounded-0">@TempData["SuccessMessage"]</div>
+        <div class="alert alert-success bg-black text-success border-success rounded-0 small">
+            SYSTEM: @TempData["SuccessMessage"]
+        </div>
     }
 </div>
 
@@ -25,30 +54,52 @@
 <div class="row-cols-custom" id="nodeGrid">
     @foreach (var vm in Model)
     {
+        bool needsAttention = !vm.User.IsApproved && !string.IsNullOrEmpty(vm.User.DeclarationFilePath) && vm.User.DeclarationFilePath != "REJECTED";
+
         <div class="node-item">
-            <div class="node-card">
+            <div class="node-card @(needsAttention ? "border-approval" : "")">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <h6 class="fw-bold text-uppercase m-0">@vm.User.FirstName @vm.User.LastName</h6>
-                    @if (vm.RequestCount > 0)
+                    
+                    @if (needsAttention)
                     {
-                        <span class="text-gold fw-bold" style="font-size: 0.7rem;">[ @vm.RequestCount ACTIVE ]</span>
+                        <span class="badge bg-warning text-dark animate-pulse">PENDING DOCS</span>
                     }
                 </div>
-                <div class="text-muted small mb-4" style="font-family: monospace;">TEL // @vm.User.PhoneNumber</div>
+                
+                <div class="text-muted small mb-3" style="font-family: monospace;">TEL // @vm.User.PhoneNumber</div>
+
+                @if (needsAttention)
+                {
+                    <div class="p-3 mb-3 bg-black border border-warning">
+                        <p class="text-warning small fw-bold mb-2"><i class="bi bi-file-earmark-pdf"></i> VERIFICATION REQUIRED</p>
+                        <div class="d-grid gap-2">
+                            <a href="/uploads/declarations/@vm.User.DeclarationFilePath" target="_blank" class="btn btn-sm btn-outline-gold fw-bold text-center">VIEW DECLARATION</a>
+                            <div class="d-flex gap-2">
+                                <form asp-controller="CourierPanel" asp-action="ApproveUser" method="post" class="w-100 m-0">
+                                    <input type="hidden" name="userId" value="@vm.User.Id" />
+                                    <button type="submit" class="btn btn-sm btn-success w-100 fw-bold">APPROVE</button>
+                                </form>
+                                <form asp-controller="CourierPanel" asp-action="RejectUser" method="post" class="m-0">
+                                    <input type="hidden" name="userId" value="@vm.User.Id" />
+                                    <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-x-lg"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
 
                 <div class="request-list">
                     @foreach (var req in allRequests.Where(r => r.UserId == vm.User.Id))
                     {
                         <div class="p-2 mb-2" style="background: rgba(255,255,255,0.03); border-left: 2px solid #ffc107;">
                             <div class="text-white small fw-bold mb-1">@req.PackageDescription</div>
-                            <div class="text-muted mb-2" style="font-size: 0.6rem;">TO // @req.DropoffAddress</div>
-
                             <div class="d-flex gap-2">
                                 <button type="button" class="btn btn-sm btn-warning w-100 py-1 fw-bold" style="font-size: 0.7rem; border-radius: 0;"
                                         onclick="openApproveModal('@req.CourierRequestId', '@req.PackageDescription', '@req.PickupAddress', '@req.DropoffAddress', '@vm.User.FirstName @vm.User.LastName')">
                                     INSPECT
                                 </button>
-                                <form asp-action="RejectRequest" method="post" class="m-0">
+                                <form asp-controller="CourierPanel" asp-action="RejectRequest" method="post" class="m-0">
                                     <input type="hidden" name="requestId" value="@req.CourierRequestId" />
                                     <button type="submit" class="btn btn-sm btn-outline-danger border-0 py-0"><i class="bi bi-x"></i></button>
                                 </form>
@@ -68,34 +119,22 @@
                 <h5 class="modal-title text-warning fw-bold">REQUEST INSPECTION</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="text-muted small d-block">SENDER</label>
-                    <span id="modalSender" class="fw-bold text-white"></span>
-                </div>
-                <div class="mb-3">
-                    <label class="text-muted small d-block">DESCRIPTION</label>
-                    <span id="modalDesc" class="text-white"></span>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-6">
-                        <label class="text-muted small d-block">PICKUP</label>
-                        <span id="modalPickup" class="small text-white"></span>
-                    </div>
-                    <div class="col-6">
-                        <label class="text-muted small d-block">DROPOFF</label>
-                        <span id="modalDropoff" class="small text-white"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer border-secondary">
-                <form asp-action="ApproveRequest" method="post" class="w-100">
+            <form asp-controller="CourierPanel" asp-action="ApproveRequest" method="post">
+                <div class="modal-body">
                     <input type="hidden" name="requestId" id="modalId">
-                    <button type="submit" class="btn btn-warning btn-lg w-100 rounded-0 fw-bold text-dark">
-                        APPROVE & GENERATE MANIFEST
-                    </button>
-                </form>
-            </div>
+                    <div class="mb-3">
+                        <label class="text-muted small d-block">SENDER</label>
+                        <span id="modalSender" class="fw-bold text-white"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="text-muted small d-block">DESCRIPTION</label>
+                        <span id="modalDesc" class="text-white"></span>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="submit" class="btn btn-warning btn-lg w-100 rounded-0 fw-bold text-dark">APPROVE & GENERATE</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -103,23 +142,10 @@
 @section Scripts {
     <script>
         function openApproveModal(id, desc, pickup, dropoff, user) {
-            // Set values in the modal
             document.getElementById('modalId').value = id;
             document.getElementById('modalSender').innerText = user;
             document.getElementById('modalDesc').innerText = desc;
-            document.getElementById('modalPickup').innerText = pickup;
-            document.getElementById('modalDropoff').innerText = dropoff;
-
-            // Open the modal
-            var myModal = new bootstrap.Modal(document.getElementById('approveModal'));
-            myModal.show();
+            new bootstrap.Modal(document.getElementById('approveModal')).show();
         }
-
-        document.getElementById('nodeFilter').addEventListener('keyup', function() {
-            let val = this.value.toLowerCase();
-            document.querySelectorAll('.node-item').forEach(el => {
-                el.style.display = el.innerText.toLowerCase().includes(val) ? '' : 'none';
-            });
-        });
     </script>
 }
