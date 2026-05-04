@@ -6,10 +6,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
 
 <style>
-    .iti {
-        width: 100%;
-    }
-
+    .iti { width: 100%; }
     .iti__country-list {
         background-color: #0a0a0a !important;
         border: 1px solid #D4AF37 !important;
@@ -17,35 +14,16 @@
         box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         z-index: 100;
     }
-
-    .iti__country:hover {
-        background-color: #1a1a1a !important;
-    }
-
-    .iti__selected-flag {
-        background-color: rgba(255,255,255,0.05) !important;
-        border-radius: 4px 0 0 4px;
-    }
-
-    .iti__arrow {
-        border-top-color: #D4AF37 !important;
-    }
-
-    input[type="date"]::-webkit-calendar-picker-indicator {
-        filter: invert(1);
-    }
-
+    .iti__country:hover { background-color: #1a1a1a !important; }
+    .iti__selected-flag { background-color: rgba(255,255,255,0.05) !important; border-radius: 4px 0 0 4px; }
+    .iti__arrow { border-top-color: #D4AF37 !important; }
+    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
     .form-control:focus {
         background-color: #111 !important;
         border-color: #D4AF37 !important;
         box-shadow: 0 0 10px rgba(212, 175, 55, 0.3) !important;
     }
-
-    .text-danger.small {
-        font-size: 0.75rem;
-        margin-top: 5px;
-        display: block;
-    }
+    .text-danger.small { font-size: 0.75rem; margin-top: 5px; display: block; }
 </style>
 
 <div class="container py-5 mt-5">
@@ -60,10 +38,10 @@
                 <form asp-controller="Account" asp-action="Register" method="post" id="registerForm">
                     @Html.AntiForgeryToken()
 
-                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ContainsKey(string.Empty))
+                    @if (!ViewData.ModelState.IsValid)
                     {
                         <div class="alert alert-danger bg-transparent border-danger text-danger small mb-4">
-                            <div asp-validation-summary="ModelOnly"></div>
+                            <div asp-validation-summary="All"></div>
                         </div>
                     }
 

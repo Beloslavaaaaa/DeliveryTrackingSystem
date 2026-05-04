@@ -1,8 +1,8 @@
 ﻿@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @{
     ViewData["Title"] = "Contact Concierge | Cargobell";
+    string apiKey = Configuration["GoogleMaps:ApiKey"];
 }
-
 <div class="container py-5 mt-lg-5">
     <div class="text-center mb-5">
         <h1 class="display-4 text-gold mb-2">GLOBAL CONCIERGE</h1>
@@ -37,7 +37,10 @@
 </div>
 
 @section Scripts {
-                <script src="https://maps.googleapis.com/maps/api/js?key=@Configuration["GoogleMaps:ApiKey"]&callback=initMap" async defer></script>
+    let apiKey = @apiKey;
+    conso
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=apiKey&callback=initMap" async defer></script>
 
         <script>
             function initMap() {
