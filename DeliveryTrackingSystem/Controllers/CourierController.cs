@@ -41,7 +41,14 @@ namespace DeliveryTrackingSystem.Controllers
             var userId = _userManager.GetUserId(User);
             if (string.IsNullOrEmpty(userId)) return Challenge();
 
-            // Твоята логика от Pricing страницата:
+            // 1. Сървърна валидация на датата
+            if (courierRequest.PreferredPickupTime < DateTime.Now.AddMinutes(-5))
+            {
+                TempData["Error"] = "The selected pickup time has already passed.";
+                return RedirectToAction(nameof(RequestIndex), new { tab = "create" });
+            }
+
+            // 2. Сървърно изчисляване на цената (Сигурност)
             decimal basePrice = courierRequest.PackageType switch
             {
                 "Envelope" => 5,
@@ -59,11 +66,13 @@ namespace DeliveryTrackingSystem.Controllers
                 _ => 1
             };
 
+            // 3. Подготовка на обекта
             courierRequest.UserId = userId;
             courierRequest.EstimatedPrice = basePrice * multiplier;
+            courierRequest.CreatedAt = DateTime.Now;
             courierRequest.Status = "Pending";
+            courierRequest.IsCompleted = false;
 
-            // Премахваме навигационните свойства от проверката
             ModelState.Remove("UserId");
             ModelState.Remove("User");
 
@@ -74,6 +83,7 @@ namespace DeliveryTrackingSystem.Controllers
                 return RedirectToAction(nameof(RequestIndex), new { tab = "active" });
             }
 
+            TempData["Error"] = "There was an error with your submission. Please check the fields.";
             return RedirectToAction(nameof(RequestIndex), new { tab = "create" });
         }
 
@@ -90,6 +100,7 @@ namespace DeliveryTrackingSystem.Controllers
                 request.Status = "Cancelled";
                 request.IsCompleted = true;
                 await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Request successfully cancelled.";
             }
 
             return RedirectToAction(nameof(RequestIndex), new { tab = "finished" });
