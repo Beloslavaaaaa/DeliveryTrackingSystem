@@ -185,10 +185,21 @@
     <script>
         $(document).ready(function() {
             let step = 1;
-            function updateUI() {
+           function updateUI() {
+                // Toggle Buttons
                 $('#prevBtn').toggle(step > 1);
                 if(step === 4) { $('#nextBtn').hide(); $('#submitBtnFinal').show(); }
                 else { $('#nextBtn').show(); $('#submitBtnFinal').hide(); }
+
+                // Update Step Circles
+                $('.step-circle').each(function() {
+                    const circleStep = parseInt($(this).data('step'));
+                    if(circleStep <= step) {
+                        $(this).addClass('active');
+                    } else {
+                        $(this).removeClass('active');
+                    }
+                });
             }
 
             $('#nextBtn').click(function() { $(`.step-content`).addClass('d-none'); step++; $(`#step-${step}`).removeClass('d-none'); updateUI(); });
