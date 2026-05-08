@@ -145,6 +145,14 @@ namespace DeliveryTrackingSystem.Controllers
                 return RedirectToAction("Index", "CourierPanel");
             }
 
+            // --- LOGIC FOR SHIPMENT COUNT ---
+            // We count shipments where the user is involved AND the status is not 'Delivered'
+            var activeShipmentsCount = await _context.Shipments
+                .Include(s => s.Status)
+                .Where(s => (s.SenderId == user.Id || s.ReceiverId == user.Id) &&
+                            (s.Status == null || s.Status.Name != "Delivered"))
+                .CountAsync();
+
             var userShipments = await _context.Shipments
                 .Include(s => s.Status)
                 .Include(s => s.DeliveryRoute)
@@ -156,6 +164,10 @@ namespace DeliveryTrackingSystem.Controllers
             var model = new DashboardViewModel
             {
                 UserName = (!string.IsNullOrEmpty(user.FirstName) ? user.FirstName : user.Email.Split('@')[0]).ToUpper(),
+
+                // ASSIGN THE COUNT HERE
+                ActiveShipmentsCount = activeShipmentsCount,
+
                 TotalSpent = await _context.Shipments
                     .Where(s => s.SenderId == user.Id)
                     .SumAsync(s => s.DeliveryRoute != null ? s.DeliveryRoute.Price : 0),
