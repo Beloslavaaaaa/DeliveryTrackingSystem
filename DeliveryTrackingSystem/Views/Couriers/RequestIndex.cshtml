@@ -1,206 +1,223 @@
 ﻿@model IEnumerable<Cargobell.Shared.Models.CourierRequest>
-@using Cargobell.Shared.Models
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<Cargobell.Shared.Models.ApplicationUser> UserManager
 @{
-    ViewData["Title"] = "Courier Services";
+    ViewData["Title"] = "Courier Services | Cargobell";
     string activeTab = ViewBag.ActiveTab ?? "active";
-    var activeRequests = Model?.Where(r => !r.IsCompleted).ToList() ?? new List<CourierRequest>();
-    var finishedRequests = Model?.Where(r => r.IsCompleted).ToList() ?? new List<CourierRequest>();
+    var currentUser = await UserManager.GetUserAsync(User);
+    
+    // Safety check for null model
+    var requests = Model ?? new List<Cargobell.Shared.Models.CourierRequest>();
+    var activeRequests = requests.Where(r => !r.IsCompleted).ToList();
+    var finishedRequests = requests.Where(r => r.IsCompleted).ToList();
 }
 
 <div class="container py-5">
-    <div class="mb-5">
+    <div class="mb-5 text-center">
         <h4 class="text-secondary small mb-1" style="letter-spacing: 3px;">SERVICE TERMINAL</h4>
         <h1 class="text-gold display-6 fw-bold">COURIER DISPATCH</h1>
     </div>
 
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger bg-black text-danger border-danger rounded-0 small mb-4">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
-        </div>
-    }
-
-    <div class="d-flex border-bottom border-secondary mb-4">
-        <a href="?tab=active" class="py-2 px-4 text-decoration-none small fw-bold @(activeTab == "active" ? "text-gold border-bottom border-gold" : "text-secondary")">
-            ACTIVE (@activeRequests.Count)
-        </a>
-        <a href="?tab=finished" class="py-2 px-4 text-decoration-none small fw-bold @(activeTab == "finished" ? "text-gold border-bottom border-gold" : "text-secondary")">
-            HISTORY (@finishedRequests.Count)
-        </a>
-        <a href="?tab=create" class="ms-auto btn btn-gold btn-sm px-4 fw-bold">
-            + NEW REQUEST
-        </a>
+    <div class="d-flex border-bottom border-secondary mb-5 justify-content-center">
+        <a href="?tab=active" class="py-2 px-4 text-decoration-none small fw-bold @(activeTab == "active" ? "text-gold border-bottom border-gold" : "text-secondary")">ACTIVE (@activeRequests.Count)</a>
+        <a href="?tab=finished" class="py-2 px-4 text-decoration-none small fw-bold @(activeTab == "finished" ? "text-gold border-bottom border-gold" : "text-secondary")">HISTORY (@finishedRequests.Count)</a>
+        <a href="?tab=create" class="py-2 px-4 text-decoration-none small fw-bold @(activeTab == "create" ? "text-gold border-bottom border-gold" : "text-secondary")">+ NEW REQUEST</a>
     </div>
 
-    <div class="mt-4">
-        @if (activeTab == "active")
-        {
-            <div class="row g-4">
-                @if (activeRequests.Any())
-                {
-                    @foreach (var req in activeRequests)
-                    {
-                        <div class="col-md-6">
-                            <div class="card bg-dark border-secondary p-3 h-100 shadow">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <span class="badge border border-gold text-gold mb-2" style="font-size: 0.6rem;">@req.Status.ToUpper()</span>
-                                        <h6 class="text-white fw-bold">@req.PackageDescription</h6>
-                                        <div class="small mb-3">
-                                            <p class="text-secondary mb-1"><i class="bi bi-geo-alt text-gold me-1"></i> FROM: @req.PickupAddress</p>
-                                            <p class="text-secondary mb-1"><i class="bi bi-flag text-info me-1"></i> TO: @req.DropoffAddress</p>
-                                        </div>
-                                        @if (req.Status == "Pending")
-                                        {
-                                            <form action="/Couriers/Cancel/@req.CourierRequestId" method="post">
-                                                @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" style="font-size: 0.7rem;">CANCEL REQUEST</button>
-                                            </form>
-                                        }
-                                    </div>
-                                    <div class="text-end">
-                                        <div class="text-gold fw-bold mb-1">€@req.EstimatedPrice.ToString("F2")</div>
-                                        <div class="text-muted" style="font-size: 0.7rem;">@req.PreferredPickupTime.ToString("MMM dd, HH:mm")</div>
-                                    </div>
+    @if (activeTab == "active" || activeTab == "finished")
+    {
+        var displayList = activeTab == "active" ? activeRequests : finishedRequests;
+        <div class="row g-4">
+            @if (!displayList.Any())
+            {
+                <div class="col-12 text-center py-5">
+                    <p class="text-secondary">No requests found in this category.</p>
+                </div>
+            }
+            @foreach (var req in displayList)
+            {
+                <div class="col-md-6">
+                    <div class="card bg-soft-black border-secondary p-4 h-100 position-relative overflow-hidden shadow">
+                        <div class="gold-accent-bar"></div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="badge border border-gold text-gold">@req.Status?.ToUpper()</span>
+                            <span class="text-gold fw-bold">€@req.EstimatedPrice.ToString("F2")</span>
+                        </div>
+                        <h5 class="text-white fw-bold">@req.PackageDescription</h5>
+                        <p class="small text-secondary mb-1 uppercase">Pickup: <span class="text-white">@req.PickupAddress</span></p>
+                        <p class="small text-secondary mb-3 uppercase">Dropoff: <span class="text-white">@req.DropoffAddress</span></p>
+                        
+                        @if (req.Status == "Pending")
+                        {
+                            <form asp-action="Cancel" asp-route-id="@req.CourierRequestId" method="post">
+                                <button type="submit" class="btn btn-outline-danger btn-sm px-4">CANCEL</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else if (activeTab == "create")
+    {
+        <div class="row justify-content-center">
+            <div class="col-md-9">
+                <div class="d-flex justify-content-between mb-5 position-relative px-5">
+                    <div class="progress-line"></div>
+                    <div class="step-circle active" data-step="1">1<span>Sender</span></div>
+                    <div class="step-circle" data-step="2">2<span>Address</span></div>
+                    <div class="step-circle" data-step="3">3<span>Shipment</span></div>
+                    <div class="step-circle" data-step="4">4<span>Timing</span></div>
+                </div>
+
+                <div class="card p-5 bg-soft-black border-gold-subtle shadow-lg">
+                    <form asp-action="Create" method="post" id="dispatchForm">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        <div class="step-content" id="step-1">
+                            <h5 class="text-gold mb-4 small fw-bold uppercase">Step 1: Contact</h5>
+                            <div class="btn-group w-100 mb-4">
+                                <input type="radio" class="btn-check" name="IsCustomSender" id="myInfo" value="false" checked>
+                                <label class="btn btn-outline-gold py-3" for="myInfo">My Profile</label>
+                                <input type="radio" class="btn-check" name="IsCustomSender" id="otherInfo" value="true">
+                                <label class="btn btn-outline-gold py-3" for="otherInfo">Other Contact</label>
+                            </div>
+                            <div id="myInfoFields" class="p-3 border border-secondary rounded text-center small text-white">
+                                @currentUser?.UserName | @currentUser?.PhoneNumber
+                            </div>
+                            <div id="otherInfoFields" style="display:none;">
+                                <input type="text" name="CustomSenderName" class="form-control bg-dark text-white border-secondary mb-2" placeholder="Full Name">
+                                <input type="text" name="CustomSenderPhone" class="form-control bg-dark text-white border-secondary mb-2" placeholder="Phone">
+                            </div>
+                        </div>
+
+                        <div class="step-content d-none" id="step-2">
+                            <h5 class="text-gold mb-4 small fw-bold uppercase">Step 2: Route</h5>
+                            <input name="PickupAddress" class="form-control bg-dark text-white border-secondary mb-1 py-3" placeholder="Pickup Address*" required>
+                            <span class="text-danger smaller mb-3 d-block" id="val-PickupAddress"></span>
+                            
+                            <input name="DropoffAddress" class="form-control bg-dark text-white border-secondary mb-1 py-3" placeholder="Dropoff Address*" required>
+                            <span class="text-danger smaller d-block" id="val-DropoffAddress"></span>
+                        </div>
+
+                        <div class="step-content d-none" id="step-3">
+                            <h5 class="text-gold mb-4 small fw-bold uppercase">Step 3: Shipment</h5>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <select name="DestinationZone" id="calcDest" class="form-select bg-dark text-white border-secondary">
+                                        <option value="1">Domestic</option>
+                                        <option value="2.5">International (EU)</option>
+                                        <option value="5.0">International (Global)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <select name="PackageType" id="calcSize" class="form-select bg-dark text-white border-secondary">
+                                        <option value="5">Document (€5)</option>
+                                        <option value="15">Small (€15)</option>
+                                        <option value="35">Standard (€35)</option>
+                                        <option value="70">Heavy (€70)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div class="form-check"><input type="checkbox" name="IsFragile" value="true" class="form-check-input" id="fCheck"><label class="text-white small">Fragile (+€5)</label></div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check"><input type="checkbox" name="IsCashOnDelivery" value="true" class="form-check-input" id="codCheck"><label class="text-white small">COD</label></div>
+                                    <input type="number" step="0.01" name="CodAmount" id="codWrap" class="form-control bg-dark text-white border-gold mt-2" placeholder="€" style="display:none;">
+                                </div>
+                            </div>
+                            <input type="text" name="PackageDescription" class="form-control bg-dark text-white border-secondary mb-1" placeholder="Description*" required>
+                            <span class="text-danger smaller d-block mb-3" id="val-PackageDescription"></span>
+                            
+                            <div class="text-center p-3 bg-black border border-secondary mt-3"><h2 id="calcTotal" class="text-gold mb-0">€5.00</h2></div>
+                        </div>
+
+                        <div class="step-content d-none" id="step-4">
+                            <h5 class="text-gold mb-4 small fw-bold uppercase">Step 4: Timing</h5>
+                            <input type="date" name="PreferredPickupTime" id="pickupDate" class="form-control bg-dark text-white border-secondary mb-4 py-3" required>
+                            <div class="row">
+                                <div class="col">
+                                    <label class="smaller text-secondary">Start Time</label>
+                                    <input type="time" name="TimeStart" class="form-control bg-dark text-white border-secondary" value="09:00">
+                                </div>
+                                <div class="col">
+                                    <label class="smaller text-secondary">End Time</label>
+                                    <input type="time" name="PreferredPickupTimeEnd" class="form-control bg-dark text-white border-secondary" value="17:00">
                                 </div>
                             </div>
                         </div>
-                    }
-                }
-                else
-                {
-                    <div class="col-12 text-center py-5 border border-secondary border-dashed rounded" style="border-style: dashed !important;">
-                        <p class="text-secondary mb-0 small uppercase">No active dispatch requests found.</p>
-                    </div>
-                }
-            </div>
-        }
-        else if (activeTab == "finished")
-        {
-            @if (finishedRequests.Any())
-            {
-                <div class="table-responsive border border-secondary rounded">
-                    <table class="table table-dark mb-0 small">
-                        <thead>
-                            <tr class="text-gold">
-                                <th class="ps-4 py-3">DATE</th>
-                                <th>DESCRIPTION</th>
-                                <th>PRICE</th>
-                                <th>DESTINATION</th>
-                                <th class="pe-4 text-end">STATUS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var req in finishedRequests)
-                            {
-                                <tr>
-                                    <td class="ps-4">@req.CreatedAt.ToString("yyyy-MM-dd")</td>
-                                    <td>@req.PackageDescription</td>
-                                    <td class="text-gold">€@req.EstimatedPrice.ToString("F2")</td>
-                                    <td>@req.DropoffAddress</td>
-                                    <td class="pe-4 text-end">
-                                        <span class="@(req.Status == "Cancelled" ? "text-danger" : "text-success") small uppercase fw-bold">@req.Status</span>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-        }
-        else if (activeTab == "create")
-        {
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <div class="card bg-dark border-gold p-4 shadow-lg">
-                        <form action="/Couriers/Create" method="post" id="dispatchForm">
-                            @Html.AntiForgeryToken()
-                            
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="text-gold small fw-bold mb-2">PACKAGE TYPE</label>
-                                    <select name="PackageType" id="packageType" class="form-control bg-transparent text-white border-secondary" required>
-                                        <option value="Envelope" data-price="5" style="background:#000;">Document Envelope (Up to 0.5kg)</option>
-                                        <option value="Small" data-price="15" style="background:#000;">Small Parcel (Up to 2kg)</option>
-                                        <option value="Standard" data-price="35" style="background:#000;">Standard Box (Up to 10kg)</option>
-                                        <option value="Heavy" data-price="70" style="background:#000;">Heavy Freight (Up to 30kg)</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="text-gold small fw-bold mb-2">DESTINATION ZONE</label>
-                                    <select name="DestinationZone" id="destZone" class="form-control bg-transparent text-white border-secondary" required>
-                                        <option value="Domestic" data-mult="1" style="background:#000;">Domestic (Bulgaria)</option>
-                                        <option value="EU" data-mult="2.5" style="background:#000;">International (Europe)</option>
-                                        <option value="Global" data-mult="5" style="background:#000;">International (Global)</option>
-                                    </select>
-                                </div>
-                            </div>
 
-                            <div class="mb-3">
-                                <label class="text-gold small fw-bold mb-2">CONTENT DESCRIPTION</label>
-                                <input name="PackageDescription" class="form-control bg-transparent text-white border-secondary" placeholder="e.g. Laptop, Fragile Vases..." required />
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="text-gold small fw-bold mb-2">PICKUP ADDRESS</label>
-                                    <input name="PickupAddress" class="form-control bg-transparent text-white border-secondary" required />
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="text-gold small fw-bold mb-2">DROPOFF ADDRESS</label>
-                                    <input name="DropoffAddress" class="form-control bg-transparent text-white border-secondary" required />
-                                </div>
-                            </div>
-
-                            <div class="row mb-4">
-                                <div class="col-md-6">
-                                    <label class="text-gold small fw-bold mb-2">PICKUP TIME</label>
-                                    <input name="PreferredPickupTime" id="pickupTime" type="datetime-local" class="form-control bg-transparent text-white border-secondary" required />
-                                </div>
-                                <div class="col-md-6 d-flex align-items-end">
-                                    <div class="bg-black border border-secondary p-2 w-100 text-center">
-                                        <small class="text-secondary d-block uppercase" style="font-size: 0.6rem;">Estimated Fee</small>
-                                        <span id="livePrice" class="text-gold fw-bold fs-4">€5.00</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="btn btn-gold w-100 py-3 fw-bold">INITIALIZE DISPATCH</button>
-                        </form>
-                    </div>
+                        <div class="d-flex gap-2 mt-5">
+                            <button type="button" class="btn btn-dark border-secondary flex-grow-1 py-3" id="prevBtn" style="display:none">BACK</button>
+                            <button type="button" class="btn btn-gold flex-grow-1 py-3 fw-bold" id="nextBtn">CONTINUE</button>
+                            <button type="submit" class="btn btn-gold flex-grow-1 py-3 fw-bold" id="submitBtnFinal" style="display:none">INITIALIZE REQUEST</button>
+                        </div>
+                    </form>
                 </div>
             </div>
-        }
-    </div>
+        </div>
+    }
 </div>
+
+<style>
+    :root { --gold: #D4AF37; --soft-black: #0b0b0b; }
+    body { background-color: #050505; color: white; }
+    .bg-soft-black { background-color: var(--soft-black) !important; }
+    .text-gold { color: var(--gold) !important; }
+    .btn-gold { background: var(--gold); color: black; border: none; }
+    .btn-outline-gold { border-color: var(--gold); color: var(--gold); }
+    .progress-line { position: absolute; top: 20px; left: 10%; right: 10%; height: 1px; background: #333; z-index: 0; }
+    .step-circle { width: 40px; height: 40px; border-radius: 50%; background: #111; border: 1px solid #333; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; color: #555; }
+    .step-circle.active { border-color: var(--gold); color: var(--gold); }
+    .step-circle span { position: absolute; top: 45px; font-size: 0.6rem; text-transform: uppercase; white-space: nowrap; color: #555; }
+    .gold-accent-bar { position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--gold); }
+    .smaller { font-size: 0.65rem; text-transform: uppercase; }
+</style>
 
 @section Scripts {
     <script>
-        $(document).ready(function () {
-            // 1. Изчисляване на цена
-            function calculateLivePrice() {
-                var base = parseFloat($('#packageType option:selected').data('price')) || 0;
-                var mult = parseFloat($('#destZone option:selected').data('mult')) || 1;
-                $('#livePrice').text('€' + (base * mult).toFixed(2));
+        $(document).ready(function() {
+            let step = 1;
+            function updateUI() {
+                $('.step-circle').removeClass('active');
+                $(`.step-circle[data-step="${step}"]`).addClass('active');
+                $('#prevBtn').toggle(step > 1);
+                if(step === 4) { $('#nextBtn').hide(); $('#submitBtnFinal').show(); }
+                else { $('#nextBtn').show(); $('#submitBtnFinal').hide(); }
             }
-            $('#packageType, #destZone').on('change', calculateLivePrice);
-
-            // 2. Блокиране на минали дати
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            const minDateTime = now.toISOString().slice(0, 16);
             
-            $('#pickupTime').attr('min', minDateTime);
-            $('#pickupTime').val(minDateTime);
-
-            // 3. Последна проверка при Submit
-            $('#dispatchForm').on('submit', function(e) {
-                const selected = new Date($('#pickupTime').val());
-                if (selected < new Date()) {
-                    alert("ERROR: Time cannot be in the past.");
-                    e.preventDefault();
-                }
+            $('#nextBtn').click(function() { 
+                $(`#step-${step}`).addClass('d-none'); step++; 
+                $(`#step-${step}`).removeClass('d-none'); updateUI(); 
             });
+            
+            $('#prevBtn').click(function() { 
+                $(`#step-${step}`).addClass('d-none'); step--; 
+                $(`#step-${step}`).removeClass('d-none'); updateUI(); 
+            });
+            
+            $('#codCheck').change(function() { $('#codWrap').toggle(this.checked); });
+            
+            function calc() {
+                let s = parseFloat($('#calcSize').val()) || 0;
+                let d = parseFloat($('#calcDest').val()) || 1;
+                let total = (s * d) + ($('#fCheck').is(':checked') ? 5 : 0);
+                $('#calcTotal').text('€' + total.toFixed(2));
+            }
+            
+            $('#calcSize, #calcDest, #fCheck').change(calc);
+
+            // --- DATE VALIDATION LOGIC ---
+            const pickupDateInput = document.getElementById('pickupDate');
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Set the minimum allowed date to today
+            pickupDateInput.setAttribute('min', today);
+            // Default the value to today
+            pickupDateInput.value = today;
         });
     </script>
 }

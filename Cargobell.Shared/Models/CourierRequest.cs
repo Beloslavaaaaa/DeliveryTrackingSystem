@@ -1,40 +1,50 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Cargobell.Shared.Models
 {
     public class CourierRequest
     {
+        [Key]
         public int CourierRequestId { get; set; }
 
-        [Required]
-        public string UserId { get; set; }
-        public ApplicationUser User { get; set; }
+        public string? UserId { get; set; }
 
-        [Required]
-        public string PickupAddress { get; set; }
+        [ForeignKey("UserId")]
+        public virtual ApplicationUser? User { get; set; }
 
-        [Required]
-        public string DropoffAddress { get; set; }
+        [Required(ErrorMessage = "Pickup address is required")]
+        public string? PickupAddress { get; set; }
 
-        [Required]
-        public string PackageDescription { get; set; }
+        [Required(ErrorMessage = "Dropoff address is required")]
+        public string? DropoffAddress { get; set; }
 
-        // --- НОВИ ПОЛЕТА ЗА ПРЕЦИЗНОСТ ---
-        [Required]
-        public string PackageType { get; set; } // Envelope, Small, Standard, Heavy
+        [Required(ErrorMessage = "Please describe the package contents")]
+        public string? PackageDescription { get; set; }
 
-        [Required]
-        public string DestinationZone { get; set; } // Domestic, EU, Global
+        public string? PackageType { get; set; }
+        public string? DestinationZone { get; set; }
 
-        public decimal EstimatedPrice { get; set; }
         public bool IsFragile { get; set; }
-        // --------------------------------
+        public bool IsCashOnDelivery { get; set; }
 
-        public DateTime PreferredPickupTime { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public decimal? CodAmount { get; set; }
+        public decimal EstimatedPrice { get; set; }
+
+        public string? Status { get; set; } = "Pending";
         public bool IsCompleted { get; set; }
-        public string Status { get; set; } = "Pending";
+
+        [Required(ErrorMessage = "Please select a pickup date")]
+        public DateTime PreferredPickupTime { get; set; }
+
+        public string? PreferredPickupTimeEnd { get; set; }
+        public bool IsExactTime { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        public bool IsCustomSender { get; set; }
+        public string? CustomSenderName { get; set; }
+        public string? CustomSenderPhone { get; set; }
+        public string? CustomSenderEmail { get; set; }
     }
 }

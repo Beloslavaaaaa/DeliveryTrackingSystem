@@ -131,7 +131,7 @@ namespace DeliveryTrackingSystem.Controllers
                 }).ToListAsync();
 
             ViewBag.AllRequests = await _context.CourierRequests
-                .Include(r => r.User)
+                .Include(r => r.UserId)
                 .Where(r => !r.IsCompleted)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();

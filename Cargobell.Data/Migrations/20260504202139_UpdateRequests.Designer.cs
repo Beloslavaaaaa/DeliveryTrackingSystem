@@ -4,6 +4,7 @@ using Cargobell.Data.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cargobell.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260504202139_UpdateRequests")]
+    partial class UpdateRequests
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -117,7 +120,7 @@ namespace Cargobell.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CourierRequestId"));
 
-                    b.Property<decimal?>("CodAmount")
+                    b.Property<decimal>("CodAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -132,10 +135,8 @@ namespace Cargobell.Data.Migrations
                     b.Property<string>("CustomSenderPhone")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DestinationZone")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("DropoffAddress")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("EstimatedPrice")
@@ -150,34 +151,39 @@ namespace Cargobell.Data.Migrations
                     b.Property<bool>("IsCustomSender")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsExactTime")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsFragile")
                         .HasColumnType("bit");
 
                     b.Property<string>("PackageDescription")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PackageType")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PickupAddress")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PreferredPickupTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("PreferredPickupTimeEnd")
+                    b.Property<string>("Status")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("TimeInterval")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("CourierRequestId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("CourierRequests");
                 });
@@ -537,6 +543,17 @@ namespace Cargobell.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Cargobell.Shared.Models.CourierRequest", b =>
+                {
+                    b.HasOne("Cargobell.Shared.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Cargobell.Shared.Models.Rating", b =>
