@@ -182,42 +182,39 @@
         $(document).ready(function() {
             let step = 1;
             function updateUI() {
-                $('.step-circle').removeClass('active');
-                $(`.step-circle[data-step="${step}"]`).addClass('active');
                 $('#prevBtn').toggle(step > 1);
                 if(step === 4) { $('#nextBtn').hide(); $('#submitBtnFinal').show(); }
                 else { $('#nextBtn').show(); $('#submitBtnFinal').hide(); }
             }
-            
-            $('#nextBtn').click(function() { 
-                $(`#step-${step}`).addClass('d-none'); step++; 
-                $(`#step-${step}`).removeClass('d-none'); updateUI(); 
+
+            $('#nextBtn').click(function() { $(`.step-content`).addClass('d-none'); step++; $(`#step-${step}`).removeClass('d-none'); updateUI(); });
+            $('#prevBtn').click(function() { $(`.step-content`).addClass('d-none'); step--; $(`#step-${step}`).removeClass('d-none'); updateUI(); });
+
+            // Radio Button Toggle for Step 1
+            $('input[name="IsCustomSender"]').on('change', function() {
+                if ($(this).val() === 'true') {
+                    $('#otherInfoFields').slideDown(200);
+                    $('#myInfoFields').slideUp(200);
+                } else {
+                    $('#otherInfoFields').slideUp(200);
+                    $('#myInfoFields').slideDown(200);
+                }
             });
-            
-            $('#prevBtn').click(function() { 
-                $(`#step-${step}`).addClass('d-none'); step--; 
-                $(`#step-${step}`).removeClass('d-none'); updateUI(); 
-            });
-            
-            $('#codCheck').change(function() { $('#codWrap').toggle(this.checked); });
-            
+
+            // Pricing logic
             function calc() {
                 let s = parseFloat($('#calcSize').val()) || 0;
                 let d = parseFloat($('#calcDest').val()) || 1;
                 let total = (s * d) + ($('#fCheck').is(':checked') ? 5 : 0);
                 $('#calcTotal').text('€' + total.toFixed(2));
             }
-            
             $('#calcSize, #calcDest, #fCheck').change(calc);
 
-            // --- DATE VALIDATION LOGIC ---
-            const pickupDateInput = document.getElementById('pickupDate');
+            // Date setup
+            const pDate = document.getElementById('pickupDate');
             const today = new Date().toISOString().split('T')[0];
-            
-            // Set the minimum allowed date to today
-            pickupDateInput.setAttribute('min', today);
-            // Default the value to today
-            pickupDateInput.value = today;
+            pDate.setAttribute('min', today);
+            pDate.value = today;
         });
     </script>
 }

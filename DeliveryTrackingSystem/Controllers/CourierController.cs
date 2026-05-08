@@ -43,11 +43,16 @@ namespace DeliveryTrackingSystem.Controllers
             request.UserId = userId;
             request.CreatedAt = DateTime.UtcNow;
             request.Status = "Pending";
-            request.IsCompleted = false;
 
             ModelState.Remove("User");
             ModelState.Remove("UserId");
             ModelState.Remove("Status");
+            // Remove custom fields from validation if not being used
+            if (!request.IsCustomSender)
+            {
+                ModelState.Remove("CustomSenderName");
+                ModelState.Remove("CustomSenderPhone");
+            }
 
             // Pricing logic
             decimal.TryParse(request.PackageType, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal baseP);
