@@ -1,92 +1,100 @@
 ﻿@model IEnumerable<Cargobell.Shared.Models.Shipment>
 @{
     Layout = "_CourierLayout";
+    ViewData["Title"] = "Active Pipeline";
+
+    // Business Recommendation: Sort by Status (In Transit first) then by ETA (closest first)
+    var sortedShipments = Model
+        .OrderBy(s => s.StatusId)
+        .ThenBy(s => s.EstimatedDelivery);
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="text-gold fw-bold mb-0">ACTIVE CARGO</h2>
-        <span class="text-muted small text-uppercase">Manifests in Terminal Transit</span>
+<div class="terminal-fade-in">
+    <div class="d-flex justify-content-between align-items-end mb-4 border-start border-gold ps-4">
+        <div>
+            <h4 class="text-secondary small mb-1 uppercase-tracking">Logistics Command</h4>
+            <h2 class="text-gold fw-bold mb-0">ACTIVE MANIFESTS</h2>
+        </div>
+        <a href="/CourierPanel/CreateShipment" class="btn btn-gold px-4 py-2 small fw-bold">
+            <i class="bi bi-plus-lg me-2"></i>CREATE MANIFEST
+        </a>
     </div>
 
-    <a href="/CourierPanel/CreateShipment" class="btn btn-gold px-4 py-2">
-        <i class="bi bi-plus-square me-2"></i>CREATE NEW MANIFEST
-    </a>
-</div>
-
-<div class="mb-4">
-    <form method="get" action="/CourierPanel/Active" class="d-flex gap-2 w-50">
-        <input type="text" name="searchTerm" class="form-control bg-black text-white border-secondary rounded-0"
-               placeholder="SEARCH TRACKING # OR PHONE..." value="@Context.Request.Query["searchTerm"]">
-        <button type="submit" class="btn btn-outline-gold px-4 rounded-0">FILTER</button>
-    </form>
-</div>
-
-<div class="terminal-border overflow-hidden">
-    <table class="table table-dark table-luxury mb-0">
-        <thead>
-            <tr class="text-uppercase small">
-                <th class="ps-4">ID</th>
-                <th>RECEIVER</th>
-                <th>HUB</th>
-                <th>COD</th>
-                <th class="text-end pe-4">ACTION</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (!Model.Any())
-            {
-                <tr><td colspan="5" class="text-center py-4 text-muted small">NO ACTIVE MANIFESTS FOUND.</td></tr>
-            }
-            @foreach (var item in Model)
-            {
-                <tr style="cursor: pointer;" onclick="showDetailModal('@item.TrackingCode', '@item.Receiver?.FirstName @item.Receiver?.LastName', '@item.Receiver?.PhoneNumber', '@item.DeliveryRoute?.EndLocation', '@item.CodAmount')">
-                    <td class="ps-4 text-gold fw-bold">@item.TrackingCode</td>
-                    <td>@item.Receiver?.FirstName<br /><span class="text-muted small">@item.Receiver?.PhoneNumber</span></td>
-                    <td>@item.DeliveryRoute?.EndLocation</td>
-                    <td class="text-success fw-bold">$@item.CodAmount</td>
-                    <td class="text-end pe-4">
-                        <form action="/CourierPanel/MarkDelivered" method="post" class="d-inline">
-                            <input type="hidden" name="shipmentId" value="@item.ShipmentId" />
-                            <button type="submit" class="btn btn-sm btn-outline-success rounded-0 py-0" onclick="event.stopPropagation();">DELIVER</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-</div>
-
-<div class="modal fade" id="detailModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-black border border-gold rounded-0">
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title text-gold fw-bold">MANIFEST READOUT</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="text-muted small d-block">TRACKING CODE</label>
-                    <span id="mCode" class="text-white fs-5 fw-bold"></span>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-6"><label class="text-muted small d-block">RECEIVER</label><span id="mName" class="text-white"></span></div>
-                    <div class="col-6"><label class="text-muted small d-block">PHONE</label><span id="mPhone" class="text-white"></span></div>
-                </div>
-                <div><label class="text-muted small d-block">DESTINATION HUB</label><span id="mHub" class="text-white"></span></div>
-            </div>
+    <div class="row mb-4 g-2">
+        <div class="col-md-6">
+            <form method="get" action="/CourierPanel/Active" class="input-group">
+                <span class="input-group-text bg-soft-black border-secondary text-gold">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" name="searchTerm" class="form-control bg-black text-white border-secondary font-monospace"
+                       placeholder="SCAN ID OR SEARCH RECEIVER..." value="@Context.Request.Query["searchTerm"]">
+                <button type="submit" class="btn btn-outline-gold uppercase-tracking px-4">Filter</button>
+            </form>
         </div>
     </div>
-</div>
 
-@section Scripts {
-    <script>
-        function showDetailModal(code, name, phone, hub, cod) {
-            $('#mCode').text(code);
-            $('#mName').text(name);
-            $('#mPhone').text(phone);
-            $('#mHub').text(hub);
-            new bootstrap.Modal(document.getElementById('detailModal')).show();
-        }
-    </script>
-}
+    <div class="terminal-card shadow-lg">
+        <table class="table table-dark table-hover mb-0 align-middle">
+            <thead class="bg-soft-black">
+                <tr class="text-gold uppercase-tracking small">
+                    <th class="ps-4 py-3 border-0">Tracking ID</th>
+                    <th class="py-3 border-0">Receiver Information</th>
+                    <th class="py-3 border-0">Route Sector</th>
+                    <th class="py-3 border-0">Financial (COD)</th>
+                    <th class="py-3 border-0">Priority / ETA</th>
+                    <th class="pe-4 py-3 border-0 text-end">Operations</th>
+                </tr>
+            </thead>
+            <tbody class="border-top border-secondary">
+                @if (!sortedShipments.Any())
+                {
+                    <tr><td colspan="6" class="text-center py-5 text-secondary uppercase-tracking">No active data streams found.</td></tr>
+                }
+                @foreach (var item in sortedShipments)
+                {
+                    <tr>
+                        <td class="ps-4 py-4 fw-bold font-monospace text-gold">
+                            <a href="/CourierPanel/ShipmentDetails/@item.ShipmentId" class="text-decoration-none text-gold">#@item.TrackingCode</a>
+                        </td>
+                        <td>
+                            <div class="text-white fw-bold">@item.Receiver?.FirstName @item.Receiver?.LastName</div>
+                            <div class="text-secondary small font-monospace">@item.Receiver?.PhoneNumber</div>
+                        </td>
+                        <td>
+                            <div class="small">@item.DeliveryRoute?.EndLocation</div>
+                            <div class="text-secondary" style="font-size: 0.7rem;">HUB: SEC-@item.DeliveryRouteId</div>
+                        </td>
+                        <td>
+                            @if (item.IsCashOnDelivery)
+                            {
+                                <span class="text-success fw-bold font-monospace">$@item.CodAmount</span>
+                                <div class="text-muted" style="font-size: 0.6rem;">CASH ONLY</div>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">PREPAID</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge border border-gold text-gold mb-1 d-block uppercase-tracking" style="font-size: 0.6rem;">@item.Status?.Name</span>
+                            <div class="text-secondary small font-monospace">@(item.EstimatedDelivery?.ToString("MMM dd") ?? "TBD")</div>
+                        </td>
+                        <td class="pe-4 text-end">
+                            <div class="btn-group">
+                                <a href="/CourierPanel/ShipmentDetails/@item.ShipmentId" class="btn btn-sm btn-outline-secondary px-3">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <form action="/CourierPanel/MarkDelivered" method="post" class="d-inline">
+                                    <input type="hidden" name="shipmentId" value="@item.ShipmentId" />
+                                    <button type="submit" class="btn btn-sm btn-gold px-3">
+                                        DELIVER
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

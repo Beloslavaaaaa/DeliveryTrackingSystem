@@ -1,0 +1,95 @@
+﻿@model Cargobell.Shared.Models.Shipment
+@{
+    Layout = "_CourierLayout";
+    ViewData["Title"] = "Manifest Details";
+}
+
+<div class="container-fluid terminal-fade-in p-0">
+    <div class="mb-4 d-flex align-items-center">
+        <a href="/CourierPanel/Active" class="btn btn-outline-secondary btn-sm me-3">
+            <i class="bi bi-arrow-left"></i>
+        </a>
+        <h2 class="text-white fw-bold mb-0">MANIFEST <span class="text-gold">#@Model.TrackingCode</span></h2>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="terminal-card p-4 h-100">
+                <div class="row g-4">
+                    <div class="col-md-6 border-end border-secondary">
+                        <h6 class="text-gold uppercase-tracking mb-3">Sender (Origin)</h6>
+                        <p class="mb-1 fw-bold">@Model.Sender?.FirstName @Model.Sender?.LastName</p>
+                        <p class="text-secondary small mb-0">@Model.DeliveryRoute?.StartLocation</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-gold uppercase-tracking mb-3">Receiver (Target)</h6>
+                        <p class="mb-1 fw-bold">@Model.Receiver?.FirstName @Model.Receiver?.LastName</p>
+                        <p class="text-secondary small">@Model.Receiver?.PhoneNumber</p>
+                        <p class="text-secondary small mb-0">@Model.DeliveryRoute?.EndLocation</p>
+                    </div>
+                </div>
+
+                <hr class="border-secondary my-4">
+
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <h6 class="text-gold uppercase-tracking mb-2">Transit Profile</h6>
+                        <div class="p-3 bg-black rounded border border-secondary">
+                            <div class="mb-2">
+                                <span class="text-muted small d-block">Distance</span>
+                                <span class="text-white">@Model.DeliveryRoute?.DistanceKm km</span>
+                            </div>
+                            <div>
+                                <span class="text-muted small d-block">Est. Time</span>
+                                <span class="text-white">@Model.DeliveryRoute?.EstimatedTimeHours hrs</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <h6 class="text-gold uppercase-tracking mb-2">Manifest Notes</h6>
+                        <div class="p-3 bg-black rounded border border-secondary h-100">
+                            <p class="text-white-50 small mb-0 italic">
+                                "@(string.IsNullOrEmpty(Model.Notes) ? "No specialized handling instructions." : Model.Notes)"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="terminal-card p-4 mb-4">
+                <h6 class="text-gold uppercase-tracking mb-3">Current Status</h6>
+                <div class="text-center py-4 bg-black border border-gold mb-3">
+                    <span class="badge border border-gold text-gold px-4 py-2 uppercase-tracking">@Model.Status?.Name</span>
+                </div>
+                
+                @if (Model.IsFragile)
+                {
+                    <div class="alert bg-danger bg-opacity-10 text-danger border-danger small mb-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> FRAGILE HANDLING REQUIRED
+                    </div>
+                }
+
+                @if (Model.IsCashOnDelivery)
+                {
+                    <div class="alert bg-success bg-opacity-10 text-success border-success small">
+                        <i class="bi bi-cash-stack me-2"></i> COLLECT: <strong>$@Model.CodAmount</strong>
+                    </div>
+                }
+            </div>
+
+            <div class="terminal-card p-4">
+                <h6 class="text-gold uppercase-tracking mb-3">Administrative Actions</h6>
+                <div class="d-grid gap-2">
+                    <form action="/CourierPanel/MarkDelivered" method="post">
+                        <input type="hidden" name="shipmentId" value="@Model.ShipmentId" />
+                        <button type="submit" class="btn btn-gold w-100">CONFIRM DELIVERY</button>
+                    </form>
+                    <button class="btn btn-outline-secondary w-100">UPDATE STATUS</button>
+                    <button class="btn btn-outline-danger w-100">REPORT ANOMALY</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
