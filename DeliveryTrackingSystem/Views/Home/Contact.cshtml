@@ -3,82 +3,66 @@
     ViewData["Title"] = "Contact Concierge | Cargobell";
     string apiKey = Configuration["GoogleMaps:ApiKey"];
 }
+
 <div class="container py-5 mt-lg-5">
     <div class="text-center mb-5">
-        <h1 class="display-4 text-gold mb-2">GLOBAL CONCIERGE</h1>
-        <p class="text-gold opacity-50" style="letter-spacing: 5px;">STRATEGIC HEADQUARTERS</p>
+        <h1 class="display-4 text-gold mb-2 fw-bold">GLOBAL CONCIERGE</h1>
+        <p class="text-secondary uppercase-tracking">STRATEGIC HEADQUARTERS</p>
     </div>
 
     <div class="row g-4">
         <div class="col-lg-5">
-            <div class="card p-4 border-secondary h-100" style="background: rgba(255,255,255,0.02);">
-                <h3 class="h5 text-white mb-4 text-uppercase fw-bold">Send an Inquiry</h3>
+            <div class="card p-4 border-secondary h-100 bg-soft-black">
+                <h3 class="h5 text-white mb-4 text-uppercase fw-bold">Direct Secure Channel</h3>
                 <form>
                     <div class="mb-3">
-                        <input type="text" class="form-control bg-transparent text-white border-secondary py-3" placeholder="YOUR NAME">
+                        <input type="text" class="form-control py-3" placeholder="NAME">
                     </div>
                     <div class="mb-3">
-                        <input type="email" class="form-control bg-transparent text-white border-secondary py-3" placeholder="EMAIL ADDRESS">
+                        <input type="email" class="form-control py-3" placeholder="SECURE EMAIL">
                     </div>
                     <div class="mb-3">
-                        <textarea class="form-control bg-transparent text-white border-secondary py-3" rows="4" placeholder="MESSAGE"></textarea>
+                        <textarea class="form-control py-3" rows="4" placeholder="TRANSMISSION CONTENT"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-gold w-100 py-3">Dispatch Message</button>
+                    <button type="submit" class="btn btn-gold w-100 py-3 fw-bold">DISPATCH</button>
                 </form>
             </div>
         </div>
 
         <div class="col-lg-7">
-            <div class="card p-1 border-gold h-100" style="background: #000; min-height: 450px;">
-                <div id="map" style="height: 100%; width: 100%; min-height: 450px; filter: grayscale(1) invert(0.9) sepia(1) hue-rotate(0deg) saturate(0.5);"></div>
+            <div class="terminal-border h-100 p-1" style="min-height: 450px;">
+                <div id="map" class="h-100 w-100" style="min-height: 450px; filter: grayscale(1) invert(0.9) sepia(0.5);"></div>
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    let apiKey = @apiKey;
-    conso
-
-    <script src="https://maps.googleapis.com/maps/api/js?key=apiKey&callback=initMap" async defer></script>
-
-        <script>
-            function initMap() {
-                const bulgariaHQ = { lat: 42.6977, lng: 23.3219 };
-
-                const map = new google.maps.Map(document.getElementById("map"), {
-                    zoom: 5,
-                    center: bulgariaHQ,
-                    styles: [
-                        { "stylers": [{ "visibility": "simplified" }] },
-                        { "stylers": [{ "color": "#131314" }] },
-                        { "featureType": "water", "stylers": [{ "color": "#000000" }] },
-                        { "featureType": "gold", "elements": "geometry", "stylers": [{ "color": "#D4AF37" }] }
-                    ],
-                    disableDefaultUI: true 
-                });
-
-                const marker = new google.maps.Marker({
-                    position: bulgariaHQ,
-                    map: map,
-                    title: "Cargobell Bulgaria HQ",
-                    icon: {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        scale: 10,
-                        fillColor: "#D4AF37",
-                        fillOpacity: 1,
-                        strokeWeight: 2,
-                        strokeColor: "#FFFFFF"
-                    }
-                });
-
-                const infoWindow = new google.maps.InfoWindow({
-                    content: '<div style="color:#000; padding:10px;"><strong>CARGOBELL HQ</strong><br>Sofia, Bulgaria</div>'
-                });
-
-                marker.addListener("click", () => {
-                    infoWindow.open(map, marker);
-                });
-            }
-        </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=@apiKey&callback=initMap" async defer></script>
+    <script>
+        function initMap() {
+            const hq = { lat: 42.6977, lng: 23.3219 };
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 5,
+                center: hq,
+                styles: [
+                    { "stylers": [{ "visibility": "simplified" }, { "color": "#131314" }] },
+                    { "featureType": "water", "stylers": [{ "color": "#000000" }] }
+                ],
+                disableDefaultUI: true 
+            });
+            new google.maps.Marker({
+                position: hq,
+                map: map,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 10,
+                    fillColor: "#D4AF37",
+                    fillOpacity: 1,
+                    strokeWeight: 2,
+                    strokeColor: "#FFFFFF"
+                }
+            });
+        }
+    </script>
 }

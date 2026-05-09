@@ -6,67 +6,50 @@
     var currentUserId = UserManager.GetUserId(User);
 }
 
-<div class="container py-5">
-    <div class="mb-5">
-        <h4 class="text-secondary small mb-1" style="letter-spacing: 3px;">FINANCIAL</h4>
-        <h1 class="text-gold display-6 fw-bold">CASH ON DELIVERY</h1>
+<div class="container py-5 terminal-fade-in">
+    <div class="mb-5 border-start border-gold ps-4">
+        <h4 class="text-secondary small mb-1 uppercase-tracking">Financial Services</h4>
+        <h1 class="text-gold display-6 fw-bold tracking-tight">CASH ON DELIVERY</h1>
     </div>
 
-    <div class="row">
-        <div class="col-12">
-            @if (Model.Any())
-            {
-                    <div class="table-responsive border border-secondary rounded shadow-lg" style="background: rgba(255,255,255,0.02);">
-                        <table class="table table-dark table-hover mb-0 align-middle">
-                            <thead class="text-gold small uppercase" style="background: rgba(212, 175, 55, 0.05);">
-                                <tr>
-                                    <th class="ps-4 py-3 border-0">Manifest #</th>
-                                    <th class="py-3 border-0">Your Role</th>
-                                    <th class="py-3 border-0">Destination</th>
-                                    <th class="py-3 border-0 text-center">Amount to Collect</th>
-                                    <th class="pe-4 py-3 border-0 text-end">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-white border-0">
-                            @foreach (var item in Model)
-                            {
-                                bool isSender = item.SenderId == currentUserId;
-                                        <tr>
-                                            <td class="ps-4 py-4 fw-bold text-gold">@item.TrackingCode</td>
-                                            <td class="py-4">
-                                                <span class="small @(isSender ? "text-info" : "text-warning")">
-                                            @(isSender ? "RECEIVING FUNDS" : "PAYMENT DUE")
-                                                </span>
-                                            </td>
-                                            <td class="py-4 small text-secondary">
-                                        @item.DeliveryRoute?.EndLocation
-                                            </td>
-                                            <td class="py-4 text-center">
-                                                <span class="fs-5 fw-bold text-white">$@item.CodAmount</span>
-                                            </td>
-                                            <td class="pe-4 py-4 text-end">
-                                                <a href="/Shipments/Details?trackingCode=@item.TrackingCode" class="btn btn-sm btn-outline-gold px-3">View Manifest</a>
-                                            </td>
-                                        </tr>
-                            }
-                            </tbody>
-                        </table>
-                    </div>
-            }
-            else
-            {
-                    <div class="text-center py-5 border border-secondary border-dashed rounded bg-black" style="border-style: dashed !important; opacity: 0.6;">
-                        <i class="bi bi-currency-dollar fs-1 text-secondary d-block mb-3"></i>
-                        <h5 class="text-secondary small text-uppercase" style="letter-spacing: 2px;">No pending COD transactions detected.</h5>
-                        <p class="text-muted small">All accounts are currently settled.</p>
-                    </div>
-            }
-        </div>
+    <div class="table-responsive terminal-card shadow-lg">
+        <table class="table table-dark table-hover mb-0 align-middle">
+            <thead class="bg-soft-black">
+                <tr class="text-gold uppercase-tracking" style="font-size: 0.75rem;">
+                    <th class="ps-4 py-3 border-0">Manifest ID</th>
+                    <th class="py-3 border-0">Financial Role</th>
+                    <th class="py-3 border-0">Destination</th>
+                    <th class="py-3 border-0 text-center">Collection Amount</th>
+                    <th class="pe-4 py-3 border-0 text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody class="border-top border-secondary">
+                @if (Model.Any()) {
+                    @foreach (var item in Model) {
+                        bool isSender = item.SenderId == currentUserId;
+                        <tr>
+                            <td class="ps-4 py-4 fw-bold font-monospace text-gold">@item.TrackingCode</td>
+                            <td class="py-4">
+                                <span class="small uppercase-tracking @(isSender ? "text-info" : "text-warning")">
+                                    <i class="bi bi-circle-fill me-2" style="font-size: 0.5rem;"></i>
+                                    @(isSender ? "RECEIVING FUNDS" : "PAYMENT DUE")
+                                </span>
+                            </td>
+                            <td class="py-4 small text-secondary">@item.DeliveryRoute?.EndLocation</td>
+                            <td class="py-4 text-center font-monospace fs-5 text-white">$@item.CodAmount</td>
+                            <td class="pe-4 py-4 text-end">
+                                <a href="/Shipments/Details?trackingCode=@item.TrackingCode" class="btn btn-sm btn-outline-gold px-3 uppercase-tracking">Review</a>
+                            </td>
+                        </tr>
+                    }
+                } else {
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <p class="text-secondary uppercase-tracking small mb-0">No pending COD transactions detected.</p>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>
-
-<style>
-    .border-dashed { border: 1px dashed #444 !important; }
-    .btn-outline-gold { border-color: #D4AF37; color: #D4AF37; }
-    .btn-outline-gold:hover { background: #D4AF37; color: #000; }
-</style>

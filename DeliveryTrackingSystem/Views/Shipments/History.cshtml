@@ -3,76 +3,57 @@
     ViewData["Title"] = "Global Manifest History";
 }
 
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-end mb-5">
+<div class="container py-5 terminal-fade-in">
+    <div class="d-flex justify-content-between align-items-end mb-5 border-start border-gold ps-4">
         <div>
-            <h4 class="text-secondary small mb-1" style="letter-spacing: 3px;">LOGISTICS</h4>
-            <h1 class="text-gold display-6 fw-bold">MY MANIFESTS</h1>
+            <h4 class="text-secondary small mb-1 uppercase-tracking">Logistics Archive</h4>
+            <h1 class="text-gold display-6 fw-bold tracking-tight">MY MANIFESTS</h1>
         </div>
-        <a href="/Couriers/Request?tab=create" class="btn btn-outline-gold px-4 py-2 small fw-bold">BOOK NEW SHIPMENT</a>
+        <a href="/Couriers/Request?tab=create" class="btn btn-gold px-4 py-2 small fw-bold uppercase-tracking shadow-gold">Book Shipment</a>
     </div>
 
-    <div class="table-responsive border border-secondary rounded shadow-lg" style="background: rgba(255,255,255,0.02); backdrop-filter: blur(10px);">
+    <div class="table-responsive terminal-card">
         <table class="table table-dark table-hover mb-0 align-middle">
-            <thead class="text-gold small uppercase" style="background: rgba(212, 175, 55, 0.05);">
-                <tr>
-                    <th class="ps-4 py-3 border-0">Tracking Code</th>
-                    <th class="py-3 border-0">Route</th>
-                    <th class="py-3 border-0">Distance / ETA</th>
+            <thead class="bg-soft-black">
+                <tr class="text-gold uppercase-tracking small">
+                    <th class="ps-4 py-3 border-0">Tracking ID</th>
+                    <th class="py-3 border-0">Route Sector</th>
+                    <th class="py-3 border-0">ETA / Distance</th>
                     <th class="py-3 border-0">Status</th>
                     <th class="py-3 border-0">Created</th>
                     <th class="pe-4 py-3 border-0 text-end">Action</th>
                 </tr>
             </thead>
-            <tbody class="text-white border-0">
-                @if (Model.Any())
-                {
-                    @foreach (var item in Model)
-                    {
-                                <tr>
-                                    <td class="ps-4 py-4 fw-bold">#@item.TrackingCode</td>
-                                    <td class="py-4">
-                                        <div class="small">@item.DeliveryRoute?.StartLocation</div>
-                                        <div class="text-secondary small">→ @item.DeliveryRoute?.EndLocation</div>
-                                    </td>
-                                    <td class="py-4">
-                                        <div class="small">@item.DeliveryRoute?.DistanceKm km</div>
-                                        <div class="text-gold small fw-bold">@item.DeliveryRoute?.EstimatedTimeHours hrs</div>
-                                    </td>
-                                    <td class="py-4">
-                                        <span class="badge border @(item.Status?.Name == "Delivered" ? "border-success text-success" : "border-gold text-gold") px-3 py-2">
-                                    @item.Status?.Name.ToUpper()
-                                        </span>
-                                    </td>
-                                    <td class="py-4 text-secondary small">@item.CreatedAt.ToString("MMM dd, yyyy")</td>
-                                    <td class="pe-4 py-4 text-end">
-                                        <a href="/Shipments/Details?trackingCode=@item.TrackingCode" class="btn btn-sm btn-gold px-3">View Details</a>
-                                    </td>
-                                </tr>
-                    }
-                }
-                else
-                {
+            <tbody>
+                @if (Model.Any()) {
+                    @foreach (var item in Model) {
                         <tr>
-                            <td colspan="6" class="text-center py-5 text-secondary small">No manifest records found in your archive.</td>
+                            <td class="ps-4 py-4 fw-bold font-monospace">#@item.TrackingCode</td>
+                            <td class="py-4">
+                                <div class="text-white small">@item.DeliveryRoute?.StartLocation</div>
+                                <div class="text-secondary" style="font-size: 0.7rem;">→ @item.DeliveryRoute?.EndLocation</div>
+                            </td>
+                            <td class="py-4">
+                                <div class="text-gold small fw-bold">@item.DeliveryRoute?.EstimatedTimeHours hrs</div>
+                                <div class="text-secondary small">@item.DeliveryRoute?.DistanceKm km</div>
+                            </td>
+                            <td class="py-4">
+                                <span class="badge border @(item.Status?.Name == "Delivered" ? "border-success text-success" : "border-gold text-gold") px-3 py-2 uppercase-tracking" style="font-size: 0.6rem;">
+                                    @item.Status?.Name
+                                </span>
+                            </td>
+                            <td class="py-4 text-secondary small">@item.CreatedAt.ToString("MMM dd, yyyy")</td>
+                            <td class="pe-4 py-4 text-end">
+                                <a href="/Shipments/Details?trackingCode=@item.TrackingCode" class="btn btn-sm btn-outline-gold px-3">View</a>
+                            </td>
                         </tr>
+                    }
+                } else {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-secondary uppercase-tracking small">No manifest records found in archive.</td>
+                    </tr>
                 }
             </tbody>
         </table>
     </div>
 </div>
-
-<style>
-    .table-hover tbody tr:hover {
-        background: rgba(212, 175, 55, 0.03) !important;
-        transition: 0.3s;
-    }
-    .btn-outline-gold {
-        border-color: #D4AF37;
-        color: #D4AF37;
-    }
-    .btn-outline-gold:hover {
-        background: #D4AF37;
-        color: #000;
-    }
-</style>

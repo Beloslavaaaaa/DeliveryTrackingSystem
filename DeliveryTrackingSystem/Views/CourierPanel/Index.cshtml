@@ -4,34 +4,56 @@
     ViewData["Title"] = "Operations Dashboard";
 }
 
-<div class="row mb-5">
-    <div class="col-md-12">
-        <h2 class="text-white fw-bold">WELCOME, <span class="text-gold">@Model.FirstName.ToUpper()</span></h2>
-        <p class="text-secondary">SYSTEM STATUS: <span class="text-success">OPERATIONAL</span> | @DateTime.Now.ToString("dd MMM yyyy HH:mm")</p>
-    </div>
-</div>
-
-<div class="row g-4">
-    <div class="col-md-6">
-        <div class="p-4 terminal-border bg-dark" style="border-left: 4px solid #D4AF37;">
-            <span class="text-secondary small fw-bold text-uppercase">Active Assignments</span>
-            <h1 class="text-gold fw-bold mb-0">@ViewBag.ActiveCount</h1>
-            <p class="small text-muted mt-2 mb-0">CURRENTLY IN MANIFEST</p>
+<div class="container-fluid terminal-fade-in p-0">
+    <div class="row mb-5 align-items-end">
+        <div class="col-md-8">
+            <h4 class="text-secondary small mb-1 uppercase-tracking">Operational Command</h4>
+            <h1 class="display-5 text-white fw-bold mb-0">WELCOME, <span class="text-gold">@Model.FirstName.ToUpper()</span></h1>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="text-secondary font-monospace small">
+                <span class="text-success">●</span> SYSTEM ONLINE | @DateTime.Now.ToString("HH:mm:ss")
+            </div>
         </div>
     </div>
 
-    <div class="col-md-6">
-        <div class="p-4 terminal-border bg-dark" style="border-left: 4px solid #198754;">
-            <span class="text-secondary small fw-bold text-uppercase">Revenue Collected</span>
-            <h1 class="text-success fw-bold mb-0">@ViewBag.TotalCollected.ToString("C")</h1>
-            <span class="small text-muted">SETTLED FROM COMPLETED DELIVERIES</span>
+    <div class="row g-4">
+        <div class="col-xl-4 col-md-6">
+            <div class="p-4 terminal-border rounded shadow-sm h-100" style="border-top: 3px solid #D4AF37;">
+                <div class="d-flex justify-content-between">
+                    <span class="text-secondary small fw-bold text-uppercase">Manifest Load</span>
+                    <i class="bi bi-truck text-gold"></i>
+                </div>
+                <h1 class="display-4 text-white fw-bold my-3">@ViewBag.ActiveCount</h1>
+                <p class="small text-muted mb-0">Active assignments currently in transit.</p>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6">
+            <div class="p-4 terminal-border rounded shadow-sm h-100" style="border-top: 3px solid #198754;">
+                <div class="d-flex justify-content-between">
+                    <span class="text-secondary small fw-bold text-uppercase">Revenue Hub</span>
+                    <i class="bi bi-currency-dollar text-success"></i>
+                </div>
+                <h1 class="display-4 text-white fw-bold my-3">@ViewBag.TotalCollected.ToString("N0")</h1>
+                <p class="small text-muted mb-0">Total assets settled in current cycle.</p>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-12">
+            <div class="p-4 terminal-border rounded shadow-sm h-100 bg-black">
+                <h6 class="text-gold small uppercase-tracking mb-3">Quick Actions</h6>
+                <div class="d-grid gap-2">
+                    <a href="/CourierPanel/Active" class="btn btn-outline-gold btn-sm py-2">Open Active Manifests</a>
+                    <a href="/Shipments/Create" class="btn btn-gold btn-sm py-2">Generate New Asset ID</a>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="mt-5 pt-5 border-top border-secondary">
-    <p class="text-muted small">
-        <i class="bi bi-info-circle me-2"></i>
-        USE THE LATERAL NAVIGATION BAR TO ACCESS ACTIVE MANIFESTS OR USER DIRECTORY.
-    </p>
+    <div class="mt-5 pt-4 border-top border-secondary">
+        <div class="bg-soft-black p-3 rounded font-monospace" style="font-size: 0.75rem; color: #555;">
+            <span class="text-gold">[LOG]:</span> Session authorized for @Model.Email. Successfully connected to Central Relay.
+        </div>
+    </div>
 </div>

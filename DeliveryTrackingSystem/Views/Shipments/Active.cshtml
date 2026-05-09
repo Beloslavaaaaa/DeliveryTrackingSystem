@@ -8,77 +8,63 @@
     var outgoing = Model.Where(s => s.SenderId == currentUserId);
 }
 
-<div class="container py-5">
-    <div class="mb-5">
-        <h4 class="text-secondary small mb-1" style="letter-spacing: 3px;">REAL-TIME TRACKING</h4>
-        <h1 class="text-gold display-6 fw-bold">ACTIVE PIPELINE</h1>
+<div class="container py-5 terminal-fade-in">
+    <div class="mb-5 border-start border-gold ps-4">
+        <h4 class="text-secondary small mb-1 uppercase-tracking">Real-Time Tracking</h4>
+        <h1 class="text-gold display-6 fw-bold tracking-tight">ACTIVE PIPELINE</h1>
     </div>
 
     <div class="mb-5">
-        <h5 class="text-white mb-4"><i class="bi bi-box-arrow-in-down text-gold me-2"></i> EXPECTING DELIVERY</h5>
+        <h5 class="text-white mb-4 uppercase-tracking small"><i class="bi bi-box-arrow-in-down text-gold me-2"></i> Expecting Delivery</h5>
         <div class="row g-4">
-            @if (incoming.Any())
-            {
-                @foreach (var item in incoming)
-                {
-                            <div class="col-md-6 col-lg-4">
-                                <div class="card bg-dark border-secondary h-100 shadow-sm">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between mb-3">
-                                            <span class="badge border border-gold text-gold">@item.Status?.Name</span>
-                                            <span class="text-secondary small">#@item.TrackingCode</span>
-                                        </div>
-                                        <h6 class="text-white mb-1">From: @item.DeliveryRoute?.StartLocation</h6>
-                                        <p class="text-secondary small">Est. Arrival: @(item.EstimatedDelivery?.ToString("MMM dd") ?? "TBD")</p>
-                                        <hr class="border-secondary">
-                                        <a href="/Shipments/Details?trackingCode=@item.TrackingCode" class="btn btn-sm btn-outline-gold w-100">INTERCEPT DETAILS</a>
-                                    </div>
+            @if (incoming.Any()) {
+                @foreach (var item in incoming) {
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card bg-soft-black border-secondary h-100 shadow-hover">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span class="badge border border-gold text-gold px-2 py-1 uppercase-tracking" style="font-size: 0.6rem;">@item.Status?.Name</span>
+                                    <span class="text-secondary small font-monospace">#@item.TrackingCode</span>
                                 </div>
+                                <h6 class="text-white mb-1">From: @item.DeliveryRoute?.StartLocation</h6>
+                                <p class="text-secondary small mb-3">ETA: @(item.EstimatedDelivery?.ToString("MMM dd, HH:mm") ?? "TBD")</p>
+                                <a href="/Shipments/Details?trackingCode=@item.TrackingCode" class="btn btn-sm btn-outline-gold w-100 uppercase-tracking py-2">Intercept Details</a>
                             </div>
-                }
-            }
-            else
-            {
-                    <div class="col-12 text-secondary small py-3 border border-secondary border-dashed rounded text-center" style="border-style: dashed !important;">
-                        No inbound shipments detected in the current cycle.
+                        </div>
                     </div>
+                }
+            } else {
+                <div class="col-12 text-secondary small py-4 border-terminal-dashed rounded text-center">
+                    No inbound shipments detected in the current cycle.
+                </div>
             }
         </div>
     </div>
 
     <div>
-        <h5 class="text-white mb-4"><i class="bi bi-box-arrow-up text-gold me-2"></i> OUTBOUND LOGISTICS</h5>
+        <h5 class="text-white mb-4 uppercase-tracking small"><i class="bi bi-box-arrow-up text-gold me-2"></i> Outbound Logistics</h5>
         <div class="row g-4">
-            @if (outgoing.Any())
-            {
-                @foreach (var item in outgoing)
-                {
-                            <div class="col-md-6 col-lg-4">
-                                <div class="card bg-dark border-gold-soft h-100 shadow-sm" style="background: rgba(212,175,55,0.02);">
-                                    <div class="card-body">
-                                        <div class="d-flex justify-content-between mb-3">
-                                            <span class="badge bg-gold text-black">@item.Status?.Name</span>
-                                            <span class="text-secondary small">#@item.TrackingCode</span>
-                                        </div>
-                                        <h6 class="text-white mb-1">To: @item.DeliveryRoute?.EndLocation</h6>
-                                        <p class="text-secondary small">Distance: @item.DeliveryRoute?.DistanceKm km</p>
-                                        <a href="/Shipments/Details?trackingCode=@item.TrackingCode" class="btn btn-sm btn-gold w-100">MANAGE CARGO</a>
-                                    </div>
+            @if (outgoing.Any()) {
+                @foreach (var item in outgoing) {
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card bg-soft-black border-gold-soft h-100 shadow-hover">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <span class="badge bg-gold text-black px-2 py-1 uppercase-tracking fw-bold" style="font-size: 0.6rem;">@item.Status?.Name</span>
+                                    <span class="text-secondary small font-monospace">#@item.TrackingCode</span>
                                 </div>
+                                <h6 class="text-white mb-1">To: @item.DeliveryRoute?.EndLocation</h6>
+                                <p class="text-secondary small mb-3">Distance: @item.DeliveryRoute?.DistanceKm km</p>
+                                <a href="/Shipments/Details?trackingCode=@item.TrackingCode" class="btn btn-sm btn-gold w-100 uppercase-tracking py-2">Manage Cargo</a>
                             </div>
-                }
-            }
-            else
-            {
-                    <div class="col-12 text-secondary small py-3 border border-secondary border-dashed rounded text-center" style="border-style: dashed !important;">
-                        No active outbound manifests found.
+                        </div>
                     </div>
+                }
+            } else {
+                <div class="col-12 text-secondary small py-4 border-terminal-dashed rounded text-center">
+                    No active outbound manifests found.
+                </div>
             }
         </div>
     </div>
 </div>
-
-<style>
-    .border-gold-soft { border: 1px solid rgba(212, 175, 55, 0.3); }
-    .bg-gold { background: var(--gold-gradient); }
-</style>

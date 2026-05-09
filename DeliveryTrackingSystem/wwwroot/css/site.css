@@ -1,22 +1,240 @@
-html {
-  font-size: 14px;
+/* CARGOBELL GLOBAL - Terminal v3.5 
+    Master Stylesheet
+*/
+
+:root {
+    /* Color Palette */
+    --gold-solid: #D4AF37;
+    --gold-bright: #f7ef8a;
+    --gold-dark: #ae8625;
+    --gold-gradient: linear-gradient(135deg, #BF953F 0%, #FCF6BA 45%, #B38728 70%, #FBF5B7 100%);
+    --terminal-black: #050505;
+    --soft-black: #0a0a0a;
+    --glass-bg: rgba(10, 10, 10, 0.85);
+    --border-gold: rgba(212, 175, 55, 0.3);
+    --border-dim: rgba(255, 255, 255, 0.1);
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
+/* Base Reset & Typography */
 body {
-  margin-bottom: 60px;
+    background-color: var(--terminal-black) !important;
+    color: #ffffff !important;
+    font-family: 'Montserrat', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+h1, h2, h3, .navbar-brand, .btn-gold, .uppercase-tracking {
+    font-family: 'Cinzel', serif;
+}
+
+/* Utility Classes */
+.text-gold {
+    background: var(--gold-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
+.bg-soft-black {
+    background-color: var(--soft-black) !important;
+}
+
+.border-gold {
+    border: 1px solid var(--gold-solid) !important;
+}
+
+.border-gold-soft {
+    border: 1px solid var(--border-gold) !important;
+}
+
+.uppercase-tracking {
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-size: 0.75rem;
+}
+
+.tracking-tight {
+    letter-spacing: -1px;
+}
+
+/* Navigation */
+.navbar {
+    background-color: #000 !important;
+    border-bottom: 1px solid var(--border-gold);
+    backdrop-filter: blur(10px);
+}
+
+.nav-link {
+    transition: all 0.3s ease;
+}
+
+    .nav-link:hover {
+        color: var(--gold-solid) !important;
+        text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+    }
+
+/* Buttons */
+.btn-gold {
+    background: var(--gold-gradient) !important;
+    color: #000 !important;
+    border: none !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+    .btn-gold:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+    }
+
+.btn-outline-gold {
+    border: 1px solid var(--gold-solid);
+    color: var(--gold-solid);
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+    .btn-outline-gold:hover {
+        background: var(--gold-gradient);
+        color: #000 !important;
+    }
+
+/* Cards & Containers */
+.terminal-card {
+    background: var(--soft-black);
+    border: 1px solid var(--border-dim);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.shadow-hover {
+    transition: all 0.3s ease;
+}
+
+    .shadow-hover:hover {
+        border-color: var(--gold-solid) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        transform: translateY(-5px);
+    }
+
+/* Hero Section */
+.hero-wrap {
+    background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('/images/cargo-bell-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+}
+
+/* Table Design */
+.table {
+    color: #fff !important;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(212, 175, 55, 0.05) !important;
+}
+
+.table thead {
+    background-color: rgba(212, 175, 55, 0.03);
+}
+
+/* Timeline Components */
+.timeline-dot {
+    width: 12px;
+    height: 12px;
+    background: var(--gold-solid);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--gold-solid);
+}
+
+/* Border Styles */
+.border-terminal-dashed {
+    border: 1px dashed var(--border-gold) !important;
+}
+
+/* Inputs */
+.form-control {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-dim);
+    color: white !important;
+}
+
+    .form-control:focus {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: var(--gold-solid);
+        box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
+    }
+
+/* Animations */
+.terminal-fade-in {
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Courier Sidebar Specifics */
+.sidebar .nav-link {
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+    border-left: 3px solid transparent;
+}
+
+    .sidebar .nav-link.active {
+        background: rgba(212, 175, 55, 0.1);
+        border-left: 3px solid var(--gold-solid);
+        color: var(--gold-solid) !important;
+    }
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--terminal-black);
+}
+
+::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 10px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--gold-dark);
+    }
+
+/* Print Overrides */
+@media print {
+    body {
+        background: white !important;
+        color: black !important;
+    }
+
+    .navbar, footer, .btn {
+        display: none !important;
+    }
+
+    .card {
+        border: 1px solid #ccc !important;
+    }
+
+    .text-gold {
+        background: none !important;
+        -webkit-text-fill-color: black !important;
+        color: black !important;
+    }
 }

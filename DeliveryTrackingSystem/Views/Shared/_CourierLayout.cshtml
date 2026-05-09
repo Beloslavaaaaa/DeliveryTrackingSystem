@@ -6,133 +6,104 @@
     <title>@ViewData["Title"] - Cargobell</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <style>
-        :root {
-            --gold-gradient: linear-gradient(135deg, #D4AF37 0%, #f7ef8a 50%, #ae8625 100%);
-            --glass-bg: rgba(10, 10, 10, 0.9);
-            --border-gold: rgba(212, 175, 55, 0.4);
-        }
+            body {
+                background: #000 !important;
+                color: #fff;
+                margin: 0;
+                padding: 0;
+                height: 100vh;
+                overflow: hidden; /* Prevent body scroll */
+            }
 
-        body {
-            background: #000 !important;
-            font-family: 'Montserrat', sans-serif;
-            color: #fff;
-            overflow-x: hidden;
-            height: 100vh; /* Lock height to the screen */
-        }
+            /* Fixed Sidebar sizing */
+            .sidebar {
+                width: 260px;
+                background: #000;
+                border-right: 1px solid rgba(212, 175, 55, 0.3);
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                z-index: 1000;
+                display: flex;
+                flex-direction: column;
+            }
 
-        /* Scaling Sidebar */
-        .sidebar {
-            width: 15vw; /* Scales with screen width */
-            min-width: 180px;
-            background: #000;
-            border-right: 1px solid var(--border-gold);
-            position: fixed;
-            height: 100vh;
-            z-index: 1000;
-        }
+            /* Main content offset by fixed sidebar width */
+            main {
+                margin-left: 260px;
+                height: 100vh;
+                overflow-y: auto; /* Individual scroll for content */
+                padding: 40px !important;
+                background: radial-gradient(circle at top right, rgba(212, 175, 55, 0.05), transparent);
+            }
 
-        /* Scaling Main Content */
-        main {
-            margin-left: 15vw;
-            padding: 3vh 3vw !important; /* Vertical and horizontal scaling padding */
-            height: 100vh;
-            overflow-y: auto;
-        }
+            .nav-link {
+                color: #888;
+                font-size: 0.85rem;
+                letter-spacing: 1px;
+                padding: 12px 25px;
+                transition: 0.3s;
+                border-left: 3px solid transparent;
+            }
 
-        /* The "Elite" Card - Sizing Adjusted */
-        .node-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--border-gold);
-            padding: 1.5rem;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: 间-between;
-        }
+                .nav-link:hover, .nav-link.active {
+                    color: #D4AF37 !important;
+                    background: rgba(212, 175, 55, 0.05);
+                    border-left: 3px solid #D4AF37;
+                }
 
-        /* Floating Gold Button */
-        .btn-create-floating {
-            position: fixed;
-            top: 3vh;
-            right: 3vw;
-            background: var(--gold-gradient);
-            color: #000 !important;
-            font-family: 'Cinzel', serif;
-            font-weight: 900;
-            padding: 10px 25px;
-            text-decoration: none;
-            z-index: 1100;
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
-            clip-path: polygon(5% 0, 100% 0, 95% 100%, 0 100%);
-        }
-
-        .text-gold {
-            background: var(--gold-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-family: 'Cinzel', serif;
-        }
-
-        /* High-Density Grid */
-        .row-cols-custom {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
+            .terminal-border {
+                border: 1px solid rgba(255,255,255,0.1);
+                background: rgba(15, 15, 15, 0.6);
+            }
     </style>
 </head>
 <body>
-    <div class="container-fluid p-0">
-        <div class="row g-0">
-            <nav class="sidebar py-4 d-flex flex-column">
-                <div class="px-3 mb-4">
-                    <h5 class="text-gold fw-bold mb-0">CARGOBELL</h5>
-                    <span class="small text-muted" style="font-size: 0.65rem;">TERMINAL v3.5</span>
-                </div>
+    <div class="sidebar py-4">
+        <div class="px-4 mb-5">
+            <h5 class="text-gold fw-bold mb-0 tracking-tight">CARGOBELL</h5>
+            <span class="text-muted" style="font-size: 0.6rem; letter-spacing: 2px;">TERMINAL v3.5</span>
+        </div>
 
-                <div class="nav flex-column mb-auto">
-                    @{
-                        var currentPath = Context.Request.Path.Value ?? "";
-                    }
+        <div class="nav flex-column mb-auto">
+            @{
+                var path = Context.Request.Path.Value ?? "";
+            }
+            <a class="nav-link @(path == "/CourierPanel" ? "active" : "")" href="/CourierPanel">
+                <i class="bi bi-cpu me-3"></i> DASHBOARD
+            </a>
+            <a class="nav-link @(path.Contains("/Active") ? "active" : "")" href="/CourierPanel/Active">
+                <i class="bi bi-box-seam me-3"></i> ACTIVE CARGO
+            </a>
+            <a class="nav-link @(path.Contains("/History") ? "active" : "")" href="/CourierPanel/History">
+                <i class="bi bi-archive me-3"></i> LOGS
+            </a>
+            <a class="nav-link @(path.Contains("/Users") ? "active" : "")" href="/CourierPanel/Users">
+                <i class="bi bi-people me-3"></i> DIRECTORY
+            </a>
+        </div>
 
-                    <a class="nav-link @(currentPath == "/CourierPanel" ? "active" : "")" href="/CourierPanel">
-                        <i class="bi bi-speedometer2 me-2"></i> DASHBOARD
-                    </a>
-
-                    <a class="nav-link @(currentPath.Contains("/Active") ? "active" : "")" href="/CourierPanel/Active">
-                        <i class="bi bi-box-seam me-2"></i> ACTIVE CARGO
-                    </a>
-
-                    <a class="nav-link @(currentPath.Contains("/History") ? "active" : "")" href="/CourierPanel/History">
-                        <i class="bi bi-clock-history me-2"></i> HISTORY
-                    </a>
-
-                    <a class="nav-link @(currentPath.Contains("/Users") ? "active" : "")" href="/CourierPanel/Users">
-                        <i class="bi bi-people me-2"></i> DIRECTORY
-                    </a>
-                </div>
-
-                <div class="px-3 mt-auto mb-4">
-                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
-                        <button type="submit" class="btn btn-outline-danger w-100 btn-sm text-uppercase fw-bold" style="font-size: 0.65rem;">Terminate Session</button>
-                    </form>
-                </div>
-            </nav>
-
-            <main>
-                @if (TempData["SuccessMessage"] != null)
-                {
-                    <div class="alert alert-success bg-black text-success border-success mb-4">
-                        SYSTEM: @TempData["SuccessMessage"]
-                    </div>
-                }
-                @RenderBody()
-            </main>
+        <div class="px-4 mt-auto mb-4">
+            <form asp-area="Identity" asp-page="/Account/Logout" method="post">
+                <button type="submit" class="btn btn-outline-danger w-100 btn-sm uppercase-tracking">Terminate</button>
+            </form>
         </div>
     </div>
+
+    <main>
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert bg-black text-success border-success small mb-4">
+                <i class="bi bi-check-all me-2"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+        @RenderBody()
+    </main>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    @RenderSection("Scripts", required: false)
 </body>
 </html>

@@ -1,37 +1,50 @@
 ﻿@model Cargobell.Shared.ViewModels.ShipmentTrackingViewModel
 
-<div class="container py-5">
-    <div class="card border-0 shadow-lg overflow-hidden">
-        <div class="p-5 border-bottom border-gold">
+<div class="container py-5 terminal-fade-in">
+    <div class="card bg-soft-black border-gold shadow-lg overflow-hidden">
+        <div class="p-4 p-md-5 border-bottom border-gold bg-black">
             <div class="row align-items-center">
-                <div class="col-md-6">
-                    <h1 class="text-gold mb-0">ID: @Model.TrackingCode</h1>
-                    <p class="text-secondary small mt-2">TRANSIT MANIFEST</p>
+                <div class="col-md-7">
+                    <h4 class="text-secondary small mb-1 uppercase-tracking">Asset Manifest</h4>
+                    <h1 class="text-gold mb-0 tracking-tight">ID: @Model.TrackingCode</h1>
+                    <p class="text-white-50 mt-3 mb-0 small">
+                        <i class="bi bi-geo-alt-fill text-gold me-2"></i> @Model.Route
+                    </p>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <span class="badge py-3 px-4 rounded-0" style="background: var(--gold-solid); color: #000; font-family: 'Cinzel'; font-size: 1rem;">
-                        @Model.Status
-                    </span>
+                <div class="col-md-5 text-md-end mt-4 mt-md-0">
+                    <div class="d-inline-block text-center p-3 border border-gold rounded">
+                        <p class="text-secondary small uppercase-tracking mb-1">Current Status</p>
+                        <h4 class="text-gold mb-0 fw-bold">@Model.Status?.ToUpper()</h4>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card-body p-5">
-            <p class="text-gold small mb-1 text-uppercase fw-bold" style="letter-spacing: 2px;">Route</p>
-            <h3 class="fw-light mb-5">@Model.Route</h3>
-
-            <div class="timeline">
-                @foreach (var history in Model.StatusHistory)
-                {
-                        <div class="d-flex mb-4">
-                            <div class="me-4 text-gold"><i class="bi bi-dot fs-1"></i></div>
-                            <div>
-                                <h5 class="text-white mb-0">@history.Status.Name</h5>
-                                <small class="text-secondary">@history.Timestamp.ToString("MMMM dd, yyyy - HH:mm")</small>
-                            </div>
+        <div class="card-body p-4 p-md-5">
+            <h5 class="text-white uppercase-tracking small mb-5">Transit Chain Events</h5>
+            
+            <div class="position-relative">
+                <div class="position-absolute h-100 border-start border-secondary opacity-25" style="left: 0.75rem; top: 0;"></div>
+                
+                @foreach (var history in Model.StatusHistory.OrderByDescending(h => h.Timestamp)) {
+                    <div class="d-flex mb-5 position-relative">
+                        <div class="bg-black border border-gold rounded-circle d-flex align-items-center justify-content-center shadow-gold" 
+                             style="width: 1.5rem; height: 1.5rem; z-index: 2;">
+                            <div class="bg-gold rounded-circle" style="width: 0.5rem; height: 0.5rem;"></div>
                         </div>
+                        <div class="ms-4">
+                            <h6 class="text-gold mb-1 fw-bold">@history.Status.Name</h6>
+                            <p class="text-secondary small mb-0 font-monospace">@history.Timestamp.ToString("MMMM dd, yyyy — HH:mm")</p>
+                        </div>
+                    </div>
                 }
             </div>
+        </div>
+        
+        <div class="card-footer bg-black border-top border-secondary p-4 text-center">
+            <button onclick="window.print()" class="btn btn-sm btn-outline-secondary uppercase-tracking small">
+                <i class="bi bi-printer me-2"></i> Export Manifest
+            </button>
         </div>
     </div>
 </div>
