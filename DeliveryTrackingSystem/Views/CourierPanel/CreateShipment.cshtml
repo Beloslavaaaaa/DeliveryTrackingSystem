@@ -1,129 +1,147 @@
-﻿@model Cargobell.Shared.Models.Shipment
+﻿@model Cargobell.Shared.ViewModels.CreateShipmentViewModel
 @{
     Layout = "_CourierLayout";
+    ViewData["Title"] = "Rapid In-Take";
 }
 
-<div class="mb-5">
-    <h2 class="text-gold fw-bold mb-1">RAPID IN-TAKE</h2>
-    <p class="text-secondary small text-uppercase">Input Phone Number and Press Enter to Search</p>
-</div>
-
-<form id="manifestForm" asp-action="CreateShipment" method="post" class="terminal-border p-5">
-    @Html.AntiForgeryToken()
-
-    <input type="hidden" asp-for="SenderId" id="senderId" />
-    <input type="hidden" asp-for="ReceiverId" id="receiverId" />
-    <input type="hidden" asp-for="DeliveryRouteId" id="finalRouteId" />
-
-    <div class="row g-5">
-        <div class="col-md-6 border-end border-secondary">
-            <h5 class="text-gold mb-4"><i class="bi bi-box-arrow-up me-2"></i>SENDER DATA</h5>
-            <label class="text-muted small fw-bold">PHONE NUMBER</label>
-            <input type="text" id="senderPhone" class="form-control bg-black text-white border-gold mb-3" placeholder="Search phone...">
-
-            <div id="senderDetails" class="mt-3 p-3 bg-dark rounded d-none">
-                <p class="text-success small mb-1"><i class="bi bi-check-circle me-1"></i> REGISTERED USER</p>
-                <h6 id="senderDisplayName" class="text-white fw-bold mb-0"></h6>
-            </div>
-
-            <div id="senderManual" class="mt-3">
-                <label class="text-muted small fw-bold">NAME (FOR UNREGISTERED/MANUAL)</label>
-                <input type="text" name="SenderManualName" id="SenderManualName" class="form-control bg-transparent text-white border-secondary">
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <h5 class="text-gold mb-4"><i class="bi bi-box-arrow-in-down me-2"></i>RECEIVER DATA</h5>
-            <label class="text-muted small fw-bold">PHONE NUMBER</label>
-            <input type="text" id="receiverPhone" class="form-control bg-black text-white border-gold mb-3" placeholder="Search phone...">
-
-            <div id="receiverDetails" class="mt-3 p-3 bg-dark rounded d-none">
-                <p class="text-success small mb-1"><i class="bi bi-check-circle me-1"></i> REGISTERED USER</p>
-                <h6 id="receiverDisplayName" class="text-white fw-bold mb-0"></h6>
-            </div>
-
-            <div id="receiverManual" class="mt-3">
-                <label class="text-muted small fw-bold">NAME (FOR UNREGISTERED/MANUAL)</label>
-                <input type="text" name="ReceiverManualName" id="ReceiverManualName" class="form-control bg-transparent text-white border-secondary">
-            </div>
-        </div>
-
-        <hr class="border-secondary">
-
-        <div class="col-md-12">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label class="text-muted small fw-bold">ORIGIN</label>
-                    <select id="startOffice" class="form-select bg-black text-white border-gold">
-                        @foreach (var office in (IEnumerable<Cargobell.Shared.Models.Office>)ViewBag.Offices)
-                        {
-                            <option value="@office.OfficeId">@office.Name</option>
-                        }
-                    </select>
-                </div>
-                <div class="col-md-6">
-                    <label class="text-muted small fw-bold">DESTINATION</label>
-                    <select id="endOffice" class="form-select bg-black text-white border-gold">
-                        <option value="">-- SELECT --</option>
-                        @foreach (var office in (IEnumerable<Cargobell.Shared.Models.Office>)ViewBag.Offices)
-                        {
-                            <option value="@office.OfficeId">@office.Name</option>
-                        }
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-12">
-            <label class="text-gold small fw-bold">NOTES</label>
-            <textarea name="Notes" class="form-control bg-transparent text-white border-secondary" rows="2"></textarea>
-        </div>
+<div class="terminal-fade-in container-fluid">
+    <div class="mb-5 border-start border-gold ps-4">
+        <h4 class="text-secondary small mb-1 uppercase-tracking">Asset In-Take</h4>
+        <h2 class="text-gold fw-bold mb-0">RAPID MANIFEST GENERATOR</h2>
     </div>
 
-    <button type="submit" class="btn btn-gold w-100 mt-5 py-3 fw-bold">AUTHORIZE MANIFEST</button>
-</form>
+    <form asp-action="CreateShipment" method="post" class="terminal-card p-5 shadow-lg">
+        @Html.AntiForgeryToken()
+        
+        <input type="hidden" asp-for="SenderId" id="senderId" />
+        <input type="hidden" asp-for="ReceiverId" id="receiverId" />
+        <input type="hidden" asp-for="DeliveryRouteId" id="finalRouteId" />
+
+        <div class="row g-5">
+            <div class="col-md-6 border-end border-secondary">
+                <h6 class="text-gold uppercase-tracking mb-4"><i class="bi bi-person-up me-2"></i> Originator</h6>
+                
+                <div class="mb-3">
+                    <label class="text-muted small fw-bold mb-2">PHONE LOOKUP</label>
+                    <div class="input-group">
+                        <input type="text" id="senderPhone" class="form-control bg-black text-white border-gold font-monospace" placeholder="Search...">
+                        <button type="button" class="btn btn-outline-gold" onclick="lookupUser('sender')">FETCH</button>
+                    </div>
+                </div>
+
+                <div id="senderDetails" class="p-3 bg-soft-black border border-success rounded d-none mb-3">
+                    <span class="text-success small uppercase-tracking">Verified Account Found</span>
+                    <h5 id="senderDisplayName" class="text-white mb-0 mt-1"></h5>
+                </div>
+
+                <div id="senderManual">
+                    <label class="text-muted small fw-bold mb-2">MANUAL NAME (GUEST)</label>
+                    <input type="text" asp-for="SenderManualName" class="form-control bg-transparent text-white border-secondary">
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <h6 class="text-gold uppercase-tracking mb-4"><i class="bi bi-person-down me-2"></i> Destination Account</h6>
+                
+                <div class="mb-3">
+                    <label class="text-muted small fw-bold mb-2">PHONE LOOKUP</label>
+                    <div class="input-group">
+                        <input type="text" id="receiverPhone" class="form-control bg-black text-white border-gold font-monospace" placeholder="Search...">
+                        <button type="button" class="btn btn-outline-gold" onclick="lookupUser('receiver')">FETCH</button>
+                    </div>
+                </div>
+
+                <div id="receiverDetails" class="p-3 bg-soft-black border border-success rounded d-none mb-3">
+                    <span class="text-success small uppercase-tracking">Verified Account Found</span>
+                    <h5 id="receiverDisplayName" class="text-white mb-0 mt-1"></h5>
+                </div>
+
+                <div id="receiverManual">
+                    <label class="text-muted small fw-bold mb-2">MANUAL NAME (GUEST)</label>
+                    <input type="text" asp-for="ReceiverManualName" class="form-control bg-transparent text-white border-secondary">
+                </div>
+            </div>
+
+            <hr class="border-secondary my-5">
+
+            <div class="col-md-12">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <label class="text-gold small fw-bold mb-2">ORIGIN HUB</label>
+                        <select id="startOffice" class="form-select bg-black text-white border-secondary">
+                            @foreach (var office in (IEnumerable<Cargobell.Shared.Models.Office>)ViewBag.Offices)
+                            {
+                                <option value="@office.OfficeId">@office.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-gold small fw-bold mb-2">DESTINATION HUB</label>
+                        <select id="endOffice" class="form-select bg-black text-white border-secondary">
+                            <option value="">-- SELECT TARGET --</option>
+                            @foreach (var office in (IEnumerable<Cargobell.Shared.Models.Office>)ViewBag.Offices)
+                            {
+                                <option value="@office.OfficeId">@office.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-gold small fw-bold mb-2">COLLECTION (COD)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-white">$</span>
+                            <input type="number" asp-for="CodAmount" class="form-control bg-black text-white border-secondary font-monospace">
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" asp-for="IsCashOnDelivery" id="isCod">
+                            <label class="form-check-label text-muted small" for="isCod">Active COD Collection</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12 mt-4">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" asp-for="IsFragile" id="fragile">
+                    <label class="form-check-label text-danger small fw-bold" for="fragile">FRAGILE CARGO HANDLING</label>
+                </div>
+                <label class="text-muted small fw-bold mb-2">MANIFEST NOTES</label>
+                <textarea asp-for="Notes" class="form-control bg-transparent text-white border-secondary" rows="2"></textarea>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-gold w-100 mt-5 py-3 fw-bold uppercase-tracking">AUTHORIZE SHIPMENT</button>
+    </form>
+</div>
 
 @section Scripts {
     <script>
-        $(document).ready(function () {
-            // Prevent Enter from submitting form, use it for search instead
-            $('#manifestForm').on('keydown', function (e) {
-                if (e.keyCode == 13) {
-                    e.preventDefault();
-                    if (e.target.id === 'senderPhone') lookupUser($(e.target).val(), 'sender');
-                    if (e.target.id === 'receiverPhone') lookupUser($(e.target).val(), 'receiver');
-                    return false;
-                }
-            });
-
-            function lookupUser(phone, prefix) {
-                if (phone.length >= 8) {
-                    $.get('/CourierPanel/GetUserByPhone', { phone: phone }, function (user) {
-                        if (user) {
-                            $(`#${prefix}Details`).removeClass('d-none');
-                            $(`#${prefix}DisplayName`).text(user.firstName + " " + user.lastName);
-                            $(`#${prefix}Id`).val(user.id);
-                            // Hide manual name field if user found
-                            $(`#${prefix}Manual`).addClass('d-none');
-                        } else {
-                            alert("No registered user found with this phone. Please enter name manually.");
-                            $(`#${prefix}Details`).addClass('d-none');
-                            $(`#${prefix}Id`).val('');
-                            $(`#${prefix}Manual`).removeClass('d-none');
-                        }
-                    });
-                }
+        function lookupUser(prefix) {
+            let phone = $(`#${prefix}Phone`).val();
+            if (phone.length >= 7) {
+                $.get('/CourierPanel/GetUserByPhone', { phone: phone }, function (user) {
+                    if (user) {
+                        $(`#${prefix}Details`).removeClass('d-none');
+                        $(`#${prefix}DisplayName`).text(user.firstName + " " + user.lastName);
+                        $(`#${prefix}Id`).val(user.id);
+                        $(`#${prefix}Manual`).addClass('d-none');
+                    } else {
+                        $(`#${prefix}Details`).addClass('d-none');
+                        $(`#${prefix}Id`).val('');
+                        $(`#${prefix}Manual`).removeClass('d-none');
+                        alert("No registered account. Switching to manual entry.");
+                    }
+                });
             }
+        }
 
-            $('#startOffice, #endOffice').on('change', function () {
-                let sId = $('#startOffice').val();
-                let eId = $('#endOffice').val();
-                if (sId && eId) {
-                    $.get('/CourierPanel/GetRouteDetails', { startId: sId, endId: eId }, function (data) {
-                        $('#finalRouteId').val(data.id);
-                    });
-                }
-            });
+        $('#startOffice, #endOffice').on('change', function() {
+            let s = $('#startOffice').val();
+            let e = $('#endOffice').val();
+            if(s && e) {
+                $.get('/CourierPanel/GetRouteDetails', { startId: s, endId: e }, function(data) {
+                    $('#finalRouteId').val(data.id);
+                });
+            }
         });
     </script>
 }

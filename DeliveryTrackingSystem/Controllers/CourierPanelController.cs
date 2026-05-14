@@ -21,6 +21,7 @@ namespace DeliveryTrackingSystem.Controllers
             _userManager = userManager;
         }
 
+        // --- DASHBOARD ---
         [HttpGet("")]
         public async Task<IActionResult> Index()
         {
@@ -37,37 +38,7 @@ namespace DeliveryTrackingSystem.Controllers
             return View(user);
         }
 
-        // --- НОВИ МЕТОДИ ЗА УПРАВЛЕНИЕ НА ПОТРЕБИТЕЛИ ---
-
-        [HttpPost("ApproveUser")]
-        public async Task<IActionResult> ApproveUser(string userId)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user != null)
-            {
-                user.IsApproved = true;
-                await _userManager.UpdateAsync(user);
-                TempData["SuccessMessage"] = $"USER {user.FirstName.ToUpper()} APPROVED SUCCESSFULLY.";
-            }
-            return RedirectToAction("UserDirectory");
-        }
-
-        [HttpPost("RejectUser")]
-        public async Task<IActionResult> RejectUser(string userId)
-        {
-            var user = await _userManager.FindByIdAsync(userId);
-            if (user != null)
-            {
-                user.IsApproved = false;
-                user.DeclarationFilePath = "REJECTED";
-                await _userManager.UpdateAsync(user);
-                TempData["SuccessMessage"] = "REGISTRATION REJECTED.";
-            }
-            return RedirectToAction("UserDirectory");
-        }
-
-        // --- КРАЙ НА НОВИТЕ МЕТОДИ ---
-
+        // --- ACTIVE CARGO & SHIPMENT MANAGEMENT ---
         [HttpGet("Active")]
         public async Task<IActionResult> ActiveCargo(string searchTerm)
         {
@@ -89,20 +60,18 @@ namespace DeliveryTrackingSystem.Controllers
             return View(await query.OrderByDescending(s => s.CreatedAt).ToListAsync());
         }
 
-        [HttpGet("History")]
-        public async Task<IActionResult> PackageHistory(string searchTerm)
+        [HttpGet("ShipmentDetails/{id}")]
+        public async Task<IActionResult> ShipmentDetails(int id)
         {
-            var userId = _userManager.GetUserId(User);
-            var query = _context.Shipments
-                .Include(s => s.Status).Include(s => s.Sender).Include(s => s.Receiver)
-                .Where(s => s.CourierId == userId && s.Status.Name == "Delivered");
+            var shipment = await _context.Shipments
+                .Include(s => s.Status)
+                .Include(s => s.Sender)
+                .Include(s => s.Receiver)
+                .Include(s => s.DeliveryRoute)
+                .FirstOrDefaultAsync(s => s.ShipmentId == id);
 
-            if (!string.IsNullOrEmpty(searchTerm))
-            {
-                query = query.Where(s => s.TrackingCode.Contains(searchTerm) || s.Receiver.PhoneNumber.Contains(searchTerm));
-            }
-
-            return View(await query.OrderByDescending(s => s.DeliveredDate ?? s.CreatedAt).ToListAsync());
+            if (shipment == null) return NotFound();
+            return View(shipment);
         }
 
         [HttpPost("MarkDelivered")]
@@ -117,11 +86,49 @@ namespace DeliveryTrackingSystem.Controllers
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = "SHIPMENT ARCHIVED TO HISTORY.";
             }
-            return RedirectToAction("Active");
+            return RedirectToAction("ActiveCargo");
         }
 
+        // --- RAPID IN-TAKE (NEW) ---
+        [HttpGet("CreateShipment")]
+        public async Task<IActionResult> CreateShipment()
+        {
+            ViewBag.Offices = await _context.Offices.ToListAsync();
+            return View(new CreateShipmentViewModel());
+        }
+
+        [HttpPost("CreateShipment")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateShipment(CreateShipmentViewModel vm)
+        {
+            var initialStatus = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
+            string generatedCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
+
+            var shipment = new Shipment
+            {
+                TrackingCode = generatedCode,
+                CourierId = _userManager.GetUserId(User),
+                SenderId = vm.SenderId,
+                ReceiverId = vm.ReceiverId,
+                DeliveryRouteId = vm.DeliveryRouteId,
+                StatusId = initialStatus?.StatusId ?? 1,
+                IsCashOnDelivery = vm.IsCashOnDelivery,
+                CodAmount = vm.CodAmount,
+                IsFragile = vm.IsFragile,
+                CreatedAt = DateTime.UtcNow,
+                Notes = $"S: {vm.SenderManualName} | R: {vm.ReceiverManualName} | {vm.Notes}"
+            };
+
+            _context.Shipments.Add(shipment);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"MANIFEST {generatedCode} AUTHORIZED.";
+            return RedirectToAction("ActiveCargo");
+        }
+
+        // --- USER & COURIER REQUEST DIRECTORY ---
         [HttpGet("Users")]
-        public async Task<IActionResult> UserDirectory(string searchTerm)
+        public async Task<IActionResult> UserDirectory()
         {
             var users = await _context.Users
                 .Select(u => new UserRequestViewModel
@@ -131,7 +138,7 @@ namespace DeliveryTrackingSystem.Controllers
                 }).ToListAsync();
 
             ViewBag.AllRequests = await _context.CourierRequests
-                .Include(r => r.UserId)
+                .Include(r => r.User) // Fixed: Ensure it includes User navigation
                 .Where(r => !r.IsCompleted)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
@@ -152,14 +159,15 @@ namespace DeliveryTrackingSystem.Controllers
             {
                 TrackingCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
                 SenderId = req.UserId,
-                ReceiverId = req.UserId, // По подразбиране е до самия него, ако не е посочен друг
+                ReceiverId = req.UserId,
                 StatusId = status.StatusId,
                 DeliveryRouteId = route.DeliveryRouteId,
                 IsFragile = req.IsFragile,
-                IsCashOnDelivery = true, // Може да се направи на избор в CourierRequest
-                CodAmount = req.EstimatedPrice, // ЦЕНАТА Е ТАЗИ ОТ ЗАЯВКАТА!
-                Notes = $"[TYPE: {req.PackageType}] FROM: {req.PickupAddress} TO: {req.DropoffAddress}. Desc: {req.PackageDescription}",
-                CreatedAt = DateTime.UtcNow
+                IsCashOnDelivery = true,
+                CodAmount = req.EstimatedPrice,
+                Notes = $"[AUTO-APPROVED] FROM: {req.PickupAddress} TO: {req.DropoffAddress}.",
+                CreatedAt = DateTime.UtcNow,
+                CourierId = _userManager.GetUserId(User)
             };
 
             _context.Shipments.Add(newShipment);
@@ -167,7 +175,8 @@ namespace DeliveryTrackingSystem.Controllers
             req.Status = "Approved";
 
             await _context.SaveChangesAsync();
-            return RedirectToAction("Active");
+            TempData["SuccessMessage"] = "REQUEST CONVERTED TO ACTIVE MANIFEST.";
+            return RedirectToAction("ActiveCargo");
         }
 
         [HttpPost("RejectRequest")]
@@ -182,6 +191,40 @@ namespace DeliveryTrackingSystem.Controllers
                 TempData["SuccessMessage"] = "REQUEST REJECTED.";
             }
             return RedirectToAction("UserDirectory");
+        }
+
+        // --- HISTORY ---
+        [HttpGet("History")]
+        public async Task<IActionResult> PackageHistory(string searchTerm)
+        {
+            var userId = _userManager.GetUserId(User);
+            var query = _context.Shipments
+                .Include(s => s.Status).Include(s => s.Sender).Include(s => s.Receiver)
+                .Where(s => s.CourierId == userId && s.Status.Name == "Delivered");
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                query = query.Where(s => s.TrackingCode.Contains(searchTerm) || s.Receiver.PhoneNumber.Contains(searchTerm));
+            }
+
+            return View(await query.OrderByDescending(s => s.DeliveredDate ?? s.CreatedAt).ToListAsync());
+        }
+
+        // --- AJAX HELPERS ---
+        [HttpGet("GetUserByPhone")]
+        public async Task<IActionResult> GetUserByPhone(string phone)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phone);
+            if (user == null) return Json(null);
+            return Json(new { id = user.Id, firstName = user.FirstName, lastName = user.LastName });
+        }
+
+        [HttpGet("GetRouteDetails")]
+        public async Task<IActionResult> GetRouteDetails(int startId, int endId)
+        {
+            // In a production app, you'd match specific Start/End Office IDs to a Route record
+            var route = await _context.DeliveryRoutes.FirstOrDefaultAsync();
+            return Json(new { id = route?.DeliveryRouteId ?? 1 });
         }
     }
 }
