@@ -66,7 +66,15 @@
             width: 150px;
         }
         main { flex: 1; padding-top: 2rem; }
-        footer { border-top: 1px solid #222; padding: 2rem 0; margin-top: 5rem; }
+        footer { border-top: 1px solid #222; padding: 3rem 0; margin-top: 5rem; }
+        .footer-link {
+            color: #888;
+            text-decoration: none;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+        .footer-link:hover { color: var(--gold-solid); }
     </style>
 </head>
 <body>
@@ -75,12 +83,10 @@
             <div class="container">
                 @if (!User.Identity.IsAuthenticated)
                 {
-                    @* Guest brand links to home *@
                     <a class="navbar-brand fs-2 text-gold" asp-controller="Home" asp-action="Index">CARGOBELL</a>
                 }
                 else
                 {
-                    @* Logged in brand is just text *@
                     <span class="navbar-brand fs-2 text-gold">CARGOBELL</span>
                 }
 
@@ -137,9 +143,23 @@
     </main>
 
     <footer class="text-center">
-        <div class="container text-secondary small">
-            <p class="text-gold mb-1" style="letter-spacing: 5px;">CARGOBELL</p>
-            <p>&copy; 2026 CARGOBELL GLOBAL. ALL RIGHTS RESERVED.</p>
+        <div class="container">
+            <div class="mb-4">
+                <p class="text-gold mb-1" style="letter-spacing: 5px; font-weight: 700;">CARGOBELL</p>
+            </div>
+            
+            @if (User.Identity.IsAuthenticated)
+            {
+                <div class="d-flex justify-content-center gap-4 mb-4">
+                    <a asp-controller="Home" asp-action="Contact" class="footer-link">CONTACT US</a>
+                    <a asp-controller="Home" asp-action="Pricing" class="footer-link">PRICING</a>
+                    <a asp-controller="Home" asp-action="Privacy" class="footer-link">PRIVACY POLICY</a>
+                </div>
+            }
+
+            <div class="pt-3 border-top border-dark">
+                <p class="text-muted mb-0" style="font-size: 0.7rem;">&copy; 2026 CARGOBELL GLOBAL. ALL RIGHTS RESERVED.</p>
+            </div>
         </div>
     </footer>
 
