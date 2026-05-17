@@ -41,9 +41,21 @@ namespace DeliveryTrackingSystem.Controllers
             var viewModel = new ShipmentTrackingViewModel
             {
                 TrackingCode = shipment.TrackingCode,
-                Status = shipment.Status.Name,
-                Route = $"{shipment.DeliveryRoute.StartLocation} → {shipment.DeliveryRoute.EndLocation}",
-                StatusHistory = shipment.StatusHistory.OrderByDescending(sh => sh.Timestamp).ToList()
+                Status = shipment.Status?.Name ?? "Pending",
+                Route = shipment.DeliveryRoute != null
+                    ? $"{shipment.DeliveryRoute.StartLocation} → {shipment.DeliveryRoute.EndLocation}"
+                    : "Route Unassigned",
+                StatusHistory = shipment.StatusHistory.OrderByDescending(sh => sh.Timestamp).ToList(),
+                CreatedAt = shipment.CreatedAt,
+                EstimatedDelivery = shipment.EstimatedDelivery,
+                DeliveredDate = shipment.DeliveredDate,
+                IsFragile = shipment.IsFragile,
+                IsCashOnDelivery = shipment.IsCashOnDelivery,
+                CodAmount = shipment.CodAmount,
+                Notes = shipment.Notes,
+
+                // NEW: Map the delivery route service cost safely
+                ShippingCost = shipment.DeliveryRoute != null ? shipment.DeliveryRoute.Price : 0m
             };
 
             return View(viewModel);
