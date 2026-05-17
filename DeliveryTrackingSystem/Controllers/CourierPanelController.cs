@@ -255,16 +255,28 @@ namespace DeliveryTrackingSystem.Controllers
             {
                 shipment.StatusId = delayedStatus.StatusId;
 
+                // CRITICAL FIX: Append the reason to the public notes field
+                if (string.IsNullOrEmpty(shipment.Notes))
+                {
+                    shipment.Notes = $"[DELAY ALERT]: {reason} ({DateTime.UtcNow:MMM dd, HH:mm} UTC)";
+                }
+                else
+                {
+                    shipment.Notes += $" | [DELAY ALERT]: {reason} ({DateTime.UtcNow:MMM dd, HH:mm} UTC)";
+                }
+
+                // Keep your historical log tracking intact
                 _context.StatusHistories.Add(new StatusHistory
                 {
                     ShipmentId = shipmentId,
                     StatusId = delayedStatus.StatusId,
                     Timestamp = DateTime.UtcNow,
-                    Note = "ANOMALY: " + reason,
-                    Location = "Reported by Courier" // ADD THIS LINE
+                    Note = "ANOMALY DETECTED: " + reason,
+                    Location = "Reported by Courier"
                 });
 
                 await _context.SaveChangesAsync();
+                TempData["ErrorMessage"] = "ANOMALY LOGGED. PUBLIC MANIFEST UPDATED.";
             }
             return RedirectToAction("ShipmentDetails", new { id = shipmentId });
         }

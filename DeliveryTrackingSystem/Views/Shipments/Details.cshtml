@@ -22,25 +22,37 @@
 
         <div class="card-body p-4 p-md-5">
             <h5 class="text-white uppercase-tracking small mb-5">Transit Chain Events</h5>
-            
+
             <div class="position-relative">
                 <div class="position-absolute h-100 border-start border-secondary opacity-25" style="left: 0.75rem; top: 0;"></div>
-                
-                @foreach (var history in Model.StatusHistory.OrderByDescending(h => h.Timestamp)) {
+
+                @foreach (var history in Model.StatusHistory.OrderByDescending(h => h.Timestamp))
+                {
                     <div class="d-flex mb-5 position-relative">
-                        <div class="bg-black border border-gold rounded-circle d-flex align-items-center justify-content-center shadow-gold" 
+                        <div class="bg-black border border-gold rounded-circle d-flex align-items-center justify-content-center shadow-gold"
                              style="width: 1.5rem; height: 1.5rem; z-index: 2;">
                             <div class="bg-gold rounded-circle" style="width: 0.5rem; height: 0.5rem;"></div>
                         </div>
-                        <div class="ms-4">
-                            <h6 class="text-gold mb-1 fw-bold">@history.Status.Name</h6>
+                        <div class="ms-4 w-100">
+                            <h6 class="text-gold mb-1 fw-bold d-inline-block">@history.Status.Name</h6>
+
+                            @if (!string.IsNullOrEmpty(history.Note) && history.Note.Contains("ANOMALY"))
+                            {
+                                <div class="mt-1 mb-2 p-2 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded d-inline-block max-w-100">
+                                    <span class="text-danger small font-monospace fw-bold">
+                                        <i class="bi bi-exclamation-octagon-fill me-1"></i>
+                                        @history.Note.Replace("ANOMALY: ", "").ToUpper()
+                                    </span>
+                                </div>
+                            }
+
                             <p class="text-secondary small mb-0 font-monospace">@history.Timestamp.ToString("MMMM dd, yyyy — HH:mm")</p>
                         </div>
                     </div>
                 }
             </div>
         </div>
-        
+
         <div class="card-footer bg-black border-top border-secondary p-4 text-center">
             <button onclick="window.print()" class="btn btn-sm btn-outline-secondary uppercase-tracking small">
                 <i class="bi bi-printer me-2"></i> Export Manifest
