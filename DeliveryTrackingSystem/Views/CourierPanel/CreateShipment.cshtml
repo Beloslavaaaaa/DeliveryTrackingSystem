@@ -154,22 +154,70 @@
 @section Scripts {
     <script>
         function lookupUser(prefix) {
-            let phone = $(`#${prefix}Phone`).val();
-            if (phone.length >= 7) {
-                $.get('/CourierPanel/GetUserByPhone', { phone: phone }, function (user) {
-                    if (user) {
-                        $(`#${prefix}Details`).removeClass('d-none');
-                        $(`#${prefix}DisplayName`).text(user.firstName + " " + user.lastName);
-                        $(`#${prefix}Id`).val(user.id);
-                        $(`#${prefix}Manual`).addClass('d-none');
+            let phoneInput = $(`#${prefix}Phone`).val();
+            let detailsContainer = $(`#${prefix}Details`);
+            let manualContainer = $(`#${prefix}Manual`);
+            let hiddenIdInput = $(`#${prefix}Id`);
+            let manualNameInput = $(`#${prefix}ManualName`);
+
+            if (phoneInput.length >= 6) {
+                // Clear any existing dynamically injected lookup lists first
+                $(`#${prefix}PickerList`).remove();
+
+                $.get('/CourierPanel/GetUserByPhone', { phone: phoneInput }, function (users) {
+                    if (users && users.length > 0) {
+                        if (users.length === 1) {
+                            // Perfect unique match scenario: Auto-select immediately
+                            let singleUser = users[0];
+                            detailsContainer.removeClass('d-none');
+                            $(`#${prefix}DisplayName`).text(singleUser.firstName + " " + singleUser.lastName + " (" + singleUser.phoneNumber + ")");
+                            hiddenIdInput.val(singleUser.id);
+                            $(`#${prefix}Phone`).val(singleUser.phoneNumber); // Standardize phone input layout
+                            manualContainer.addClass('d-none');
+                            manualNameInput.val('');
+                        } else {
+                            // Conflict Scenario: Multiple regional accounts discovered. Build selection grid
+                            let pickerHtml = `<div id="${prefix}PickerList" class="p-3 my-2 bg-black border border-warning rounded shadow-lg animate-fade-in">
+                                                <span class="text-warning small uppercase-tracking fw-bold d-block mb-2">
+                                                    <i class="bi bi-exclamation-triangle-fill me-1"></i> AMBIGUOUS CORRELATION: SELECT ACCOUNT
+                                                </span>`;
+                            
+                            users.forEach(function(u) {
+                                pickerHtml += `<button type="button" class="btn btn-sm btn-outline-light d-block w-100 text-start my-1 p-2 font-monospace" 
+                                                    onclick="selectPickerUser('${prefix}', '${u.id}', '${u.firstName} ${u.lastName}', '${u.phoneNumber}')">
+                                                    <i class="bi bi-person-check-fill text-gold me-2"></i> ${u.firstName} ${u.lastName} <span class="text-muted">(${u.phoneNumber})</span>
+                                                </button>`;
+                            });
+                            
+                            pickerHtml += `</div>`;
+                            
+                            // Insert the picker view list directly below the targeting Input Group UI
+                            $(`#${prefix}Phone`).closest('.input-group').after(pickerHtml);
+                        }
                     } else {
-                        $(`#${prefix}Details`).addClass('d-none');
-                        $(`#${prefix}Id`).val('');
-                        $(`#${prefix}Manual`).removeClass('d-none');
-                        alert("No registered account found. Switching to manual guest mode.");
+                        // Complete Guest Fallback State
+                        detailsContainer.addClass('d-none');
+                        hiddenIdInput.val('');
+                        manualContainer.removeClass('d-none');
+                        alert("No registered database account matched. Reverting parameters to manual entry.");
                     }
                 });
             }
+        }
+
+        // Executed instantly when a courier confirms one of the candidate users
+        function selectPickerUser(prefix, userId, fullName, standardizedPhone) {
+            $(`#${prefix}Id`).val(userId);
+            $(`#${prefix}Phone`).val(standardizedPhone);
+            
+            $(`#${prefix}Details`).removeClass('d-none');
+            $(`#${prefix}DisplayName`).text(fullName + " (" + standardizedPhone + ")");
+            
+            $(`#${prefix}Manual`).addClass('d-none');
+            $(`#${prefix}ManualName`).val('');
+            
+            // Clean up visual selection layout structures
+            $(`#${prefix}PickerList`).remove();
         }
 
         // Handle Delivery Option Target Toggling

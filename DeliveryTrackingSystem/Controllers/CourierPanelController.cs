@@ -342,9 +342,26 @@ namespace DeliveryTrackingSystem.Controllers
         [HttpGet("GetUserByPhone")]
         public async Task<IActionResult> GetUserByPhone(string phone)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phone);
-            if (user == null) return Json(null);
-            return Json(new { id = user.Id, firstName = user.FirstName, lastName = user.LastName });
+            if (string.IsNullOrWhiteSpace(phone)) return Json(new List<object>());
+
+            // Strip out spaces, plus signs, dashes, and leading zeros to normalize input string 
+            string cleanPhone = phone.Replace("+", "").Replace(" ", "").Replace("-", "").TrimStart('0');
+
+            // If the entered number is too short, cancel lookup to save performance
+            if (cleanPhone.Length < 6) return Json(new List<object>());
+
+            // Query across the tail end of the DB field to catch varying country codes
+            var matchedUsers = await _context.Users
+                .Where(u => u.PhoneNumber != null && u.PhoneNumber.Replace("+", "").Replace(" ", "").Replace("-", "").EndsWith(cleanPhone))
+                .Select(u => new {
+                    id = u.Id,
+                    firstName = u.FirstName,
+                    lastName = u.LastName,
+                    phoneNumber = u.PhoneNumber
+                })
+                .ToListAsync();
+
+            return Json(matchedUsers);
         }
 
         [HttpGet("GetRouteDetails")]
