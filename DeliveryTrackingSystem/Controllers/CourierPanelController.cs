@@ -59,7 +59,6 @@ namespace DeliveryTrackingSystem.Controllers
 
             return View(await query.OrderByDescending(s => s.CreatedAt).ToListAsync());
         }
-
         [HttpGet("ShipmentDetails/{id}")]
         public async Task<IActionResult> ShipmentDetails(int id)
         {
@@ -71,6 +70,10 @@ namespace DeliveryTrackingSystem.Controllers
                 .FirstOrDefaultAsync(s => s.ShipmentId == id);
 
             if (shipment == null) return NotFound();
+
+            // Fetch all statuses so the dropdown uses REAL database IDs
+            ViewBag.StatusList = await _context.Statuses.ToListAsync();
+
             return View(shipment);
         }
 
@@ -209,6 +212,59 @@ namespace DeliveryTrackingSystem.Controllers
 
             return View(await query.OrderByDescending(s => s.DeliveredDate ?? s.CreatedAt).ToListAsync());
         }
+        // --- NEW OPERATIONAL ACTIONS ---
+
+        [HttpPost("UpdateStatus")]
+        public async Task<IActionResult> UpdateStatus(int shipmentId, int statusId, string? note)
+        {
+            var shipment = await _context.Shipments.FindAsync(shipmentId);
+            if (shipment == null) return NotFound();
+
+            shipment.StatusId = statusId;
+
+            // Log to Status History
+            var history = new StatusHistory
+            {
+                ShipmentId = shipmentId,
+                StatusId = statusId,
+                Timestamp = DateTime.UtcNow,
+                Note = note ?? "Manual status update by courier."
+            };
+
+            _context.StatusHistories.Add(history);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "MANIFEST STATUS UPDATED.";
+            return RedirectToAction("ShipmentDetails", new { id = shipmentId });
+        }
+
+        [HttpPost("ReportAnomaly")]
+        public async Task<IActionResult> ReportAnomaly(int shipmentId, string reason)
+        {
+            var shipment = await _context.Shipments.Include(s => s.Status).FirstOrDefaultAsync(s => s.ShipmentId == shipmentId);
+            if (shipment == null) return NotFound();
+
+            // Look for the exact name we just inserted in SQL
+            var delayedStatus = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "Delayed");
+
+            if (delayedStatus != null)
+            {
+                shipment.StatusId = delayedStatus.StatusId;
+            }
+
+            shipment.Notes += $" | [{DateTime.UtcNow:HH:mm}] ANOMALY: {reason}";
+
+            _context.StatusHistories.Add(new StatusHistory
+            {
+                ShipmentId = shipmentId,
+                StatusId = shipment.StatusId,
+                Timestamp = DateTime.UtcNow,
+                Note = "Anomaly reported: " + reason
+            });
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction("ShipmentDetails", new { id = shipmentId });
+        }
 
         // --- AJAX HELPERS ---
         [HttpGet("GetUserByPhone")]
@@ -226,5 +282,6 @@ namespace DeliveryTrackingSystem.Controllers
             var route = await _context.DeliveryRoutes.FirstOrDefaultAsync();
             return Json(new { id = route?.DeliveryRouteId ?? 1 });
         }
+
     }
 }
