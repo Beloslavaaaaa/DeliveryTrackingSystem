@@ -3,7 +3,6 @@
     Layout = "_CourierLayout";
     ViewData["Title"] = "Active Pipeline";
 
-    // Business Recommendation: Sort by Status (In Transit first) then by ETA (closest first)
     var sortedShipments = Model
         .OrderBy(s => s.StatusId)
         .ThenBy(s => s.EstimatedDelivery);
@@ -52,16 +51,37 @@
                 }
                 @foreach (var item in sortedShipments)
                 {
+                    string rName = "Custom Delivery Address";
+                    string rPhone = "N/A";
+
+                    if (item.Receiver != null)
+                    {
+                        rName = $"{item.Receiver.FirstName} {item.Receiver.LastName}";
+                        rPhone = item.Receiver.PhoneNumber ?? "N/A";
+                    }
+                    else if (!string.IsNullOrEmpty(item.Notes) && item.Notes.Contains("DROP-OFF RECIPIENT:"))
+                    {
+                        try
+                        {
+                            var firstSplit = item.Notes.Split(new string[] { "DROP-OFF RECIPIENT: " }, StringSplitOptions.None)[1];
+                            var secondSplit = firstSplit.Split(new string[] { ")." }, StringSplitOptions.None)[0];
+                            var details = secondSplit.Split('(');
+                            rName = details[0].Trim();
+                            rPhone = details[1].Trim();
+                        }
+                        catch { }
+                    }
+
                     <tr>
                         <td class="ps-4 py-4 fw-bold font-monospace text-gold">
                             <a href="/CourierPanel/ShipmentDetails/@item.ShipmentId" class="text-decoration-none text-gold">#@item.TrackingCode</a>
                         </td>
                         <td>
-                            <div class="text-white fw-bold">@item.Receiver?.FirstName @item.Receiver?.LastName</div>
-                            <div class="text-secondary small font-monospace">@item.Receiver?.PhoneNumber</div>
+                            <div class="text-white fw-bold">@rName</div>
+                            <div class="text-secondary small font-monospace">@rPhone</div>
                         </td>
                         <td>
-                            <div class="small">@item.DeliveryRoute?.EndLocation</div>
+                            <div class="small">@(item.DeliveryRoute?.EndLocation ?? "Inbound Sorting Hub")</div>
                             <div class="text-secondary" style="font-size: 0.7rem;">HUB: SEC-@item.DeliveryRouteId</div>
                         </td>
                         <td>
@@ -76,7 +96,7 @@
                             }
                         </td>
                         <td>
-                            <span class="badge border border-gold text-gold mb-1 d-block uppercase-tracking" style="font-size: 0.6rem;">@item.Status?.Name</span>
+                            <span class="badge border border-gold text-gold mb-1 d-block uppercase-tracking" style="font-size: 0.6rem;">@(item.Status?.Name ?? "IN TRANSIT")</span>
                             <div class="text-secondary small font-monospace">@(item.EstimatedDelivery?.ToString("MMM dd") ?? "TBD")</div>
                         </td>
                         <td class="pe-4 text-end">

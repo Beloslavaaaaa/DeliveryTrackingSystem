@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<Cargobell.Shared.Models.Shipment>
+@using System.Text.Encodings.Web
 @{
     Layout = "_CourierLayout";
     ViewData["Title"] = "Archived Manifests";
@@ -18,7 +19,7 @@
 <div class="mb-4">
     <form method="get" action="/CourierPanel/History" class="d-flex gap-2 w-50">
         <input type="text" name="searchTerm" class="form-control bg-black text-white border-secondary rounded-0"
-               placeholder="SEARCH BY NAME OR PHONE..." value="@Context.Request.Query["searchTerm"]">
+               placeholder="SEARCH BY NAME, PHONE OR TRK..." value="@Context.Request.Query["searchTerm"]">
         <button type="submit" class="btn btn-outline-gold px-4 rounded-0">QUERY</button>
     </form>
 </div>
@@ -41,14 +42,36 @@
             }
             @foreach (var item in Model)
             {
-                <tr style="cursor: pointer;" onclick="showHistoryDetail('@item.TrackingCode', '@item.Receiver?.FirstName @item.Receiver?.LastName', '@item.Receiver?.PhoneNumber', '@item.DeliveryRoute?.EndLocation', '@item.CodAmount', '@item.DeliveredDate?.ToString("f")')">
+                string rName = "Custom Delivery Entity";
+                string rPhone = "N/A";
+
+                // FIXED: Removed 'item.PhoneNumber' to prevent context compilation error
+                if (item.Receiver != null)
+                {
+                    rName = $"{item.Receiver.FirstName} {item.Receiver.LastName}";
+                    rPhone = item.Receiver.PhoneNumber ?? "N/A";
+                }
+                else if (!string.IsNullOrEmpty(item.Notes) && item.Notes.Contains("DROP-OFF RECIPIENT:"))
+                {
+                    try
+                    {
+                        var firstSplit = item.Notes.Split(new string[] { "DROP-OFF RECIPIENT: " }, StringSplitOptions.None)[1];
+                        var secondSplit = firstSplit.Split(new string[] { ")." }, StringSplitOptions.None)[0];
+                        var details = secondSplit.Split('(');
+                        rName = details[0].Trim();
+                        rPhone = details[1].Trim();
+                    }
+                    catch { }
+                }
+
+                <tr style="cursor: pointer;" onclick="showHistoryDetail('@item.TrackingCode', '@Html.Raw(JavaScriptEncoder.Default.Encode(rName))', '@Html.Raw(JavaScriptEncoder.Default.Encode(rPhone))', '@Html.Raw(JavaScriptEncoder.Default.Encode(item.DeliveryRoute?.EndLocation ?? "Global System Drop Node"))', '@item.CodAmount', '@item.DeliveredDate?.ToString("f")')">
                     <td class="ps-4 text-secondary">@item.TrackingCode</td>
                     <td>
-                        <span class="text-white">@item.Receiver?.FirstName @item.Receiver?.LastName</span><br />
-                        <span class="text-muted small">@item.Receiver?.PhoneNumber</span>
+                        <span class="text-white">@rName</span><br />
+                        <span class="text-muted small">@rPhone</span>
                     </td>
                     <td class="text-muted">@(item.DeliveredDate?.ToString("dd MMM yyyy") ?? "N/A")</td>
-                    <td>@item.DeliveryRoute?.EndLocation</td>
+                    <td>@(item.DeliveryRoute?.EndLocation ?? "Distributed Processing Node")</td>
                     <td class="text-end pe-4 text-success fw-bold">€@item.CodAmount</td>
                 </tr>
             }
@@ -87,7 +110,6 @@
                         <span id="hDate" class="text-white"></span>
                     </div>
                 </div>
-
                 <div class="alert alert-secondary bg-dark border-secondary rounded-0 mb-0 py-2">
                     <small class="text-muted">STATUS: FILE IS READ-ONLY</small>
                 </div>
