@@ -220,49 +220,52 @@ namespace DeliveryTrackingSystem.Controllers
             var shipment = await _context.Shipments.FindAsync(shipmentId);
             if (shipment == null) return NotFound();
 
+            // Verification check: Does this database status exist?
+            var statusExists = await _context.Statuses.AnyAsync(s => s.StatusId == statusId);
+            if (!statusExists)
+            {
+                TempData["ErrorMessage"] = "System mismatch: Selected status ID is invalid.";
+                return RedirectToAction("ShipmentDetails", new { id = shipmentId });
+            }
+
             shipment.StatusId = statusId;
 
-            // Log to Status History
             var history = new StatusHistory
             {
                 ShipmentId = shipmentId,
                 StatusId = statusId,
                 Timestamp = DateTime.UtcNow,
-                Note = note ?? "Manual status update by courier."
+                Note = note ?? "Manual status update.",
+                Location = "In Transit / Courier Terminal"
             };
 
             _context.StatusHistories.Add(history);
             await _context.SaveChangesAsync();
 
-            TempData["SuccessMessage"] = "MANIFEST STATUS UPDATED.";
             return RedirectToAction("ShipmentDetails", new { id = shipmentId });
         }
 
         [HttpPost("ReportAnomaly")]
         public async Task<IActionResult> ReportAnomaly(int shipmentId, string reason)
         {
-            var shipment = await _context.Shipments.Include(s => s.Status).FirstOrDefaultAsync(s => s.ShipmentId == shipmentId);
-            if (shipment == null) return NotFound();
-
-            // Look for the exact name we just inserted in SQL
+            var shipment = await _context.Shipments.FindAsync(shipmentId);
             var delayedStatus = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "Delayed");
 
-            if (delayedStatus != null)
+            if (shipment != null && delayedStatus != null)
             {
                 shipment.StatusId = delayedStatus.StatusId;
+
+                _context.StatusHistories.Add(new StatusHistory
+                {
+                    ShipmentId = shipmentId,
+                    StatusId = delayedStatus.StatusId,
+                    Timestamp = DateTime.UtcNow,
+                    Note = "ANOMALY: " + reason,
+                    Location = "Reported by Courier" // ADD THIS LINE
+                });
+
+                await _context.SaveChangesAsync();
             }
-
-            shipment.Notes += $" | [{DateTime.UtcNow:HH:mm}] ANOMALY: {reason}";
-
-            _context.StatusHistories.Add(new StatusHistory
-            {
-                ShipmentId = shipmentId,
-                StatusId = shipment.StatusId,
-                Timestamp = DateTime.UtcNow,
-                Note = "Anomaly reported: " + reason
-            });
-
-            await _context.SaveChangesAsync();
             return RedirectToAction("ShipmentDetails", new { id = shipmentId });
         }
 

@@ -4,7 +4,7 @@
     ViewData["Title"] = "Manifest Details";
 }
 
-<div class="container-fluid terminal-fade-in p-0" style="max-width: 1100px;">
+<div class="container-fluid py-4" style="max-width: 1140px; margin: 0 auto;">
     <div class="mb-4 d-flex align-items-center justify-content-between">
         <div class="d-flex align-items-center">
             <a href="/CourierPanel/Active" class="btn btn-outline-secondary btn-sm me-3 border-gold text-gold">
@@ -17,7 +17,7 @@
 
     <div class="row g-4">
         <div class="col-lg-8">
-            <div class="terminal-card p-4 h-100 border-secondary">
+            <div class="terminal-card p-4 h-100 border-secondary" style="background-color: #0c0c0c; border: 1px solid #222; border-radius: 6px;">
                 <div class="row g-4">
                     <div class="col-md-6 border-end border-secondary">
                         <h6 class="text-gold uppercase-tracking small mb-3">Originator</h6>
@@ -61,12 +61,12 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="terminal-card p-4 mb-4 border-gold bg-soft-black">
+            <div class="terminal-card p-4 mb-4 border-gold bg-soft-black" style="border: 1px solid var(--gold-solid); border-radius: 6px;">
                 <h6 class="text-gold uppercase-tracking small mb-3">Operational Status</h6>
                 <div class="text-center py-3 bg-black border border-gold border-opacity-50 mb-3 rounded">
                     <span class="text-gold fw-bold uppercase-tracking">@Model.Status?.Name</span>
                 </div>
-                
+
                 @if (Model.IsFragile)
                 {
                     <div class="d-flex align-items-center p-2 mb-2 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded">
@@ -84,18 +84,18 @@
                 }
             </div>
 
-            <div class="terminal-card p-4 border-secondary shadow-sm">
+            <div class="terminal-card p-4 border-secondary shadow-sm" style="background-color: #0c0c0c; border: 1px solid #222; border-radius: 6px;">
                 <h6 class="text-secondary uppercase-tracking small mb-3">Actions</h6>
                 <div class="d-grid gap-2">
                     <form action="/CourierPanel/MarkDelivered" method="post">
                         <input type="hidden" name="shipmentId" value="@Model.ShipmentId" />
                         <button type="submit" class="btn btn-gold w-100 fw-bold">CONFIRM DELIVERY</button>
                     </form>
-                    
+
                     <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#statusModal">
                         UPDATE STATUS
                     </button>
-                    
+
                     <button class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#anomalyModal">
                         REPORT ANOMALY
                     </button>
@@ -107,54 +107,30 @@
 
 <div class="modal fade" id="statusModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark border-gold text-white">
+        <div class="modal-content bg-dark border-gold text-white" style="border: 1px solid #D4AF37;">
             <form action="/CourierPanel/UpdateStatus" method="post">
                 <div class="modal-header border-secondary">
                     <h5 class="modal-title text-gold">CHANGE MANIFEST STATUS</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="shipmentId" value="@Model.ShipmentId" />
-                    <label class="small text-muted mb-2">NEW STATUS</label>
-                    <select name="statusId" class="form-select bg-black text-white border-secondary mb-3">
-                        <option value="2">In Transit</option>
-                        <option value="3">Arrived at Hub</option>
-                        <option value="4">Out for Delivery</option>
-                    </select>
-                    <label class="small text-muted mb-2">OPERATIONAL NOTE</label>
-                    <textarea name="note" class="form-control bg-black text-white border-secondary" rows="2"></textarea>
-                </div>
-                <div class="modal-footer border-secondary">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">CANCEL</button>
-                    <button type="submit" class="btn btn-gold">UPDATE</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
-<div class="modal fade" id="statusModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark border-gold text-white">
-            <form action="/CourierPanel/UpdateStatus" method="post">
-                <div class="modal-header border-secondary">
-                    <h5 class="modal-title text-gold">CHANGE MANIFEST STATUS</h5>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="shipmentId" value="@Model.ShipmentId" />
-                    
                     <label class="small text-muted mb-2">NEW STATUS</label>
                     <select name="statusId" class="form-select bg-black text-white border-secondary mb-3">
-                        @foreach (var status in (IEnumerable<Cargobell.Shared.Models.Status>)ViewBag.StatusList)
+                        @if (ViewBag.StatusList != null)
                         {
-                            <! -- This ensures the ID sent to the controller exists in your DB -->
-                            <option value="@status.StatusId" selected="@(Model.StatusId == status.StatusId)">
-                                @status.Name
-                            </option>
+                            foreach (var status in (IEnumerable<Cargobell.Shared.Models.Status>)ViewBag.StatusList)
+                            {
+                                <option value="@status.StatusId" selected="@(Model.StatusId == status.StatusId)">
+                                    @status.Name
+                                </option>
+                            }
                         }
                     </select>
 
                     <label class="small text-muted mb-2">OPERATIONAL NOTE</label>
-                    <textarea name="note" class="form-control bg-black text-white border-secondary" rows="2" placeholder="Optional notes..."></textarea>
+                    <textarea name="note" class="form-control bg-black text-white border-secondary" rows="2" placeholder="Optional entry description..."></textarea>
                 </div>
                 <div class="modal-footer border-secondary">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">CANCEL</button>
@@ -164,4 +140,30 @@
         </div>
     </div>
 </div>
-                   
+
+<div class="modal fade" id="anomalyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark border-danger text-white" style="border: 1px solid #dc3545;">
+            <form action="/CourierPanel/ReportAnomaly" method="post">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-danger">REPORT LOGISTICS ANOMALY</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="shipmentId" value="@Model.ShipmentId" />
+                    <label class="small text-muted mb-2">NATURE OF PROBLEM</label>
+                    <select name="reason" class="form-select bg-black text-white border-danger mb-3">
+                        <option value="Mechanical Failure">Mechanical Failure</option>
+                        <option value="Weather Delay">Weather Delay</option>
+                        <option value="Receiver Not Available">Receiver Not Available</option>
+                        <option value="Incorrect Address">Incorrect Address</option>
+                    </select>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">CANCEL</button>
+                    <button type="submit" class="btn btn-danger">LOG ANOMALY</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
