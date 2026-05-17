@@ -49,7 +49,7 @@
                     </td>
                     <td class="text-muted">@(item.DeliveredDate?.ToString("dd MMM yyyy") ?? "N/A")</td>
                     <td>@item.DeliveryRoute?.EndLocation</td>
-                    <td class="text-end pe-4 text-success fw-bold">$@item.CodAmount</td>
+                    <td class="text-end pe-4 text-success fw-bold">€@item.CodAmount</td>
                 </tr>
             }
         </tbody>
@@ -103,7 +103,7 @@
             $('#hName').text(name);
             $('#hPhone').text(phone);
             $('#hHub').text(hub);
-            $('#hCod').text('$' + parseFloat(cod).toFixed(2));
+            $('#hCod').text('€' + parseFloat(cod).toFixed(2));
             $('#hDate').text(date);
             new bootstrap.Modal(document.getElementById('historyModal')).show();
         }

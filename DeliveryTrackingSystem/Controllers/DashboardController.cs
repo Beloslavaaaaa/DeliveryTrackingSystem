@@ -178,7 +178,8 @@ namespace DeliveryTrackingSystem.Controllers
                 {
                     Title = $"Cargo #{s.TrackingCode}",
                     Type = s.SenderId == user.Id ? "Delivery From You" : "Delivery To You",
-                    Amount = s.DeliveryRoute != null ? s.DeliveryRoute.Price.ToString("C") : "$0.00",
+                    // FIXED: Explicitly formats currency to Euros (€) instead of falling back to system default (Leva)
+                    Amount = s.DeliveryRoute != null ? $"€{s.DeliveryRoute.Price.ToString("N2")}" : "€0.00",
                     Date = s.CreatedAt.ToString("MMM dd"),
                     Status = s.Status != null ? s.Status.Name : "Pending"
                 }).ToList()

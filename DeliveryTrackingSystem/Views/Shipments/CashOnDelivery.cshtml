@@ -24,8 +24,10 @@
                 </tr>
             </thead>
             <tbody class="border-top border-secondary">
-                @if (Model.Any()) {
-                    @foreach (var item in Model) {
+                @if (Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
                         bool isSender = item.SenderId == currentUserId;
                         <tr>
                             <td class="ps-4 py-4 fw-bold font-monospace text-gold">@item.TrackingCode</td>
@@ -36,13 +38,15 @@
                                 </span>
                             </td>
                             <td class="py-4 small text-secondary">@item.DeliveryRoute?.EndLocation</td>
-                            <td class="py-4 text-center font-monospace fs-5 text-white">$@item.CodAmount</td>
+                            <td class="py-4 text-center font-monospace fs-5 text-white">€@item.CodAmount</td>
                             <td class="pe-4 py-4 text-end">
                                 <a href="/Shipments/Details?trackingCode=@item.TrackingCode" class="btn btn-sm btn-outline-gold px-3 uppercase-tracking">Review</a>
                             </td>
                         </tr>
                     }
-                } else {
+                }
+                else
+                {
                     <tr>
                         <td colspan="5" class="text-center py-5">
                             <p class="text-secondary uppercase-tracking small mb-0">No pending COD transactions detected.</p>

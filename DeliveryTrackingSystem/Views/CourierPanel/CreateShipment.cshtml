@@ -12,7 +12,7 @@
 
     <form asp-action="CreateShipment" method="post" class="terminal-card p-5 shadow-lg">
         @Html.AntiForgeryToken()
-        
+
         <input type="hidden" asp-for="SenderId" id="senderId" />
         <input type="hidden" asp-for="ReceiverId" id="receiverId" />
         <input type="hidden" asp-for="DeliveryRouteId" id="finalRouteId" />
@@ -20,7 +20,7 @@
         <div class="row g-5">
             <div class="col-md-6 border-end border-secondary">
                 <h6 class="text-gold uppercase-tracking mb-4"><i class="bi bi-person-up me-2"></i> Originator</h6>
-                
+
                 <div class="mb-3">
                     <label class="text-muted small fw-bold mb-2">PHONE LOOKUP</label>
                     <div class="input-group">
@@ -42,7 +42,7 @@
 
             <div class="col-md-6">
                 <h6 class="text-gold uppercase-tracking mb-4"><i class="bi bi-person-down me-2"></i> Destination Account</h6>
-                
+
                 <div class="mb-3">
                     <label class="text-muted small fw-bold mb-2">PHONE LOOKUP</label>
                     <div class="input-group">
@@ -88,7 +88,7 @@
                     <div class="col-md-4">
                         <label class="text-gold small fw-bold mb-2">COLLECTION (COD)</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-dark border-secondary text-white">$</span>
+                            <span class="input-group-text bg-dark border-secondary text-white">€</span>
                             <input type="number" asp-for="CodAmount" class="form-control bg-black text-white border-secondary font-monospace">
                         </div>
                         <div class="form-check mt-2">

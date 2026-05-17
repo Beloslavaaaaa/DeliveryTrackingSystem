@@ -36,7 +36,7 @@
 
                 <div class="row g-4">
                     <div class="col-md-4">
-                        <h6 class="text-gold uppercase-tracking small mb-2">Logistics Profile</h6>
+                        <label class="text-gold small fw-bold mb-2">ORIGIN HUB</label>
                         <div class="p-3 bg-soft-black rounded border border-secondary shadow-sm">
                             <div class="mb-2">
                                 <span class="text-muted small d-block">ROUTE SECTOR</span>
@@ -78,8 +78,8 @@
                 @if (Model.IsCashOnDelivery)
                 {
                     <div class="d-flex align-items-center p-2 bg-success bg-opacity-10 border border-success border-opacity-25 rounded">
-                        <i class="bi bi-cash-stack text-success me-2"></i>
-                        <span class="text-success small fw-bold">COLLECT: $@Model.CodAmount</span>
+                        <i class="bi bi-currency-euro text-success me-2"></i>
+                        <span class="text-success small fw-bold">COLLECT: €@Model.CodAmount</span>
                     </div>
                 }
             </div>
