@@ -3,7 +3,7 @@ using Cargobell.Shared.Models;
 using Cargobell.Shared.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;  
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Cargobell.Data.Data;
 
@@ -54,12 +54,13 @@ namespace DeliveryTrackingSystem.Controllers
                 CodAmount = shipment.CodAmount,
                 Notes = shipment.Notes,
 
-                // NEW: Map the delivery route service cost safely
-                ShippingCost = shipment.DeliveryRoute != null ? shipment.DeliveryRoute.Price : 0m
+                // FIXED: Map directly from the shipment's new explicit property instead of the static route base price
+                ShippingCost = shipment.ShippingCost
             };
 
             return View(viewModel);
         }
+
         [Authorize]
         public async Task<IActionResult> Active()
         {
@@ -76,6 +77,7 @@ namespace DeliveryTrackingSystem.Controllers
 
             return View(shipments);
         }
+
         [Authorize]
         public async Task<IActionResult> History()
         {
@@ -89,6 +91,7 @@ namespace DeliveryTrackingSystem.Controllers
 
             return View(shipments);
         }
+
         [Authorize]
         public async Task<IActionResult> CashOnDelivery()
         {

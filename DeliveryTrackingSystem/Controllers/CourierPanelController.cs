@@ -59,6 +59,7 @@ namespace DeliveryTrackingSystem.Controllers
 
             return View(await query.OrderByDescending(s => s.CreatedAt).ToListAsync());
         }
+
         [HttpGet("ShipmentDetails/{id}")]
         public async Task<IActionResult> ShipmentDetails(int id)
         {
@@ -71,7 +72,6 @@ namespace DeliveryTrackingSystem.Controllers
 
             if (shipment == null) return NotFound();
 
-            // Fetch all statuses so the dropdown uses REAL database IDs
             ViewBag.StatusList = await _context.Statuses.ToListAsync();
 
             return View(shipment);
@@ -119,6 +119,9 @@ namespace DeliveryTrackingSystem.Controllers
                 CodAmount = vm.CodAmount,
                 IsFragile = vm.IsFragile,
                 CreatedAt = DateTime.UtcNow,
+
+                // MAPPED CLEANLY: Direct property mapping from user form tracking data
+                ShippingCost = vm.ShippingCost,
                 Notes = $"S: {vm.SenderManualName} | R: {vm.ReceiverManualName} | {vm.Notes}"
             };
 
@@ -141,7 +144,7 @@ namespace DeliveryTrackingSystem.Controllers
                 }).ToListAsync();
 
             ViewBag.AllRequests = await _context.CourierRequests
-                .Include(r => r.User) // Fixed: Ensure it includes User navigation
+                .Include(r => r.User)
                 .Where(r => !r.IsCompleted)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
@@ -156,23 +159,19 @@ namespace DeliveryTrackingSystem.Controllers
             var request = await _context.CourierRequests.FirstOrDefaultAsync(r => r.CourierRequestId == requestId);
             if (request == null) return NotFound();
 
-            // --- NEW VALIDATION & FALLBACK SAFETY CHECK ---
-            // Check if the route provided by the form actually exists in the database
+            // --- VALIDATION & FALLBACK SAFETY CHECK ---
             var routeExists = await _context.DeliveryRoutes.AnyAsync(r => r.DeliveryRouteId == deliveryRouteId);
 
             if (!routeExists)
             {
-                // If it doesn't exist, try to grab the first available route as a fallback
                 var defaultRoute = await _context.DeliveryRoutes.FirstOrDefaultAsync();
 
                 if (defaultRoute == null)
                 {
-                    // If your database has absolutely ZERO routes configured, alert the user
                     TempData["ErrorMessage"] = "CRITICAL: No delivery routes found in the database. Please create a route first.";
                     return RedirectToAction("UserDirectory");
                 }
 
-                // Override the invalid ID with the real working one
                 deliveryRouteId = defaultRoute.DeliveryRouteId;
             }
             // ----------------------------------------------
@@ -188,12 +187,16 @@ namespace DeliveryTrackingSystem.Controllers
                 SenderId = senderId,
                 ReceiverId = matchedReceiver?.Id,
                 CourierId = _userManager.GetUserId(User),
-                DeliveryRouteId = deliveryRouteId, // Now guaranteed to be valid!
+                DeliveryRouteId = deliveryRouteId,
                 StatusId = 1,
                 CreatedAt = DateTime.UtcNow,
                 IsCashOnDelivery = request.IsCashOnDelivery,
                 CodAmount = request.CodAmount ?? 0m,
                 IsFragile = request.IsFragile,
+
+                // MAPPED CLEANLY: Pulling the 350.00 directly from request.EstimatedPrice database column
+                ShippingCost = request.EstimatedPrice,
+
                 Notes = $"DROP-OFF RECIPIENT: {request.ReceiverName} ({request.ReceiverPhone}). DESCRIPTION: {request.PackageDescription}"
             };
 
@@ -246,15 +249,14 @@ namespace DeliveryTrackingSystem.Controllers
 
             return View(await query.OrderByDescending(s => s.DeliveredDate ?? s.CreatedAt).ToListAsync());
         }
-        // --- NEW OPERATIONAL ACTIONS ---
 
+        // --- OPERATIONAL ACTIONS ---
         [HttpPost("UpdateStatus")]
         public async Task<IActionResult> UpdateStatus(int shipmentId, int statusId, string? note)
         {
             var shipment = await _context.Shipments.FindAsync(shipmentId);
             if (shipment == null) return NotFound();
 
-            // Verification check: Does this database status exist?
             var statusExists = await _context.Statuses.AnyAsync(s => s.StatusId == statusId);
             if (!statusExists)
             {
@@ -289,7 +291,6 @@ namespace DeliveryTrackingSystem.Controllers
             {
                 shipment.StatusId = delayedStatus.StatusId;
 
-                // CRITICAL FIX: Append the reason to the public notes field
                 if (string.IsNullOrEmpty(shipment.Notes))
                 {
                     shipment.Notes = $"[DELAY ALERT]: {reason} ({DateTime.UtcNow:MMM dd, HH:mm} UTC)";
@@ -299,7 +300,6 @@ namespace DeliveryTrackingSystem.Controllers
                     shipment.Notes += $" | [DELAY ALERT]: {reason} ({DateTime.UtcNow:MMM dd, HH:mm} UTC)";
                 }
 
-                // Keep your historical log tracking intact
                 _context.StatusHistories.Add(new StatusHistory
                 {
                     ShipmentId = shipmentId,
@@ -327,10 +327,8 @@ namespace DeliveryTrackingSystem.Controllers
         [HttpGet("GetRouteDetails")]
         public async Task<IActionResult> GetRouteDetails(int startId, int endId)
         {
-            // In a production app, you'd match specific Start/End Office IDs to a Route record
             var route = await _context.DeliveryRoutes.FirstOrDefaultAsync();
             return Json(new { id = route?.DeliveryRouteId ?? 1 });
         }
-
     }
 }

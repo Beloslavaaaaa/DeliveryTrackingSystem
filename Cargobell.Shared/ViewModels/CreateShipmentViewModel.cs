@@ -20,5 +20,6 @@
         public bool IsCashOnDelivery { get; set; }
         public bool IsFragile { get; set; }
         public string? Notes { get; set; }
+        public decimal ShippingCost { get; set; }
     }
 }

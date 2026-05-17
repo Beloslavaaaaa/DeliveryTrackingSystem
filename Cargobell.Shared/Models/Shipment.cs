@@ -39,5 +39,6 @@ namespace Cargobell.Shared.Models
         public bool IsFragile { get; set; }
 
         public string? Notes { get; set; }
+        public decimal ShippingCost { get; set; }
     }
 }
