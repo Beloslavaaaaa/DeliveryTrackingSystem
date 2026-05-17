@@ -44,17 +44,19 @@ namespace DeliveryTrackingSystem.Controllers
             request.CreatedAt = DateTime.UtcNow;
             request.Status = "Pending";
 
+            // Clean up generic relations
             ModelState.Remove("User");
             ModelState.Remove("UserId");
             ModelState.Remove("Status");
-            // Remove custom fields from validation if not being used
+
+            // Safety handling if the sender options fluctuate
             if (!request.IsCustomSender)
             {
                 ModelState.Remove("CustomSenderName");
                 ModelState.Remove("CustomSenderPhone");
             }
 
-            // Pricing logic
+            // Pricing Logic
             decimal.TryParse(request.PackageType, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal baseP);
             decimal.TryParse(request.DestinationZone, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal mult);
             request.EstimatedPrice = (baseP * mult) + (request.IsFragile ? 5.00m : 0);
@@ -71,7 +73,7 @@ namespace DeliveryTrackingSystem.Controllers
                 return RedirectToAction("RequestIndex", new { tab = "active" });
             }
 
-            // If invalid, we MUST reload the lists so the other tabs aren't empty
+            // If parsing fails, fall back and safely rebuild components
             ViewBag.ActiveTab = "create";
             var allRequests = await _context.CourierRequests
                 .Where(r => r.UserId == userId)

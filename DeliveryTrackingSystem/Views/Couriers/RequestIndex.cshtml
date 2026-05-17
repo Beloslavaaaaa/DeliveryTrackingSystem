@@ -76,19 +76,36 @@
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
                         <div class="step-content" id="step-1">
-                            <h5 class="text-gold mb-4 small fw-bold uppercase">Step 1: Contact</h5>
-                            <div class="btn-group w-100 mb-4">
-                                <input type="radio" class="btn-check" name="IsCustomSender" id="myInfo" value="false" checked>
-                                <label class="btn btn-outline-gold py-3" for="myInfo">My Profile</label>
-                                <input type="radio" class="btn-check" name="IsCustomSender" id="otherInfo" value="true">
-                                <label class="btn btn-outline-gold py-3" for="otherInfo">Other Contact</label>
+                            <h5 class="text-gold mb-3 small fw-bold uppercase">Step 1: Dispatch Parties</h5>
+
+                            @* SENDER BLOCK *@
+                            <div class="mb-4">
+                                <label class="smaller text-secondary d-block mb-2">Originator / Sender Context</label>
+                                <div class="btn-group w-100 mb-3">
+                                    <input type="radio" class="btn-check" name="IsCustomSender" id="myInfo" value="false" checked>
+                                    <label class="btn btn-outline-gold py-2 small" for="myInfo">My Profile</label>
+                                    <input type="radio" class="btn-check" name="IsCustomSender" id="otherInfo" value="true">
+                                    <label class="btn btn-outline-gold py-2 small" for="otherInfo">Other Contact</label>
+                                </div>
+                                <div id="myInfoFields" class="p-3 border border-secondary rounded text-center small text-white-50 bg-black">
+                                    <i class="bi bi-person-fill text-gold me-2"></i> @currentUser?.UserName | @currentUser?.PhoneNumber
+                                </div>
+                                <div id="otherInfoFields" style="display:none;">
+                                    <input type="text" name="CustomSenderName" class="form-control bg-dark text-white border-secondary mb-2" placeholder="Sender Full Name">
+                                    <input type="text" name="CustomSenderPhone" class="form-control bg-dark text-white border-secondary mb-0" placeholder="Sender Phone Number">
+                                </div>
                             </div>
-                            <div id="myInfoFields" class="p-3 border border-secondary rounded text-center small text-white">
-                                @currentUser?.UserName | @currentUser?.PhoneNumber
-                            </div>
-                            <div id="otherInfoFields" style="display:none;">
-                                <input type="text" name="CustomSenderName" class="form-control bg-dark text-white border-secondary mb-2" placeholder="Full Name">
-                                <input type="text" name="CustomSenderPhone" class="form-control bg-dark text-white border-secondary mb-2" placeholder="Phone">
+
+                            <hr class="border-secondary opacity-25 my-4">
+
+                            @* NEW UPDATED RECEIVER BLOCK *@
+                            <div class="mb-2">
+                                <label class="smaller text-gold d-block mb-2">Destination Recipient</label>
+                                <input type="text" name="ReceiverName" class="form-control bg-dark text-white border-secondary mb-2 py-2" placeholder="Recipient Full Name*" required>
+                                <span class="text-danger smaller d-block mb-2" id="val-ReceiverName"></span>
+
+                                <input type="text" name="ReceiverPhone" class="form-control bg-dark text-white border-secondary mb-0 py-2" placeholder="Recipient Phone Number*" required>
+                                <span class="text-danger smaller d-block" id="val-ReceiverPhone"></span>
                             </div>
                         </div>
 
@@ -113,10 +130,10 @@
                                 </div>
                                 <div class="col-md-6">
                                     <select name="PackageType" id="calcSize" class="form-select bg-dark text-white border-secondary">
-                                        <option value="5">Document (€5)</option>
-                                        <option value="15">Small (€15)</option>
-                                        <option value="35">Standard (€35)</option>
-                                        <option value="70">Heavy (€70)</option>
+                                        <option value="5">Document Envelope (€5)</option>
+                                        <option value="15">Small Parcel (&lt; 2kg) (€15)</option>
+                                        <option value="35">Standard Box (&lt; 10kg) (€35)</option>
+                                        <option value="70">Heavy Freight (&lt; 30kg) (€70)</option>
                                     </select>
                                 </div>
                             </div>

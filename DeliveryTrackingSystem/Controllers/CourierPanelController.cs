@@ -150,35 +150,69 @@ namespace DeliveryTrackingSystem.Controllers
         }
 
         [HttpPost("ApproveRequest")]
-        public async Task<IActionResult> ApproveRequest(int requestId)
+        [Authorize(Roles = "Courier,Admin")]
+        public async Task<IActionResult> ApproveRequest(int requestId, int deliveryRouteId)
         {
-            var req = await _context.CourierRequests.FindAsync(requestId);
-            if (req == null) return NotFound();
+            var request = await _context.CourierRequests.FirstOrDefaultAsync(r => r.CourierRequestId == requestId);
+            if (request == null) return NotFound();
 
-            var status = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
-            var route = await _context.DeliveryRoutes.FirstOrDefaultAsync();
+            // --- NEW VALIDATION & FALLBACK SAFETY CHECK ---
+            // Check if the route provided by the form actually exists in the database
+            var routeExists = await _context.DeliveryRoutes.AnyAsync(r => r.DeliveryRouteId == deliveryRouteId);
+
+            if (!routeExists)
+            {
+                // If it doesn't exist, try to grab the first available route as a fallback
+                var defaultRoute = await _context.DeliveryRoutes.FirstOrDefaultAsync();
+
+                if (defaultRoute == null)
+                {
+                    // If your database has absolutely ZERO routes configured, alert the user
+                    TempData["ErrorMessage"] = "CRITICAL: No delivery routes found in the database. Please create a route first.";
+                    return RedirectToAction("UserDirectory");
+                }
+
+                // Override the invalid ID with the real working one
+                deliveryRouteId = defaultRoute.DeliveryRouteId;
+            }
+            // ----------------------------------------------
+
+            string? senderId = request.UserId;
+
+            var matchedReceiver = await _userManager.Users
+                .FirstOrDefaultAsync(u => u.PhoneNumber == request.ReceiverPhone);
 
             var newShipment = new Shipment
             {
-                TrackingCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
-                SenderId = req.UserId,
-                ReceiverId = req.UserId,
-                StatusId = status.StatusId,
-                DeliveryRouteId = route.DeliveryRouteId,
-                IsFragile = req.IsFragile,
-                IsCashOnDelivery = true,
-                CodAmount = req.EstimatedPrice,
-                Notes = $"[AUTO-APPROVED] FROM: {req.PickupAddress} TO: {req.DropoffAddress}.",
+                TrackingCode = "CB" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
+                SenderId = senderId,
+                ReceiverId = matchedReceiver?.Id,
+                CourierId = _userManager.GetUserId(User),
+                DeliveryRouteId = deliveryRouteId, // Now guaranteed to be valid!
+                StatusId = 1,
                 CreatedAt = DateTime.UtcNow,
-                CourierId = _userManager.GetUserId(User)
+                IsCashOnDelivery = request.IsCashOnDelivery,
+                CodAmount = request.CodAmount ?? 0m,
+                IsFragile = request.IsFragile,
+                Notes = $"DROP-OFF RECIPIENT: {request.ReceiverName} ({request.ReceiverPhone}). DESCRIPTION: {request.PackageDescription}"
             };
 
-            _context.Shipments.Add(newShipment);
-            req.IsCompleted = true;
-            req.Status = "Approved";
+            request.Status = "Approved";
+            request.IsCompleted = true;
 
+            _context.Shipments.Add(newShipment);
             await _context.SaveChangesAsync();
-            TempData["SuccessMessage"] = "REQUEST CONVERTED TO ACTIVE MANIFEST.";
+
+            _context.StatusHistories.Add(new StatusHistory
+            {
+                ShipmentId = newShipment.ShipmentId,
+                StatusId = newShipment.StatusId,
+                Timestamp = DateTime.UtcNow,
+                Note = "Courier dispatch request approved. Manifest initialized.",
+                Location = "Logistics Dispatch Hub"
+            });
+            await _context.SaveChangesAsync();
+
             return RedirectToAction("ActiveCargo");
         }
 
