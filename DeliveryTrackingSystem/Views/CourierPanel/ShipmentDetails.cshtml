@@ -3,30 +3,59 @@
     Layout = "_CourierLayout";
     ViewData["Title"] = "Manifest Details";
 
-    // Fallback parsing logic if the receiver does not have a registered account
+    // Fallback instantiation states
+    string senderName = "Anonymous Originator";
+    string senderPhone = "No Phone Logged";
     string receiverName = "UNREGISTERED RECIPIENT";
     string receiverPhone = "NO PHONE REGISTERED";
+    string routingDestination = Model.DeliveryRoute?.EndLocation ?? "Unassigned Sector Location";
+
+    // Parse verified or guest metadata fields safely out of persistent database records
+    if (Model.Sender != null)
+    {
+        senderName = $"{Model.Sender.FirstName} {Model.Sender.LastName}";
+        senderPhone = Model.Sender.PhoneNumber ?? "No Number Logged";
+    }
 
     if (Model.Receiver != null)
     {
         receiverName = $"{Model.Receiver.FirstName} {Model.Receiver.LastName}";
-        receiverPhone = Model.Receiver.PhoneNumber ?? "";
+        receiverPhone = Model.Receiver.PhoneNumber ?? "No Phone Logged";
     }
-    else if (!string.IsNullOrEmpty(Model.Notes) && Model.Notes.Contains("DROP-OFF RECIPIENT:"))
-    {
-        try
-        {
-            // Parse recipient data out from standard string token format
-            var firstSplit = Model.Notes.Split(new string[] { "DROP-OFF RECIPIENT: " }, StringSplitOptions.None)[1];
-            var secondSplit = firstSplit.Split(new string[] { ")." }, StringSplitOptions.None)[0];
-            var details = secondSplit.Split('(');
 
-            receiverName = details[0].Trim();
-            receiverPhone = details[1].Trim();
-        }
-        catch
+    // Advanced Regex string extraction parsing layer for unpacking serialized custom unregistered courier manifests
+    if (!string.IsNullOrEmpty(Model.Notes))
+    {
+        if (Model.Notes.Contains("GUEST_SENDER_NAME:"))
         {
-            receiverName = "Custom Drop-off Entity";
+            try
+            {
+                var sName = Model.Notes.Split("GUEST_SENDER_NAME: ")[1].Split(" | ")[0];
+                var sPhone = Model.Notes.Split("GUEST_SENDER_PHONE: ")[1].Split(" | ")[0];
+                if (!string.IsNullOrEmpty(sName)) senderName = $"{sName} (Guest)";
+                if (!string.IsNullOrEmpty(sPhone)) senderPhone = sPhone;
+            }
+            catch { }
+        }
+        if (Model.Notes.Contains("GUEST_RECEIVER_NAME:"))
+        {
+            try
+            {
+                var rName = Model.Notes.Split("GUEST_RECEIVER_NAME: ")[1].Split(" | ")[0];
+                var rPhone = Model.Notes.Split("GUEST_RECEIVER_PHONE: ")[1].Split(" | ")[0];
+                if (!string.IsNullOrEmpty(rName)) receiverName = $"{rName} (Guest)";
+                if (!string.IsNullOrEmpty(rPhone)) receiverPhone = rPhone;
+            }
+            catch { }
+        }
+        if (Model.Notes.Contains("DESTINATION_LOCATION:"))
+        {
+            try
+            {
+                var loc = Model.Notes.Split("DESTINATION_LOCATION: ")[1].Split(" | ")[0];
+                if (!string.IsNullOrEmpty(loc)) routingDestination = loc;
+            }
+            catch { }
         }
     }
 }
@@ -48,15 +77,15 @@
                 <div class="row g-4">
                     <div class="col-md-6 border-end border-secondary">
                         <h6 class="text-gold uppercase-tracking small mb-3">Originator</h6>
-                        <p class="mb-1 fw-bold text-white fs-5">@(Model.Sender != null ? $"{Model.Sender.FirstName} {Model.Sender.LastName}" : "Anonymous Sender")</p>
-                        <p class="text-gold small mb-1 font-monospace">@Model.Sender.PhoneNumber</p>
+                        <p class="mb-1 fw-bold text-white fs-5">@senderName</p>
+                        <p class="text-gold small mb-1 font-monospace">@senderPhone</p>
                         <p class="text-secondary small mb-0"><i class="bi bi-geo-alt me-1"></i> @(Model.DeliveryRoute?.StartLocation ?? "Processing Hub")</p>
                     </div>
                     <div class="col-md-6">
                         <h6 class="text-gold uppercase-tracking small mb-3">Target Destination</h6>
                         <p class="mb-1 fw-bold text-white fs-5">@receiverName</p>
                         <p class="text-gold small mb-1 font-monospace">@receiverPhone</p>
-                        <p class="text-secondary small mb-0"><i class="bi bi-geo-fill me-1"></i> @(Model.DeliveryRoute?.EndLocation ?? "Unassigned Hub Sector")</p>
+                        <p class="text-secondary small mb-0"><i class="bi bi-geo-fill me-1"></i> @routingDestination</p>
                     </div>
                 </div>
 
@@ -64,10 +93,10 @@
 
                 <div class="row g-4">
                     <div class="col-md-4">
-                        <label class="text-gold small fw-bold mb-2">ORIGIN HUB</label>
+                        <label class="text-gold small fw-bold mb-2">OPERATIONAL DATA</label>
                         <div class="p-3 bg-soft-black rounded border border-secondary shadow-sm">
                             <div class="mb-2">
-                                <span class="text-muted small d-block">ROUTE SECTOR</span>
+                                <span class="text-muted small d-block">ROUTE TRACK SECTOR</span>
                                 <span class="text-white font-monospace">SEC-@Model.DeliveryRouteId</span>
                             </div>
                             <div>
@@ -77,9 +106,9 @@
                         </div>
                     </div>
                     <div class="col-md-8">
-                        <h6 class="text-gold uppercase-tracking small mb-2">Cargo Notes</h6>
+                        <h6 class="text-gold uppercase-tracking small mb-2">Cargo Notes & Dynamic Meta Logs</h6>
                         <div class="p-3 bg-soft-black rounded border border-secondary h-100">
-                            <p class="text-secondary small mb-0 font-italic">
+                            <p class="text-secondary small mb-0 font-monospace" style="font-size:0.8rem;">
                                 @(string.IsNullOrEmpty(Model.Notes) ? "NO SPECIALIZED INSTRUCTIONS LOGGED." : Model.Notes)
                             </p>
                         </div>
@@ -95,19 +124,25 @@
                     <span class="text-gold fw-bold uppercase-tracking">@(Model.Status?.Name ?? "MANIFEST INITIALIZED")</span>
                 </div>
 
+                <div class="p-3 bg-black border border-secondary rounded mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted small">FREIGHT CHARGE TARIFF:</span>
+                        <span class="text-white font-monospace fw-bold">€@Model.ShippingCost.ToString("N2")</span>
+                    </div>
+                    @if (Model.IsCashOnDelivery)
+                    {
+                        <div class="d-flex justify-content-between align-items-center border-top border-secondary pt-2 mt-2">
+                            <span class="text-success small fw-bold">COD ESCROW:</span>
+                            <span class="text-success font-monospace fw-bold">€@Model.CodAmount.ToString("N2")</span>
+                        </div>
+                    }
+                </div>
+
                 @if (Model.IsFragile)
                 {
                     <div class="d-flex align-items-center p-2 mb-2 bg-danger bg-opacity-10 border border-danger border-opacity-25 rounded">
                         <i class="bi bi-exclamation-triangle-fill text-danger me-2"></i>
                         <span class="text-danger small fw-bold">FRAGILE CARGO</span>
-                    </div>
-                }
-
-                @if (Model.IsCashOnDelivery)
-                {
-                    <div class="d-flex align-items-center p-2 bg-success bg-opacity-10 border border-success border-opacity-25 rounded">
-                        <i class="bi bi-currency-euro text-success me-2"></i>
-                        <span class="text-success small fw-bold">COLLECT: €@Model.CodAmount</span>
                     </div>
                 }
             </div>

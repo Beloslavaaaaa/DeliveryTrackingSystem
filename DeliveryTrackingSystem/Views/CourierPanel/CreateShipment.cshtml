@@ -24,7 +24,7 @@
                 <div class="mb-3">
                     <label class="text-muted small fw-bold mb-2">PHONE LOOKUP</label>
                     <div class="input-group">
-                        <input type="text" id="senderPhone" class="form-control bg-black text-white border-gold font-monospace" placeholder="Search...">
+                        <input type="text" asp-for="SenderPhone" id="senderPhone" class="form-control bg-black text-white border-gold font-monospace" placeholder="Search phone...">
                         <button type="button" class="btn btn-outline-gold" onclick="lookupUser('sender')">FETCH</button>
                     </div>
                 </div>
@@ -36,7 +36,7 @@
 
                 <div id="senderManual">
                     <label class="text-muted small fw-bold mb-2">MANUAL NAME (GUEST)</label>
-                    <input type="text" asp-for="SenderManualName" class="form-control bg-transparent text-white border-secondary">
+                    <input type="text" asp-for="SenderManualName" id="senderManualName" class="form-control bg-transparent text-white border-secondary">
                 </div>
             </div>
 
@@ -46,7 +46,7 @@
                 <div class="mb-3">
                     <label class="text-muted small fw-bold mb-2">PHONE LOOKUP</label>
                     <div class="input-group">
-                        <input type="text" id="receiverPhone" class="form-control bg-black text-white border-gold font-monospace" placeholder="Search...">
+                        <input type="text" asp-for="ReceiverPhone" id="receiverPhone" class="form-control bg-black text-white border-gold font-monospace" placeholder="Search phone...">
                         <button type="button" class="btn btn-outline-gold" onclick="lookupUser('receiver')">FETCH</button>
                     </div>
                 </div>
@@ -58,7 +58,7 @@
 
                 <div id="receiverManual">
                     <label class="text-muted small fw-bold mb-2">MANUAL NAME (GUEST)</label>
-                    <input type="text" asp-for="ReceiverManualName" class="form-control bg-transparent text-white border-secondary">
+                    <input type="text" asp-for="ReceiverManualName" id="receiverManualName" class="form-control bg-transparent text-white border-secondary">
                 </div>
             </div>
 
@@ -66,7 +66,7 @@
 
             <div class="col-md-12">
                 <div class="row g-4">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="text-gold small fw-bold mb-2">ORIGIN HUB</label>
                         <select id="startOffice" class="form-select bg-black text-white border-secondary">
                             @foreach (var office in (IEnumerable<Cargobell.Shared.Models.Office>)ViewBag.Offices)
@@ -75,21 +75,59 @@
                             }
                         </select>
                     </div>
-                    <div class="col-md-4">
-                        <label class="text-gold small fw-bold mb-2">DESTINATION HUB</label>
-                        <select id="endOffice" class="form-select bg-black text-white border-secondary">
-                            <option value="">-- SELECT TARGET --</option>
-                            @foreach (var office in (IEnumerable<Cargobell.Shared.Models.Office>)ViewBag.Offices)
-                            {
-                                <option value="@office.OfficeId">@office.Name</option>
-                            }
+
+                    <div class="col-md-3">
+                        <label class="text-gold small fw-bold mb-2">DESTINATION TERMINAL TYPE</label>
+                        <select asp-for="DestinationType" id="destinationType" class="form-select bg-dark text-white border-secondary">
+                            <option value="Hub">Corporate Office Hub</option>
+                            <option value="Manual">Manual Street Address</option>
+                        </select>
+
+                        <div id="hubSelectContainer" class="mt-3">
+                            <label class="text-muted small mb-1">SELECT OFFICE HUB</label>
+                            <select asp-for="EndOfficeId" id="endOffice" class="form-select bg-black text-white border-secondary">
+                                <option value="">-- SELECT TARGET HUB --</option>
+                                @foreach (var office in (IEnumerable<Cargobell.Shared.Models.Office>)ViewBag.Offices)
+                                {
+                                    <option value="@office.OfficeId">@office.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div id="addressInputContainer" class="mt-3 d-none">
+                            <label class="text-muted small mb-1">ENTER MANUAL ADDRESS</label>
+                            <input type="text" asp-for="ManualDestinationAddress" id="manualAddress" class="form-control bg-black text-white border-secondary" placeholder="123 Logistics Way, City">
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="text-gold small fw-bold mb-2">DESTINATION REGIONAL ZONE</label>
+                        <select asp-for="DestinationZone" id="calcDest" class="form-select bg-dark text-white border-secondary">
+                            <option value="1">Domestic (x1.0)</option>
+                            <option value="2.5">International (EU) (x2.5)</option>
+                            <option value="5.0">International (Global) (x5.0)</option>
+                        </select>
+
+                        <label class="text-gold small fw-bold mb-2 mt-3">PACKAGE VOLUMETRIC SIZE</label>
+                        <select asp-for="PackageType" id="calcSize" class="form-select bg-dark text-white border-secondary">
+                            <option value="5">Document Envelope (€5)</option>
+                            <option value="15">Small Parcel (< 2kg) (€15)</option>
+                            <option value="35">Standard Box (< 10kg) (€35)</option>
+                            <option value="70">Heavy Freight (< 30kg) (€70)</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+
+                    <div class="col-md-3">
+                        <label class="text-gold small fw-bold mb-2">CALCULATED SHIPPING COST</label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text bg-dark border-gold text-gold">€</span>
+                            <input type="number" step="0.01" asp-for="ShippingCost" id="shippingCostField" class="form-control bg-black text-white border-gold font-monospace" readonly />
+                        </div>
+
                         <label class="text-gold small fw-bold mb-2">COLLECTION (COD)</label>
                         <div class="input-group">
                             <span class="input-group-text bg-dark border-secondary text-white">€</span>
-                            <input type="number" asp-for="CodAmount" class="form-control bg-black text-white border-secondary font-monospace">
+                            <input type="number" step="0.01" asp-for="CodAmount" class="form-control bg-black text-white border-secondary font-monospace">
                         </div>
                         <div class="form-check mt-2">
                             <input class="form-check-input" type="checkbox" asp-for="IsCashOnDelivery" id="isCod">
@@ -128,20 +166,41 @@
                         $(`#${prefix}Details`).addClass('d-none');
                         $(`#${prefix}Id`).val('');
                         $(`#${prefix}Manual`).removeClass('d-none');
-                        alert("No registered account. Switching to manual entry.");
+                        alert("No registered account found. Switching to manual guest mode.");
                     }
                 });
             }
         }
 
-        $('#startOffice, #endOffice').on('change', function() {
-            let s = $('#startOffice').val();
-            let e = $('#endOffice').val();
-            if(s && e) {
-                $.get('/CourierPanel/GetRouteDetails', { startId: s, endId: e }, function(data) {
-                    $('#finalRouteId').val(data.id);
-                });
+        // Handle Delivery Option Target Toggling
+        $('#destinationType').on('change', function() {
+            if ($(this).val() === 'Hub') {
+                $('#hubSelectContainer').removeClass('d-none');
+                $('#addressInputContainer').addClass('d-none');
+                $('#manualAddress').val('');
+            } else {
+                $('#hubSelectContainer').addClass('d-none');
+                $('#addressInputContainer').removeClass('d-none');
+                $('#endOffice').val('');
             }
+            calculateLiveTariff();
+        });
+
+        // Compute Live Matrix Tariff Pricing
+        function calculateLiveTariff() {
+            let baseSizePrice = parseFloat($('#calcSize').val()) || 0;
+            let zoneMultiplier = parseFloat($('#calcDest').val()) || 1.0;
+            let finalCost = baseSizePrice * zoneMultiplier;
+            
+            $('#shippingCostField').val(finalCost.toFixed(2));
+        }
+
+        $('#calcSize, #calcDest').on('change', function() {
+            calculateLiveTariff();
+        });
+
+        $(document).ready(function() {
+            calculateLiveTariff();
         });
     </script>
 }

@@ -35,6 +35,10 @@ namespace DeliveryTrackingSystem.Controllers
                 .Where(s => s.CourierId == userId && s.Status.Name == "Delivered" && s.IsCashOnDelivery)
                 .SumAsync(s => s.CodAmount);
 
+            ViewBag.TotalShippingRevenue = await _context.Shipments
+                .Where(s => s.CourierId == userId && s.Status.Name == "Delivered")
+                .SumAsync(s => s.ShippingCost);
+
             return View(user);
         }
 
@@ -92,7 +96,7 @@ namespace DeliveryTrackingSystem.Controllers
             return RedirectToAction("ActiveCargo");
         }
 
-        // --- RAPID IN-TAKE (NEW) ---
+        // --- RAPID IN-TAKE ---
         [HttpGet("CreateShipment")]
         public async Task<IActionResult> CreateShipment()
         {
@@ -107,25 +111,54 @@ namespace DeliveryTrackingSystem.Controllers
             var initialStatus = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
             string generatedCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
 
+            // Resolve target destination description
+            string finalizedDestination = "Unassigned Sector Location";
+            if (vm.DestinationType == "Hub" && vm.EndOfficeId.HasValue)
+            {
+                var targetOffice = await _context.Offices.FindAsync(vm.EndOfficeId.Value);
+                if (targetOffice != null) finalizedDestination = $"Office Hub: {targetOffice.Name}";
+            }
+            else if (!string.IsNullOrEmpty(vm.ManualDestinationAddress))
+            {
+                finalizedDestination = vm.ManualDestinationAddress;
+            }
+
+            // Fallback strategy for Route ID safely mapping to contextual parameters
+            var activeRoute = await _context.DeliveryRoutes.FirstOrDefaultAsync();
+            int routeId = activeRoute?.DeliveryRouteId ?? 1;
+
+            // Strict metadata serialization string layout for parsing guest entities cleanly 
+            string structuredNotes = $"GUEST_SENDER_NAME: {vm.SenderManualName} | GUEST_SENDER_PHONE: {vm.SenderPhone} | " +
+                                     $"GUEST_RECEIVER_NAME: {vm.ReceiverManualName} | GUEST_RECEIVER_PHONE: {vm.ReceiverPhone} | " +
+                                     $"DESTINATION_LOCATION: {finalizedDestination} | {vm.Notes}";
+
             var shipment = new Shipment
             {
                 TrackingCode = generatedCode,
                 CourierId = _userManager.GetUserId(User),
                 SenderId = vm.SenderId,
                 ReceiverId = vm.ReceiverId,
-                DeliveryRouteId = vm.DeliveryRouteId,
+                DeliveryRouteId = routeId,
                 StatusId = initialStatus?.StatusId ?? 1,
                 IsCashOnDelivery = vm.IsCashOnDelivery,
                 CodAmount = vm.CodAmount,
                 IsFragile = vm.IsFragile,
                 CreatedAt = DateTime.UtcNow,
-
-                // MAPPED CLEANLY: Direct property mapping from user form tracking data
                 ShippingCost = vm.ShippingCost,
-                Notes = $"S: {vm.SenderManualName} | R: {vm.ReceiverManualName} | {vm.Notes}"
+                Notes = structuredNotes
             };
 
             _context.Shipments.Add(shipment);
+            await _context.SaveChangesAsync();
+
+            _context.StatusHistories.Add(new StatusHistory
+            {
+                ShipmentId = shipment.ShipmentId,
+                StatusId = shipment.StatusId,
+                Timestamp = DateTime.UtcNow,
+                Note = "Manifest registered via Rapid In-Take Desk.",
+                Location = finalizedDestination
+            });
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] = $"MANIFEST {generatedCode} AUTHORIZED.";
@@ -159,44 +192,34 @@ namespace DeliveryTrackingSystem.Controllers
             var request = await _context.CourierRequests.FirstOrDefaultAsync(r => r.CourierRequestId == requestId);
             if (request == null) return NotFound();
 
-            // --- VALIDATION & FALLBACK SAFETY CHECK ---
-            var routeExists = await _context.DeliveryRoutes.AnyAsync(r => r.DeliveryRouteId == deliveryRouteId);
-
-            if (!routeExists)
+            var route = await _context.DeliveryRoutes.FirstOrDefaultAsync(r => r.DeliveryRouteId == deliveryRouteId);
+            if (route == null)
             {
-                var defaultRoute = await _context.DeliveryRoutes.FirstOrDefaultAsync();
-
-                if (defaultRoute == null)
+                route = await _context.DeliveryRoutes.FirstOrDefaultAsync();
+                if (route == null)
                 {
-                    TempData["ErrorMessage"] = "CRITICAL: No delivery routes found in the database. Please create a route first.";
+                    TempData["ErrorMessage"] = "CRITICAL: No delivery routes found in the database.";
                     return RedirectToAction("UserDirectory");
                 }
-
-                deliveryRouteId = defaultRoute.DeliveryRouteId;
             }
-            // ----------------------------------------------
 
             string? senderId = request.UserId;
-
             var matchedReceiver = await _userManager.Users
                 .FirstOrDefaultAsync(u => u.PhoneNumber == request.ReceiverPhone);
 
             var newShipment = new Shipment
             {
-                TrackingCode = "CB" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
+                TrackingCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
                 SenderId = senderId,
                 ReceiverId = matchedReceiver?.Id,
                 CourierId = _userManager.GetUserId(User),
-                DeliveryRouteId = deliveryRouteId,
+                DeliveryRouteId = route.DeliveryRouteId,
                 StatusId = 1,
                 CreatedAt = DateTime.UtcNow,
                 IsCashOnDelivery = request.IsCashOnDelivery,
                 CodAmount = request.CodAmount ?? 0m,
                 IsFragile = request.IsFragile,
-
-                // MAPPED CLEANLY: Pulling the 350.00 directly from request.EstimatedPrice database column
                 ShippingCost = request.EstimatedPrice,
-
                 Notes = $"DROP-OFF RECIPIENT: {request.ReceiverName} ({request.ReceiverPhone}). DESCRIPTION: {request.PackageDescription}"
             };
 
@@ -328,7 +351,7 @@ namespace DeliveryTrackingSystem.Controllers
         public async Task<IActionResult> GetRouteDetails(int startId, int endId)
         {
             var route = await _context.DeliveryRoutes.FirstOrDefaultAsync();
-            return Json(new { id = route?.DeliveryRouteId ?? 1 });
+            return Json(new { id = route?.DeliveryRouteId ?? 1, price = route?.Price ?? 0.00m });
         }
     }
 }
