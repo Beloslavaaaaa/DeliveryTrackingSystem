@@ -217,5 +217,25 @@ namespace DeliveryTrackingSystem.Controllers
             }
             return RedirectToAction("UserDirectory");
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return NotFound();
+
+            // Sign out the session first to clear local security cookies
+            await _signInManager.SignOutAsync();
+
+            // Permanently terminate the data store profile entry
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                // If an unexpected error occurs during data deletion, force redirect to landing
+                return RedirectToAction("Index", "Home");
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
     }
 }

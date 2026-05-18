@@ -4,6 +4,28 @@
     ViewData["Title"] = "Executive Dossier";
 }
 
+<style>
+    /* Styling extension matching your premium luxury dark UI layout */
+    .btn-outline-danger-terminal {
+        color: #dc3545;
+        border: 1px solid rgba(220, 53, 69, 0.4);
+        background: transparent;
+        transition: all 0.3s ease;
+    }
+
+        .btn-outline-danger-terminal:hover {
+            color: #fff;
+            background: #dc3545;
+            border-color: #dc3545;
+            box-shadow: 0 0 15px rgba(220, 53, 69, 0.4);
+        }
+
+    .modal-blur-bg {
+        background: rgba(5, 5, 5, 0.85) !important;
+        backdrop-filter: blur(10px);
+    }
+</style>
+
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-9">
@@ -41,10 +63,45 @@
                         </div>
                     </div>
 
-                    <div class="mt-5 pt-4 border-top border-dark">
+                    <div class="mt-5 pt-4 border-top border-dark d-flex flex-column gap-3">
                         <a asp-action="Settings" class="btn btn-gold w-100 py-3 fw-bold">MODIFY ACCOUNT</a>
+
+                        <button type="button" class="btn btn-outline-danger-terminal w-100 py-3 fw-bold font-monospace tracking-wider text-uppercase btn-sm" data-bs-toggle="modal" data-bs-target="#confirmTerminationModal">
+                            Initialize Account Deletion
+                        </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="confirmTerminationModal" tabindex="-1" aria-labelledby="terminationProtocolLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border border-danger rounded-2 modal-blur-bg text-white" style="background-color: #0c0c0c;">
+            <div class="modal-header border-bottom border-dark px-4 py-3">
+                <h5 class="modal-title text-danger fw-bold font-monospace small tracking-wider" id="terminationProtocolLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>CRITICAL SECURITY WARNING
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="mb-2 small font-monospace text-secondary">DELETION TARGET ENTITY:</p>
+                <div class="p-3 mb-4 bg-black border border-dark rounded text-center">
+                    <span class="text-white fw-bold">@Model.Email</span>
+                </div>
+                <p class="text-muted small mb-0 font-monospace">
+                    Warning: This structural action permanently purges your global dossier information, active shipments access authorization, and historic tracking logs inside the system. Recovering this node structure post-execution will be impossible.
+                </p>
+            </div>
+            <div class="modal-footer border-top border-dark p-3">
+                <button type="button" class="btn btn-outline-secondary px-4 font-monospace small py-2" data-bs-dismiss="modal">CANCEL</button>
+                <form asp-controller="Dashboard" asp-action="DeleteAccount" method="post" class="m-0">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger px-4 font-monospace fw-bold small py-2 text-white shadow-sm">
+                        CONFIRM PROTOCOL
+                    </button>
+                </form>
             </div>
         </div>
     </div>
