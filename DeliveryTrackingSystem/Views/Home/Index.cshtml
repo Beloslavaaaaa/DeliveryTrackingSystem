@@ -16,6 +16,38 @@
         align-items: center;
     }
 
+    /* --- SYSTEM UI KEYFRAME ANIMATION ENGINE (Razor Safe) --- */
+    .animate-terminal-fade {
+        opacity: 0;
+        transform: translateY(15px);
+        animation: terminalSlideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .animate-glow-pulse {
+        animation: criticalGlow 2.5s infinite ease-in-out;
+    }
+
+    /* DOUBLE @@ ESCAPED KEYFRAMES TO ELIMINATE IDE ERROR UNDERLINES */
+    @@keyframes terminalSlideUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes criticalGlow {
+        0%, 100% {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 0 4px rgba(212, 175, 55, 0.15);
+            border-color: #D4AF37 !important;
+        }
+
+        50% {
+            box-shadow: 0 4px 25px rgba(0,0,0,0.5), 0 0 15px rgba(212, 175, 55, 0.45);
+            border-color: #f1c40f !important;
+        }
+    }
+    /* -------------------------------------------------------- */
+
     /* Gold Theme Colors */
     .text-gold {
         color: #D4AF37 !important;
@@ -31,27 +63,47 @@
         .btn-gold:hover {
             background-color: #f1c40f;
             transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
         }
 
     .btn-outline-gold {
         border: 1px solid #D4AF37;
         color: #D4AF37;
+        transition: all 0.25s ease;
     }
 
         .btn-outline-gold:hover {
             background-color: #D4AF37;
             color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
         }
 
     .border-gold {
         border-color: #D4AF37 !important;
     }
+
+    /* Subtle hover interactive logic for exterior content blocks */
+    .card-interactive-node {
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .card-interactive-node:hover {
+            transform: translateY(-4px);
+            border-color: #D4AF37 !important;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+    .tracking-input-field:focus {
+        box-shadow: none !important;
+        outline: none !important;
+    }
 </style>
 
 <div class="hero-wrap">
     <div class="container py-5">
-        <div class="text-center mb-5">
-            <h1 class="display-1 fw-bold text-gold mb-0">CARGOBELL</h1>
+        <div class="text-center mb-5 animate-terminal-fade">
+            <h1 class="display-1 fw-bold text-gold mb-0" style="letter-spacing: 2px;">CARGOBELL</h1>
             <p class="text-gold opacity-75 mt-0" style="letter-spacing: 8px; font-size: 0.9rem;">YOUR CARGO ON THE BELL</p>
 
             <div class="row justify-content-center mt-4">
@@ -63,13 +115,13 @@
             </div>
         </div>
 
-        <div class="row justify-content-center mb-5">
+        <div class="row justify-content-center mb-5 animate-terminal-fade" style="animation-delay: 100ms;">
             <div class="col-md-8">
                 <div class="card p-2 shadow-lg" style="background: rgba(0,0,0,0.4); backdrop-filter: blur(15px); border: 1px solid #D4AF37;">
                     <form asp-controller="Shipments" asp-action="Details" method="get">
                         <div class="input-group">
                             <input type="text" name="trackingCode"
-                                   class="form-control form-control-lg bg-transparent text-white border-0 py-4 ps-4"
+                                   class="form-control form-control-lg bg-transparent text-white border-0 py-4 ps-4 tracking-input-field"
                                    placeholder="TRACKING CODE"
                                    style="letter-spacing: 4px;" required />
                             <button type="submit" class="btn btn-gold px-5">TRACK</button>
@@ -84,24 +136,24 @@
         </div>
 
         <div class="row g-5 mt-5 text-center">
-            <div class="col-md-4">
-                <div class="p-4 border border-secondary rounded h-100 d-flex flex-column" style="background: rgba(0,0,0,0.6);">
+            <div class="col-md-4 animate-terminal-fade" style="animation-delay: 200ms;">
+                <div class="p-4 border border-secondary rounded h-100 d-flex flex-column card-interactive-node" style="background: rgba(0,0,0,0.6);">
                     <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Contact Us</h5>
                     <p class="small text-secondary fw-light mb-4">Reach out to our global concierge for support.</p>
                     <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-gold px-4 mt-auto py-2">Open Inquiry</a>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="p-4 border border-gold rounded h-100 d-flex flex-column shadow-lg" style="background: rgba(212, 175, 55, 0.15); transform: scale(1.05); backdrop-filter: blur(5px);">
+            <div class="col-md-4 animate-terminal-fade" style="animation-delay: 250ms;">
+                <div class="p-4 border border-gold rounded h-100 d-flex flex-column shadow-lg card-interactive-node animate-glow-pulse" style="background: rgba(212, 175, 55, 0.15); transform: scale(1.05); backdrop-filter: blur(5px);">
                     <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Pricing</h5>
                     <p class="small text-white fw-light mb-4">Calculate shipping rates for domestic and international.</p>
                     <a asp-controller="Home" asp-action="Pricing" class="btn btn-gold px-4 mt-auto py-2">View Rates</a>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="p-4 border border-secondary rounded h-100 d-flex flex-column" style="background: rgba(0,0,0,0.6);">
+            <div class="col-md-4 animate-terminal-fade" style="animation-delay: 300ms;">
+                <div class="p-4 border border-secondary rounded h-100 d-flex flex-column card-interactive-node" style="background: rgba(0,0,0,0.6);">
                     <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Privacy Policy</h5>
                     <p class="small text-secondary fw-light mb-4">Learn about our data security and cargo protection.</p>
                     <a asp-controller="Home" asp-action="Privacy" class="btn btn-outline-gold px-4 mt-auto py-2">Read Policy</a>
