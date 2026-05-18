@@ -26,13 +26,13 @@ namespace DeliveryTrackingSystem.Controllers
             var userId = _userManager.GetUserId(User);
             if (string.IsNullOrEmpty(userId)) return Challenge();
 
-            var requests = await _context.CourierRequests
-                .Where(r => r.UserId == userId)
-                .OrderByDescending(r => r.CreatedAt)
-                .ToListAsync();
+            // Populate the ViewBags with separate lists for the view tabs
+            await PopulateViewBagsAsync(userId);
 
             ViewBag.ActiveTab = tab;
-            return View(requests);
+
+            // Pass a clean, single instance of the model for Step 1-4 Form
+            return View(new CourierRequest());
         }
 
         [HttpPost("/Couriers/Create")]
@@ -73,14 +73,15 @@ namespace DeliveryTrackingSystem.Controllers
                 return RedirectToAction("RequestIndex", new { tab = "active" });
             }
 
-            // If parsing fails, fall back and safely rebuild components
+            // --- VALIDATION FAILED TRANSIT BLOCK ---
             ViewBag.ActiveTab = "create";
-            var allRequests = await _context.CourierRequests
-                .Where(r => r.UserId == userId)
-                .OrderByDescending(r => r.CreatedAt)
-                .ToListAsync();
 
-            return View("RequestIndex", allRequests);
+            // Repopulate ViewBags so the Active and History tabs don't crash when reloading
+            await PopulateViewBagsAsync(userId);
+
+            // Pass the validation-flawed "request" model BACK to the user 
+            // so their inputs remain filled out along with the red error strings!
+            return View("RequestIndex", request);
         }
 
         [HttpPost("/Couriers/Cancel/{id}")]
@@ -98,6 +99,18 @@ namespace DeliveryTrackingSystem.Controllers
                 await _context.SaveChangesAsync();
             }
             return RedirectToAction("RequestIndex", new { tab = "finished" });
+        }
+
+        // Reusable extraction method to populate view tabs cleanly
+        private async Task PopulateViewBagsAsync(string userId)
+        {
+            var requests = await _context.CourierRequests
+                .Where(r => r.UserId == userId)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            ViewBag.ActiveRequests = requests.Where(r => !r.IsCompleted).ToList();
+            ViewBag.FinishedRequests = requests.Where(r => r.IsCompleted).ToList();
         }
     }
 }

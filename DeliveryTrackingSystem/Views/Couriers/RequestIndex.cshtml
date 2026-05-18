@@ -1,15 +1,14 @@
-﻿@model IEnumerable<Cargobell.Shared.Models.CourierRequest>
+﻿@model Cargobell.Shared.Models.CourierRequest
 @using Microsoft.AspNetCore.Identity
 @inject UserManager<Cargobell.Shared.Models.ApplicationUser> UserManager
 @{
     ViewData["Title"] = "Courier Services | Cargobell";
     string activeTab = ViewBag.ActiveTab ?? "active";
     var currentUser = await UserManager.GetUserAsync(User);
-    
-    // Safety check for null model
-    var requests = Model ?? new List<Cargobell.Shared.Models.CourierRequest>();
-    var activeRequests = requests.Where(r => !r.IsCompleted).ToList();
-    var finishedRequests = requests.Where(r => r.IsCompleted).ToList();
+
+    // Safety fallback for rendering lists via ViewBag if passed as a composite collection, or handling query parameters
+    var activeRequests = (ViewBag.ActiveRequests as List<Cargobell.Shared.Models.CourierRequest>) ?? new List<Cargobell.Shared.Models.CourierRequest>();
+    var finishedRequests = (ViewBag.FinishedRequests as List<Cargobell.Shared.Models.CourierRequest>) ?? new List<Cargobell.Shared.Models.CourierRequest>();
 }
 
 <div class="container py-5">
@@ -46,7 +45,7 @@
                         <h5 class="text-white fw-bold">@req.PackageDescription</h5>
                         <p class="small text-secondary mb-1 uppercase">Pickup: <span class="text-white">@req.PickupAddress</span></p>
                         <p class="small text-secondary mb-3 uppercase">Dropoff: <span class="text-white">@req.DropoffAddress</span></p>
-                        
+
                         @if (req.Status == "Pending")
                         {
                             <form asp-action="Cancel" asp-route-id="@req.CourierRequestId" method="post">
@@ -75,61 +74,62 @@
                         @Html.AntiForgeryToken()
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
+                        @* STEP 1: PARTIES *@
                         <div class="step-content" id="step-1">
                             <h5 class="text-gold mb-3 small fw-bold uppercase">Step 1: Dispatch Parties</h5>
 
-                            @* SENDER BLOCK *@
                             <div class="mb-4">
                                 <label class="smaller text-secondary d-block mb-2">Originator / Sender Context</label>
                                 <div class="btn-group w-100 mb-3">
-                                    <input type="radio" class="btn-check" name="IsCustomSender" id="myInfo" value="false" checked>
+                                    <input type="radio" class="btn-check" asp-for="IsCustomSender" id="myInfo" value="false" checked>
                                     <label class="btn btn-outline-gold py-2 small" for="myInfo">My Profile</label>
-                                    <input type="radio" class="btn-check" name="IsCustomSender" id="otherInfo" value="true">
+                                    <input type="radio" class="btn-check" asp-for="IsCustomSender" id="otherInfo" value="true">
                                     <label class="btn btn-outline-gold py-2 small" for="otherInfo">Other Contact</label>
                                 </div>
                                 <div id="myInfoFields" class="p-3 border border-secondary rounded text-center small text-white-50 bg-black">
                                     <i class="bi bi-person-fill text-gold me-2"></i> @currentUser?.UserName | @currentUser?.PhoneNumber
                                 </div>
                                 <div id="otherInfoFields" style="display:none;">
-                                    <input type="text" name="CustomSenderName" class="form-control bg-dark text-white border-secondary mb-2" placeholder="Sender Full Name">
-                                    <input type="text" name="CustomSenderPhone" class="form-control bg-dark text-white border-secondary mb-0" placeholder="Sender Phone Number">
+                                    <input type="text" asp-for="CustomSenderName" class="form-control bg-dark text-white border-secondary mb-2" placeholder="Sender Full Name">
+                                    <input type="text" asp-for="CustomSenderPhone" class="form-control bg-dark text-white border-secondary mb-0" placeholder="Sender Phone Number">
                                 </div>
                             </div>
 
                             <hr class="border-secondary opacity-25 my-4">
 
-                            @* NEW UPDATED RECEIVER BLOCK *@
                             <div class="mb-2">
                                 <label class="smaller text-gold d-block mb-2">Destination Recipient</label>
-                                <input type="text" name="ReceiverName" class="form-control bg-dark text-white border-secondary mb-2 py-2" placeholder="Recipient Full Name*" required>
-                                <span class="text-danger smaller d-block mb-2" id="val-ReceiverName"></span>
+                                <input type="text" asp-for="ReceiverName" class="form-control bg-dark text-white border-secondary mb-1 py-2" placeholder="Recipient Full Name*">
+                                <span asp-validation-for="ReceiverName" class="text-danger smaller d-block mb-2"></span>
 
-                                <input type="text" name="ReceiverPhone" class="form-control bg-dark text-white border-secondary mb-0 py-2" placeholder="Recipient Phone Number*" required>
-                                <span class="text-danger smaller d-block" id="val-ReceiverPhone"></span>
+                                <input type="text" asp-for="ReceiverPhone" class="form-control bg-dark text-white border-secondary mb-1 py-2" placeholder="Recipient Phone Number*">
+                                <span asp-validation-for="ReceiverPhone" class="text-danger smaller d-block"></span>
                             </div>
                         </div>
 
+                        @* STEP 2: ROUTE *@
                         <div class="step-content d-none" id="step-2">
                             <h5 class="text-gold mb-4 small fw-bold uppercase">Step 2: Route</h5>
-                            <input name="PickupAddress" class="form-control bg-dark text-white border-secondary mb-1 py-3" placeholder="Pickup Address*" required>
-                            <span class="text-danger smaller mb-3 d-block" id="val-PickupAddress"></span>
-                            
-                            <input name="DropoffAddress" class="form-control bg-dark text-white border-secondary mb-1 py-3" placeholder="Dropoff Address*" required>
-                            <span class="text-danger smaller d-block" id="val-DropoffAddress"></span>
+                            <input asp-for="PickupAddress" class="form-control bg-dark text-white border-secondary mb-1 py-3" placeholder="Pickup Address*">
+                            <span asp-validation-for="PickupAddress" class="text-danger smaller mb-3 d-block"></span>
+
+                            <input asp-for="DropoffAddress" class="form-control bg-dark text-white border-secondary mb-1 py-3" placeholder="Dropoff Address*">
+                            <span asp-validation-for="DropoffAddress" class="text-danger smaller d-block"></span>
                         </div>
 
+                        @* STEP 3: SHIPMENT *@
                         <div class="step-content d-none" id="step-3">
                             <h5 class="text-gold mb-4 small fw-bold uppercase">Step 3: Shipment</h5>
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
-                                    <select name="DestinationZone" id="calcDest" class="form-select bg-dark text-white border-secondary">
+                                    <select asp-for="DestinationZone" id="calcDest" class="form-select bg-dark text-white border-secondary">
                                         <option value="1">Domestic</option>
                                         <option value="2.5">International (EU)</option>
                                         <option value="5.0">International (Global)</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6">
-                                    <select name="PackageType" id="calcSize" class="form-select bg-dark text-white border-secondary">
+                                    <select asp-for="PackageType" id="calcSize" class="form-select bg-dark text-white border-secondary">
                                         <option value="5">Document Envelope (€5)</option>
                                         <option value="15">Small Parcel (&lt; 2kg) (€15)</option>
                                         <option value="35">Standard Box (&lt; 10kg) (€35)</option>
@@ -139,34 +139,47 @@
                             </div>
                             <div class="row mb-3">
                                 <div class="col-6">
-                                    <div class="form-check"><input type="checkbox" name="IsFragile" value="true" class="form-check-input" id="fCheck"><label class="text-white small">Fragile (+€5)</label></div>
+                                    <div class="form-check">
+                                        <input type="checkbox" asp-for="IsFragile" class="form-check-input" id="fCheck">
+                                        <label class="text-white small" for="fCheck">Fragile (+€5)</label>
+                                    </div>
                                 </div>
                                 <div class="col-6">
-                                    <div class="form-check"><input type="checkbox" name="IsCashOnDelivery" value="true" class="form-check-input" id="codCheck"><label class="text-white small">COD</label></div>
-                                    <input type="number" step="0.01" name="CodAmount" id="codWrap" class="form-control bg-dark text-white border-gold mt-2" placeholder="€" style="display:none;">
+                                    <div class="form-check">
+                                        <input type="checkbox" asp-for="IsCashOnDelivery" class="form-check-input" id="codCheck">
+                                        <label class="text-white small" for="codCheck">COD</label>
+                                    </div>
                                 </div>
-                                <div id="codAmountWrapper" class="mb-4" style="display:none;">
+                            </div>
+
+                            <div id="codAmountWrapper" class="mb-4" style="display:none;">
                                 <label class="smaller text-gold">COD AMOUNT TO COLLECT (€)</label>
-                                <input type="number" step="0.01" name="CodAmount" class="form-control bg-dark text-white border-gold py-2" placeholder="0.00">
+                                <input type="number" step="0.01" asp-for="CodAmount" class="form-control bg-dark text-white border-gold py-2" placeholder="0.00">
+                                <span asp-validation-for="CodAmount" class="text-danger smaller d-block"></span>
                             </div>
+
+                            <input type="text" asp-for="PackageDescription" class="form-control bg-dark text-white border-secondary mb-1" placeholder="Description*">
+                            <span asp-validation-for="PackageDescription" class="text-danger smaller d-block mb-3"></span>
+
+                            <div class="text-center p-3 bg-black border border-secondary mt-3">
+                                <h2 id="calcTotal" class="text-gold mb-0">€5.00</h2>
                             </div>
-                            <input type="text" name="PackageDescription" class="form-control bg-dark text-white border-secondary mb-1" placeholder="Description*" required>
-                            <span class="text-danger smaller d-block mb-3" id="val-PackageDescription"></span>
-                            
-                            <div class="text-center p-3 bg-black border border-secondary mt-3"><h2 id="calcTotal" class="text-gold mb-0">€5.00</h2></div>
                         </div>
 
+                        @* STEP 4: TIMING *@
                         <div class="step-content d-none" id="step-4">
                             <h5 class="text-gold mb-4 small fw-bold uppercase">Step 4: Timing</h5>
-                            <input type="date" name="PreferredPickupTime" id="pickupDate" class="form-control bg-dark text-white border-secondary mb-4 py-3" required>
+                            <input type="date" asp-for="PreferredPickupTime" id="pickupDate" class="form-control bg-dark text-white border-secondary mb-1 py-3">
+                            <span asp-validation-for="PreferredPickupTime" class="text-danger smaller mb-4 d-block"></span>
+
                             <div class="row">
                                 <div class="col">
-                                    <label class="smaller text-secondary">Start Time</label>
+                                    <label class="smaller text-secondary">Start Window</label>
                                     <input type="time" name="TimeStart" class="form-control bg-dark text-white border-secondary" value="09:00">
                                 </div>
                                 <div class="col">
-                                    <label class="smaller text-secondary">End Time</label>
-                                    <input type="time" name="PreferredPickupTimeEnd" class="form-control bg-dark text-white border-secondary" value="17:00">
+                                    <label class="smaller text-secondary">End Window</label>
+                                    <input type="time" asp-for="PreferredPickupTimeEnd" class="form-control bg-dark text-white border-secondary" value="17:00">
                                 </div>
                             </div>
                         </div>
@@ -184,31 +197,119 @@
 </div>
 
 <style>
-    :root { --gold: #D4AF37; --soft-black: #0b0b0b; }
-    body { background-color: #050505; color: white; }
-    .bg-soft-black { background-color: var(--soft-black) !important; }
-    .text-gold { color: var(--gold) !important; }
-    .btn-gold { background: var(--gold); color: black; border: none; }
-    .btn-outline-gold { border-color: var(--gold); color: var(--gold); }
-    .progress-line { position: absolute; top: 20px; left: 10%; right: 10%; height: 1px; background: #333; z-index: 0; }
-    .step-circle { width: 40px; height: 40px; border-radius: 50%; background: #111; border: 1px solid #333; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; color: #555; }
-    .step-circle.active { border-color: var(--gold); color: var(--gold); }
-    .step-circle span { position: absolute; top: 45px; font-size: 0.6rem; text-transform: uppercase; white-space: nowrap; color: #555; }
-    .gold-accent-bar { position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--gold); }
-    .smaller { font-size: 0.65rem; text-transform: uppercase; }
+    :root {
+        --gold: #D4AF37;
+        --soft-black: #0b0b0b;
+    }
+
+    body {
+        background-color: #050505;
+        color: white;
+    }
+
+    .bg-soft-black {
+        background-color: var(--soft-black) !important;
+    }
+
+    .text-gold {
+        color: var(--gold) !important;
+    }
+
+    .btn-gold {
+        background: var(--gold);
+        color: black;
+        border: none;
+    }
+
+        .btn-gold:hover {
+            background: #b8952e;
+            color: black;
+        }
+
+    .btn-outline-gold {
+        border-color: var(--gold);
+        color: var(--gold);
+    }
+
+        .btn-outline-gold:hover {
+            background: var(--gold);
+            color: black;
+        }
+
+    .progress-line {
+        position: absolute;
+        top: 20px;
+        left: 10%;
+        right: 10%;
+        height: 1px;
+        background: #333;
+        z-index: 0;
+    }
+
+    .step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #111;
+        border: 1px solid #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+        color: #555;
+    }
+
+        .step-circle.active {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+
+        .step-circle span {
+            position: absolute;
+            top: 45px;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            white-space: nowrap;
+            color: #555;
+        }
+
+        .step-circle.active span {
+            color: var(--gold);
+        }
+
+    .gold-accent-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--gold);
+    }
+
+    .smaller {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+    }
 </style>
 
 @section Scripts {
+    <partial name="_ValidationScriptsPartial" />
     <script>
         $(document).ready(function() {
             let step = 1;
-           function updateUI() {
-                // Toggle Buttons
-                $('#prevBtn').toggle(step > 1);
-                if(step === 4) { $('#nextBtn').hide(); $('#submitBtnFinal').show(); }
-                else { $('#nextBtn').show(); $('#submitBtnFinal').hide(); }
+            const $form = $('#dispatchForm');
 
-                // Update Step Circles
+            function updateUI() {
+                $('#prevBtn').toggle(step > 1);
+                if(step === 4) {
+                    $('#nextBtn').hide();
+                    $('#submitBtnFinal').show();
+                } else {
+                    $('#nextBtn').show();
+                    $('#submitBtnFinal').hide();
+                }
+
                 $('.step-circle').each(function() {
                     const circleStep = parseInt($(this).data('step'));
                     if(circleStep <= step) {
@@ -219,10 +320,33 @@
                 });
             }
 
-            $('#nextBtn').click(function() { $(`.step-content`).addClass('d-none'); step++; $(`#step-${step}`).removeClass('d-none'); updateUI(); });
-            $('#prevBtn').click(function() { $(`.step-content`).addClass('d-none'); step--; $(`#step-${step}`).removeClass('d-none'); updateUI(); });
+            // Validates fields inside the CURRENT active wizard step panel only
+            function isCurrentStepValid() {
+                let isValid = true;
+                $(`#step-${step} input, #step-${step} select, #step-${step} textarea`).each(function() {
+                    if ($form.validate().element(this) === false) {
+                        isValid = false;
+                    }
+                });
+                return isValid;
+            }
 
-            // Radio Button Toggle for Step 1
+            $('#nextBtn').click(function() {
+                if (isCurrentStepValid()) {
+                    $(`.step-content`).addClass('d-none');
+                    step++;
+                    $(`#step-${step}`).removeClass('d-none');
+                    updateUI();
+                }
+            });
+
+            $('#prevBtn').click(function() {
+                $(`.step-content`).addClass('d-none');
+                step--;
+                $(`#step-${step}`).removeClass('d-none');
+                updateUI();
+            });
+
             $('input[name="IsCustomSender"]').on('change', function() {
                 if ($(this).val() === 'true') {
                     $('#otherInfoFields').slideDown(200);
@@ -230,18 +354,19 @@
                 } else {
                     $('#otherInfoFields').slideUp(200);
                     $('#myInfoFields').slideDown(200);
+                    $('#otherInfoFields input').val(''); // Clear on toggle away
                 }
             });
-            // RESTORED: COD Amount Toggle
+
             $('#codCheck').on('change', function() {
                 if ($(this).is(':checked')) {
                     $('#codAmountWrapper').slideDown(200);
                 } else {
                     $('#codAmountWrapper').slideUp(200);
+                    $('#codAmountWrapper input').val('');
                 }
             });
 
-            // Pricing logic
             function calc() {
                 let s = parseFloat($('#calcSize').val()) || 0;
                 let d = parseFloat($('#calcDest').val()) || 1;
@@ -250,11 +375,12 @@
             }
             $('#calcSize, #calcDest, #fCheck').change(calc);
 
-            // Date setup
             const pDate = document.getElementById('pickupDate');
-            const today = new Date().toISOString().split('T')[0];
-            pDate.setAttribute('min', today);
-            pDate.value = today;
+            if(pDate) {
+                const today = new Date().toISOString().split('T')[0];
+                pDate.setAttribute('min', today);
+                if(!pDate.value) pDate.value = today;
+            }
         });
     </script>
 }

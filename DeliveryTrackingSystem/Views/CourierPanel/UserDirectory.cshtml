@@ -6,154 +6,246 @@
 }
 
 <style>
-    .animate-pulse {
-        animation: pulse-gold 2s infinite;
-        border: 1px solid #D4AF37;
+    /* Terminal Theme Variables */
+    :root {
+        --terminal-gold: #D4AF37;
+        --terminal-dark: #0a0a0a;
+        --terminal-card-bg: #121212;
+        --terminal-border: #262626;
+        --terminal-muted: #888888;
     }
 
-    @@keyframes pulse-gold {
+    /* Core UI Animations */
+    .animate-pulse-gold {
+        animation: pulse-gold-frame 2s infinite;
+    }
+
+    @@keyframes pulse-gold-frame {
         0% {
-            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
+            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
+            border-color: var(--terminal-gold);
         }
 
         70% {
-            box-shadow: 0 0 0 10px rgba(212, 175, 55, 0);
+            box-shadow: 0 0 0 8px rgba(212, 175, 55, 0);
+            border-color: rgba(212, 175, 55, 0.5);
         }
 
         100% {
             box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+            border-color: var(--terminal-gold);
         }
     }
-
-    .btn-outline-gold {
-        border: 1px solid #D4AF37;
-        color: #D4AF37;
-        background: transparent;
-        transition: 0.3s;
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
+        border-color: var(--terminal-gold);
     }
 
-        .btn-outline-gold:hover {
-            background: #D4AF37;
-            color: #000;
+    70% {
+        box-shadow: 0 0 0 8px rgba(212, 175, 55, 0);
+        border-color: rgba(212, 175, 55, 0.5);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+        border-color: var(--terminal-gold);
+    }
+
+    }
+
+    /* Redesigned Card Components */
+    .terminal-node-card {
+        background-color: var(--terminal-card-bg);
+        border: 1px solid var(--terminal-border);
+        border-radius: 6px;
+        transition: transform 0.22s ease, border-color 0.22s ease;
+    }
+
+        .terminal-node-card:hover {
+            border-color: #444;
+            transform: translateY(-2px);
         }
 
-    .border-approval {
-        border: 1px solid #D4AF37 !important;
-        background: rgba(212, 175, 55, 0.05) !important;
+    .terminal-attention-card {
+        background: linear-gradient(145deg, #141310 0%, #121212 100%) !important;
+    }
+
+    /* Custom Input Line Styles */
+    .terminal-search-line {
+        border-width: 0 0 2px 0 !important;
+        border-color: var(--terminal-border) !important;
+        transition: border-color 0.3s;
+    }
+
+        .terminal-search-line:focus {
+            border-color: var(--terminal-gold) !important;
+            box-shadow: none !important;
+        }
+
+    /* Utility Grid Setup */
+    .node-grid-layout {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .inner-request-row {
+        background: #181818;
+        border: 1px solid var(--terminal-border);
+        border-left: 3px solid var(--terminal-gold);
+        border-radius: 4px;
     }
 </style>
 
-<div class="mb-4">
-    <h1 class="text-gold mb-0" style="font-size: 1.8rem;">ENTITY DIRECTORY</h1>
-    <p class="text-muted small text-uppercase" style="letter-spacing: 2px;">Operational Node Overview</p>
-</div>
+<div class="container-fluid py-4">
+    <div class="d-flex align-items-center justify-content-between mb-5 border-start border-gold ps-4">
+        <div>
+            <h4 class="text-secondary small mb-1 text-uppercase tracking-wider" style="letter-spacing: 2px;">Operational Node Overview</h4>
+            <h2 class="text-white fw-bold mb-0" style="letter-spacing: -0.5px;">ENTITY DIRECTORY</h2>
+        </div>
+        <div>
+            <input type="text" id="nodeFilter" class="form-control bg-transparent terminal-search-line text-white rounded-0 px-0 font-monospace"
+                   placeholder="[ SEARCH & FILTER NODES... ]" style="width: 280px; font-size: 0.85rem;">
+        </div>
+    </div>
 
-<div class="mb-5">
-    <input type="text" id="nodeFilter" class="form-control bg-transparent border-secondary text-white rounded-0 w-25"
-           placeholder="TYPE TO FILTER NODES..." style="border-width: 0 0 1px 0; font-size: 0.8rem;">
-</div>
+    <div class="node-grid-layout" id="nodeGrid">
+        @foreach (var vm in Model)
+        {
+            bool needsAttention = !vm.User.IsApproved && !string.IsNullOrEmpty(vm.User.DeclarationFilePath) && vm.User.DeclarationFilePath != "REJECTED";
 
-<div class="row-cols-custom" id="nodeGrid">
-    @foreach (var vm in Model)
-    {
-        bool needsAttention = !vm.User.IsApproved && !string.IsNullOrEmpty(vm.User.DeclarationFilePath) && vm.User.DeclarationFilePath != "REJECTED";
+            <div class="node-item">
+                <div class="terminal-node-card p-4 h-100 d-flex flex-column justify-content-between @(needsAttention ? "terminal-attention-card animate-pulse-gold" : "")">
 
-        <div class="node-item">
-            <div class="node-card @(needsAttention ? "border-approval" : "")">
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <h6 class="fw-bold text-uppercase m-0">@vm.User.FirstName @vm.User.LastName</h6>
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="fw-bold text-white mb-0 text-uppercase tracking-tight">@vm.User.FirstName @vm.User.LastName</h5>
+                            @if (needsAttention)
+                            {
+                                <span class="badge rounded-1 bg-warning text-black font-monospace px-2 py-1 small fw-bold">PENDING VERIFICATION</span>
+                            }
+                        </div>
 
-                    @if (needsAttention)
-                    {
-                        <span class="badge bg-warning text-dark animate-pulse">PENDING DOCS</span>
-                    }
-                </div>
+                        <div class="text-gold small mb-4 font-monospace d-flex align-items-center">
+                            <i class="bi bi-telephone me-2 opacity-50"></i>@vm.User.PhoneNumber
+                        </div>
 
-                <div class="text-muted small mb-3" style="font-family: monospace;">TEL // @vm.User.PhoneNumber</div>
-
-                @if (needsAttention)
-                {
-                    <div class="p-3 mb-3 bg-black border border-warning">
-                        <p class="text-warning small fw-bold mb-2"><i class="bi bi-file-earmark-pdf"></i> VERIFICATION REQUIRED</p>
-                        <div class="d-grid gap-2">
-                            <a href="/uploads/declarations/@vm.User.DeclarationFilePath" target="_blank" class="btn btn-sm btn-outline-gold fw-bold text-center">VIEW DECLARATION</a>
-                            <div class="d-flex gap-2">
-                                <form asp-controller="CourierPanel" asp-action="ApproveUser" method="post" class="w-100 m-0">
-                                    <input type="hidden" name="userId" value="@vm.User.Id" />
-                                    <button type="submit" class="btn btn-sm btn-success w-100 fw-bold">APPROVE</button>
-                                </form>
-                                <form asp-controller="CourierPanel" asp-action="RejectUser" method="post" class="m-0">
-                                    <input type="hidden" name="userId" value="@vm.User.Id" />
-                                    <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-x-lg"></i></button>
-                                </form>
+                        @if (needsAttention)
+                        {
+                            <div class="p-3 mb-4 bg-black border border-warning border-opacity-25 rounded-1 shadow-sm">
+                                <p class="text-warning small fw-bold mb-3 font-monospace">
+                                    <i class="bi bi-file-earmark-pdf-fill me-1"></i> ACCOUNT ACTION REQUIRED
+                                </p>
+                                <div class="d-grid gap-2">
+                                    <a href="/uploads/declarations/@vm.User.DeclarationFilePath" target="_blank" class="btn btn-sm btn-outline-warning font-monospace py-2 fw-bold text-center">
+                                        REVIEW SECURE DOCUMENT
+                                    </a>
+                                    <div class="d-flex gap-2">
+                                        <form asp-controller="CourierPanel" asp-action="ApproveUser" method="post" class="w-100 m-0">
+                                            <input type="hidden" name="userId" value="@vm.User.Id" />
+                                            <button type="submit" class="btn btn-sm btn-success w-100 fw-bold py-2 font-monospace">
+                                                <i class="bi bi-check-lg me-1"></i>APPROVE
+                                            </button>
+                                        </form>
+                                        <form asp-controller="CourierPanel" asp-action="RejectUser" method="post" class="m-0">
+                                            <input type="hidden" name="userId" value="@vm.User.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger px-3 py-2">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
+                        }
+
+                        <div class="request-list mt-2">
+                            @{
+                                var userRequests = allRequests.Where(r => r.UserId == vm.User.Id).ToList();
+                            }
+                            @if (userRequests.Any())
+                            {
+                                <span class="text-muted small uppercase-tracking d-block mb-2 font-monospace" style="font-size:0.7rem;">Active Manifest Requests (@userRequests.Count)</span>
+                                foreach (var req in userRequests)
+                                {
+                                    <div class="inner-request-row p-3 mb-2 shadow-sm">
+                                        <div class="text-white small fw-bold mb-2 font-monospace text-truncate"><i class="bi bi-box-seam me-2 text-gold"></i>@req.PackageDescription</div>
+                                        <div class="d-flex align-items-center justify-content-between gap-2 mt-1">
+                                            <button type="button" class="btn btn-sm btn-gold px-3 font-monospace text-black fw-bold" style="font-size: 0.72rem; border-radius: 3px;"
+                                                    onclick="openApproveModal('@req.CourierRequestId', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.PackageDescription ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.PickupAddress ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.DropoffAddress ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(vm.User.FirstName + " " + vm.User.LastName))')">
+                                                INSPECT SEGMENT
+                                            </button>
+                                            <form asp-controller="CourierPanel" asp-action="RejectRequest" method="post" class="m-0">
+                                                <input type="hidden" name="requestId" value="@req.CourierRequestId" />
+                                                <button type="submit" class="btn btn-sm btn-link text-danger text-decoration-none p-0 px-1 font-monospace" style="font-size: 0.75rem;">
+                                                    DISMISS
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else if (!needsAttention)
+                            {
+                                <div class="text-center py-4 border border-dashed border-secondary border-opacity-10 rounded">
+                                    <span class="text-muted small font-monospace" style="font-size: 0.75rem;">[ NO PENDING DISPATCHES ]</span>
+                                </div>
+                            }
                         </div>
                     </div>
-                }
 
-                <div class="request-list">
-                    @foreach (var req in allRequests.Where(r => r.UserId == vm.User.Id))
-                    {
-                        <div class="p-2 mb-2" style="background: rgba(255,255,255,0.03); border-left: 2px solid #ffc107;">
-                            <div class="text-white small fw-bold mb-1">@req.PackageDescription</div>
-                            <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-sm btn-warning w-100 py-1 fw-bold" style="font-size: 0.7rem; border-radius: 0;"
-                                        onclick="openApproveModal('@req.CourierRequestId', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.PackageDescription ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.PickupAddress ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.DropoffAddress ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(vm.User.FirstName + " " + vm.User.LastName))')">
-                                    INSPECT
-                                </button>
-                                <form asp-controller="CourierPanel" asp-action="RejectRequest" method="post" class="m-0">
-                                    <input type="hidden" name="requestId" value="@req.CourierRequestId" />
-                                    <button type="submit" class="btn btn-sm btn-outline-danger border-0 py-0"><i class="bi bi-x"></i></button>
-                                </form>
-                            </div>
-                        </div>
-                    }
+                    <div class="border-top border-secondary border-opacity-25 pt-2 mt-4 d-flex justify-content-between align-items-center">
+                        <span class="text-muted font-monospace" style="font-size: 0.65rem;">SYS_ID: @vm.User.Id.Substring(0, 8).ToUpper()</span>
+                        <span class="font-monospace small @(vm.User.IsApproved ? "text-success" : "text-muted")" style="font-size: 0.7rem;">
+                            ● @(vm.User.IsApproved ? "AUTHORIZED NODE" : "UNVERIFIED")
+                        </span>
+                    </div>
+
                 </div>
             </div>
-        </div>
-    }
+        }
+    </div>
 </div>
 
 <div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark border-warning text-white rounded-0">
-            <div class="modal-header border-secondary">
-                <h5 class="modal-title text-warning fw-bold">REQUEST INSPECTION</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-content bg-dark border-gold text-white rounded-2" style="border: 1px solid var(--terminal-gold) !important;">
+            <div class="modal-header border-secondary border-opacity-50 px-4">
+                <h5 class="modal-title text-gold fw-bold font-monospace"><i class="bi bi-terminal me-2"></i>REQUEST INSPECTION PROTOCOL</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form asp-controller="CourierPanel" asp-action="ApproveRequest" method="post">
-                <div class="modal-body">
+                <div class="modal-body p-4">
                     <input type="hidden" name="requestId" id="modalId">
 
                     <div class="mb-3">
-                        <label class="text-muted small d-block">SENDER</label>
-                        <span id="modalSender" class="fw-bold text-white"></span>
+                        <label class="text-muted small d-block font-monospace mb-1">ORIGINATING NODE / SENDER</label>
+                        <div class="p-2 bg-black border border-secondary rounded-1 font-monospace" id="modalSender"></div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="text-muted small d-block">DESCRIPTION</label>
-                        <span id="modalDesc" class="text-white"></span>
+                        <label class="text-muted small d-block font-monospace mb-1">CARGO MANIFEST DESCRIPTION</label>
+                        <div class="p-2 bg-black border border-secondary rounded-1 small" id="modalDesc"></div>
                     </div>
 
-                    <div class="mb-3 p-2 bg-black border border-secondary small text-muted">
-                        <div><strong>PICKUP:</strong> <span id="modalPickup" class="text-white"></span></div>
-                        <div class="mt-1"><strong>DROPOFF:</strong> <span id="modalDropoff" class="text-white"></span></div>
+                    <div class="mb-4 p-3 bg-soft-black border border-secondary border-opacity-50 rounded-1 small text-muted">
+                        <div class="mb-2"><strong class="text-white font-monospace">PICKUP LOC:</strong> <span id="modalPickup" class="text-light"></span></div>
+                        <div><strong class="text-white font-monospace">DROPOFF LOC:</strong> <span id="modalDropoff" class="text-light"></span></div>
                     </div>
 
-                    <hr class="border-secondary" />
+                    <hr class="border-secondary border-opacity-50 my-4" />
 
-                    <div class="mb-3">
-                        <label class="text-warning small d-block mb-1 fw-bold">ASSIGN ROUTE / LOGISTICS SECTOR</label>
-                        <select name="deliveryRouteId" class="form-select bg-black text-white border-secondary rounded-0" required>
+                    <div class="mb-2">
+                        <label class="text-gold small d-block mb-2 fw-bold font-monospace">ASSIGN LOGISTICS TRANSIT SECTOR</label>
+                        <select name="deliveryRouteId" class="form-select bg-black text-white border-secondary rounded-1 font-monospace py-2" required>
                             <option value="1">Primary Hub Transit (Sector A)</option>
                             <option value="2">Secondary Hub Transit (Sector B)</option>
                             <option value="3">Express Local Node (Sector C)</option>
                         </select>
-                        <span class="text-muted text-uppercase d-block mt-1" style="font-size: 0.65rem;">Select deployment sector for transit manifest tracking.</span>
+                        <span class="text-muted d-block mt-2 font-monospace" style="font-size: 0.65rem;">[ WARNING: This action will permanently initialize a tracking manifest code ]</span>
                     </div>
                 </div>
-                <div class="modal-footer border-secondary">
-                    <button type="submit" class="btn btn-warning btn-lg w-100 rounded-0 fw-bold text-dark">APPROVE & GENERATE</button>
+                <div class="modal-footer border-secondary border-opacity-50 p-3">
+                    <button type="button" class="btn btn-outline-secondary font-monospace px-4" data-bs-toggle="modal">CANCEL</button>
+                    <button type="submit" class="btn btn-gold font-monospace px-4 fw-bold text-black">AUTHORIZE & DEPLOY</button>
                 </div>
             </form>
         </div>
@@ -172,7 +264,7 @@
             new bootstrap.Modal(document.getElementById('approveModal')).show();
         }
 
-        // Optional UI node filter implementation
+        // Live Grid Client Filter Routing
         document.getElementById('nodeFilter').addEventListener('input', function (e) {
             let filter = e.target.value.toLowerCase();
             let items = document.querySelectorAll('.node-item');

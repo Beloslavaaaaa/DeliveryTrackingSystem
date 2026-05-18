@@ -57,8 +57,8 @@ namespace DeliveryTrackingSystem.Controllers
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 query = query.Where(s => s.TrackingCode.Contains(searchTerm) ||
-                                         s.Receiver.PhoneNumber.Contains(searchTerm) ||
-                                         s.Receiver.FirstName.Contains(searchTerm));
+                                     s.Receiver.PhoneNumber.Contains(searchTerm) ||
+                                     s.Receiver.FirstName.Contains(searchTerm));
             }
 
             return View(await query.OrderByDescending(s => s.CreatedAt).ToListAsync());
@@ -111,7 +111,6 @@ namespace DeliveryTrackingSystem.Controllers
             var initialStatus = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
             string generatedCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
 
-            // Resolve target destination description
             string finalizedDestination = "Unassigned Sector Location";
             if (vm.DestinationType == "Hub" && vm.EndOfficeId.HasValue)
             {
@@ -123,11 +122,9 @@ namespace DeliveryTrackingSystem.Controllers
                 finalizedDestination = vm.ManualDestinationAddress;
             }
 
-            // Fallback strategy for Route ID safely mapping to contextual parameters
             var activeRoute = await _context.DeliveryRoutes.FirstOrDefaultAsync();
             int routeId = activeRoute?.DeliveryRouteId ?? 1;
 
-            // Strict metadata serialization string layout for parsing guest entities cleanly 
             string structuredNotes = $"GUEST_SENDER_NAME: {vm.SenderManualName} | GUEST_SENDER_PHONE: {vm.SenderPhone} | " +
                                      $"GUEST_RECEIVER_NAME: {vm.ReceiverManualName} | GUEST_RECEIVER_PHONE: {vm.ReceiverPhone} | " +
                                      $"DESTINATION_LOCATION: {finalizedDestination} | {vm.Notes}";
@@ -185,6 +182,45 @@ namespace DeliveryTrackingSystem.Controllers
             return View(users);
         }
 
+        // --- RESTORED NODE VERIFICATION METHODS ---
+        [HttpPost("ApproveUser")]
+        public async Task<IActionResult> ApproveUser(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return NotFound();
+
+            user.IsApproved = true;
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                TempData["SuccessMessage"] = $"NODE ACCREDITATION GRANTED: {user.FirstName} {user.LastName} IS NOW VERIFIED.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "CRITICAL error updating authorization record parameters.";
+            }
+
+            return RedirectToAction("UserDirectory");
+        }
+
+        [HttpPost("RejectUser")]
+        public async Task<IActionResult> RejectUser(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return NotFound();
+
+            // Flags signature path to REJECTED to cleanly clear the card layout status block state
+            user.IsApproved = false;
+            user.DeclarationFilePath = "REJECTED";
+
+            await _userManager.UpdateAsync(user);
+            TempData["ErrorMessage"] = $"VERIFICATION DECLARATION REJECTED FOR PROFILE: {user.FirstName.ToUpper()}.";
+
+            return RedirectToAction("UserDirectory");
+        }
+
+        // --- MANIFEST DISPATCH METHODS ---
         [HttpPost("ApproveRequest")]
         [Authorize(Roles = "Courier,Admin")]
         public async Task<IActionResult> ApproveRequest(int requestId, int deliveryRouteId)
@@ -344,13 +380,10 @@ namespace DeliveryTrackingSystem.Controllers
         {
             if (string.IsNullOrWhiteSpace(phone)) return Json(new List<object>());
 
-            // Strip out spaces, plus signs, dashes, and leading zeros to normalize input string 
             string cleanPhone = phone.Replace("+", "").Replace(" ", "").Replace("-", "").TrimStart('0');
 
-            // If the entered number is too short, cancel lookup to save performance
             if (cleanPhone.Length < 6) return Json(new List<object>());
 
-            // Query across the tail end of the DB field to catch varying country codes
             var matchedUsers = await _context.Users
                 .Where(u => u.PhoneNumber != null && u.PhoneNumber.Replace("+", "").Replace(" ", "").Replace("-", "").EndsWith(cleanPhone))
                 .Select(u => new {
