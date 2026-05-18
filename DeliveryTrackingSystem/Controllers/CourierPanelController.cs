@@ -21,7 +21,6 @@ namespace DeliveryTrackingSystem.Controllers
             _userManager = userManager;
         }
 
-        // --- DASHBOARD ---
         [HttpGet("")]
         public async Task<IActionResult> Index()
         {
@@ -42,7 +41,6 @@ namespace DeliveryTrackingSystem.Controllers
             return View(user);
         }
 
-        // --- ACTIVE CARGO & SHIPMENT MANAGEMENT ---
         [HttpGet("Active")]
         public async Task<IActionResult> ActiveCargo(string searchTerm)
         {
@@ -96,7 +94,6 @@ namespace DeliveryTrackingSystem.Controllers
             return RedirectToAction("ActiveCargo");
         }
 
-        // --- RAPID IN-TAKE ---
         [HttpGet("CreateShipment")]
         public async Task<IActionResult> CreateShipment()
         {
@@ -162,7 +159,6 @@ namespace DeliveryTrackingSystem.Controllers
             return RedirectToAction("ActiveCargo");
         }
 
-        // --- USER & COURIER REQUEST DIRECTORY ---
         [HttpGet("Users")]
         public async Task<IActionResult> UserDirectory()
         {
@@ -182,7 +178,6 @@ namespace DeliveryTrackingSystem.Controllers
             return View(users);
         }
 
-        // --- RESTORED NODE VERIFICATION METHODS ---
         [HttpPost("ApproveUser")]
         public async Task<IActionResult> ApproveUser(string userId)
         {
@@ -210,7 +205,6 @@ namespace DeliveryTrackingSystem.Controllers
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null) return NotFound();
 
-            // Flags signature path to REJECTED to cleanly clear the card layout status block state
             user.IsApproved = false;
             user.DeclarationFilePath = "REJECTED";
 
@@ -220,7 +214,6 @@ namespace DeliveryTrackingSystem.Controllers
             return RedirectToAction("UserDirectory");
         }
 
-        // --- MANIFEST DISPATCH METHODS ---
         [HttpPost("ApproveRequest")]
         [Authorize(Roles = "Courier,Admin")]
         public async Task<IActionResult> ApproveRequest(int requestId, int deliveryRouteId)
@@ -292,7 +285,6 @@ namespace DeliveryTrackingSystem.Controllers
             return RedirectToAction("UserDirectory");
         }
 
-        // --- HISTORY ---
         [HttpGet("History")]
         public async Task<IActionResult> PackageHistory(string searchTerm)
         {
@@ -309,7 +301,6 @@ namespace DeliveryTrackingSystem.Controllers
             return View(await query.OrderByDescending(s => s.DeliveredDate ?? s.CreatedAt).ToListAsync());
         }
 
-        // --- OPERATIONAL ACTIONS ---
         [HttpPost("UpdateStatus")]
         public async Task<IActionResult> UpdateStatus(int shipmentId, int statusId, string? note)
         {

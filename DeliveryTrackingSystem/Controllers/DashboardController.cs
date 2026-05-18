@@ -5,8 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Cargobell.Data;
 using Cargobell.Shared.Models;
 using Cargobell.Shared.ViewModels;
-using System.Linq;
-using System.Threading.Tasks;
 using Cargobell.Data.Data;
 
 namespace DeliveryTrackingSystem.Controllers
@@ -33,7 +31,6 @@ namespace DeliveryTrackingSystem.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return NotFound();
 
-            // FIXED: Check approval status for profile access
             if (!user.IsApproved) return RedirectToAction("WaitingApproval", "Account");
 
             return View(user);
@@ -44,7 +41,6 @@ namespace DeliveryTrackingSystem.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return NotFound();
 
-            // FIXED: Check approval status for settings access
             if (!user.IsApproved) return RedirectToAction("WaitingApproval", "Account");
 
             return View(user);
@@ -133,20 +129,16 @@ namespace DeliveryTrackingSystem.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return Challenge();
 
-            // FIXED: If the user is under 18 and not yet approved, send them to the waiting page
             if (!user.IsApproved)
             {
                 return RedirectToAction("WaitingApproval", "Account");
             }
 
-            // If the user is a Courier, send them to their specific portal
             if (await _userManager.IsInRoleAsync(user, "Courier"))
             {
                 return RedirectToAction("Index", "CourierPanel");
             }
 
-            // --- LOGIC FOR SHIPMENT COUNT ---
-            // We count shipments where the user is involved AND the status is not 'Delivered'
             var activeShipmentsCount = await _context.Shipments
                 .Include(s => s.Status)
                 .Where(s => (s.SenderId == user.Id || s.ReceiverId == user.Id) &&
@@ -165,7 +157,6 @@ namespace DeliveryTrackingSystem.Controllers
             {
                 UserName = (!string.IsNullOrEmpty(user.FirstName) ? user.FirstName : user.Email.Split('@')[0]).ToUpper(),
 
-                // ASSIGN THE COUNT HERE
                 ActiveShipmentsCount = activeShipmentsCount,
 
                 TotalSpent = await _context.Shipments
@@ -178,7 +169,6 @@ namespace DeliveryTrackingSystem.Controllers
                 {
                     Title = $"Cargo #{s.TrackingCode}",
                     Type = s.SenderId == user.Id ? "Delivery From You" : "Delivery To You",
-                    // FIXED: Explicitly formats currency to Euros (€) instead of falling back to system default (Leva)
                     Amount = s.DeliveryRoute != null ? $"€{s.CodAmount.ToString("N2")}" : "€0.00",
                     Date = s.CreatedAt.ToString("MMM dd"),
                     Status = s.Status != null ? s.Status.Name : "Pending"
@@ -194,7 +184,6 @@ namespace DeliveryTrackingSystem.Controllers
             if (user != null)
             {
                 user.IsApproved = true;
-                // Можем да изтрием файла след одобрение, за да пестим място, или да го пазим за архив
                 await _userManager.UpdateAsync(user);
                 TempData["SuccessMessage"] = $"USER {user.FirstName} {user.LastName} HAS BEEN ACTIVATED.";
             }
@@ -207,11 +196,8 @@ namespace DeliveryTrackingSystem.Controllers
             var user = await _userManager.FindByIdAsync(userId);
             if (user != null)
             {
-                // Маркираме го като отхвърлен. 
-                // Тук можем да ползваме специално поле или просто да изтрием пътя към файла, 
-                // за да знае системата, че е отказан.
                 user.IsApproved = false;
-                user.DeclarationFilePath = "REJECTED"; // Сигнал за Front-end-а
+                user.DeclarationFilePath = "REJECTED"; 
                 await _userManager.UpdateAsync(user);
                 TempData["SuccessMessage"] = "REGISTRATION DENIED.";
             }
@@ -224,14 +210,11 @@ namespace DeliveryTrackingSystem.Controllers
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return NotFound();
 
-            // Sign out the session first to clear local security cookies
             await _signInManager.SignOutAsync();
 
-            // Permanently terminate the data store profile entry
             var result = await _userManager.DeleteAsync(user);
             if (!result.Succeeded)
             {
-                // If an unexpected error occurs during data deletion, force redirect to landing
                 return RedirectToAction("Index", "Home");
             }
 

@@ -32,7 +32,6 @@ namespace Cargobell.Shared.ViewModels
         [DataType(DataType.Date)]
         public DateTime DateOfBirth { get; set; }
 
-        // FIXED: Field for the PDF/Image declaration
         [Display(Name = "Parental Declaration (PDF/Image)")]
         public IFormFile? DeclarationFile { get; set; }
     }

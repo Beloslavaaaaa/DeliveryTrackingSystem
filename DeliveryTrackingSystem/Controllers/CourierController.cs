@@ -26,12 +26,10 @@ namespace DeliveryTrackingSystem.Controllers
             var userId = _userManager.GetUserId(User);
             if (string.IsNullOrEmpty(userId)) return Challenge();
 
-            // Populate the ViewBags with separate lists for the view tabs
             await PopulateViewBagsAsync(userId);
 
             ViewBag.ActiveTab = tab;
 
-            // Pass a clean, single instance of the model for Step 1-4 Form
             return View(new CourierRequest());
         }
 
@@ -44,19 +42,16 @@ namespace DeliveryTrackingSystem.Controllers
             request.CreatedAt = DateTime.UtcNow;
             request.Status = "Pending";
 
-            // Clean up generic relations
             ModelState.Remove("User");
             ModelState.Remove("UserId");
             ModelState.Remove("Status");
 
-            // Safety handling if the sender options fluctuate
             if (!request.IsCustomSender)
             {
                 ModelState.Remove("CustomSenderName");
                 ModelState.Remove("CustomSenderPhone");
             }
 
-            // Pricing Logic
             decimal.TryParse(request.PackageType, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal baseP);
             decimal.TryParse(request.DestinationZone, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal mult);
             request.EstimatedPrice = (baseP * mult) + (request.IsFragile ? 5.00m : 0);
@@ -73,14 +68,10 @@ namespace DeliveryTrackingSystem.Controllers
                 return RedirectToAction("RequestIndex", new { tab = "active" });
             }
 
-            // --- VALIDATION FAILED TRANSIT BLOCK ---
             ViewBag.ActiveTab = "create";
 
-            // Repopulate ViewBags so the Active and History tabs don't crash when reloading
             await PopulateViewBagsAsync(userId);
 
-            // Pass the validation-flawed "request" model BACK to the user 
-            // so their inputs remain filled out along with the red error strings!
             return View("RequestIndex", request);
         }
 
@@ -101,7 +92,6 @@ namespace DeliveryTrackingSystem.Controllers
             return RedirectToAction("RequestIndex", new { tab = "finished" });
         }
 
-        // Reusable extraction method to populate view tabs cleanly
         private async Task PopulateViewBagsAsync(string userId)
         {
             var requests = await _context.CourierRequests

@@ -14,9 +14,8 @@ namespace Cargobell.Shared.Models
         [Required]
         public DateTime? DateOfBirth { get; set; }
 
-        // FIXED: New fields for minor safety
         public string? DeclarationFilePath { get; set; }
-        public bool IsApproved { get; set; } = true; // Default to true for adults, we will flip it for minors
+        public bool IsApproved { get; set; } = true;
 
         public int Age
         {

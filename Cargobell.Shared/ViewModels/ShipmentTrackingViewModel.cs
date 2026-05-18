@@ -16,8 +16,6 @@ namespace Cargobell.Shared.ViewModels
         public bool IsCashOnDelivery { get; set; }
         public decimal CodAmount { get; set; }
         public string? Notes { get; set; }
-
-        // NEW: Base shipping price field
         public decimal ShippingCost { get; set; }
     }
 }

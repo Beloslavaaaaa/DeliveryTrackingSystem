@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Cargobell.Shared.Models
@@ -42,20 +41,17 @@ namespace Cargobell.Shared.Models
         public bool IsExactTime { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // --- SENDER INFO (Existing) ---
         public bool IsCustomSender { get; set; }
         public string? CustomSenderName { get; set; }
         public string? CustomSenderPhone { get; set; }
         public string? CustomSenderEmail { get; set; }
 
-        // --- NEW: RECIPIENT / RECEIVER INFO ---
         [Required(ErrorMessage = "Recipient name is required")]
         public string? ReceiverName { get; set; }
 
         [Required(ErrorMessage = "Recipient phone number is required")]
         public string? ReceiverPhone { get; set; }
 
-        public string? ReceiverEmail { get; set; } // Optional: In case you want to notify them later
+        public string? ReceiverEmail { get; set; } 
     }
 }

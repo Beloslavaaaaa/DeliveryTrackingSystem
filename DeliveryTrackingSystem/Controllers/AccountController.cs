@@ -3,9 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Cargobell.Shared.Models;
 using Cargobell.Shared.ViewModels;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace DeliveryTrackingSystem.Controllers
 {
@@ -35,7 +32,6 @@ namespace DeliveryTrackingSystem.Controllers
                     return View(model);
                 }
 
-                // --- ADDED: Check if Phone Number Already Exists ---
                 var phoneExists = await _userManager.Users.AnyAsync(u => u.PhoneNumber == model.PhoneNumber);
                 if (phoneExists)
                 {
@@ -43,14 +39,12 @@ namespace DeliveryTrackingSystem.Controllers
                     return View(model);
                 }
 
-                // Calculate Age
                 var today = DateTime.Today;
                 var age = today.Year - model.DateOfBirth.Year;
                 if (model.DateOfBirth.Date > today.AddYears(-age)) age--;
 
                 string? savedFileName = null;
 
-                // Validation and File Saving for Minors
                 if (age < 18)
                 {
                     if (model.DeclarationFile == null)
@@ -123,14 +117,8 @@ namespace DeliveryTrackingSystem.Controllers
                 {
                     var isCourier = await _userManager.IsInRoleAsync(user, "Courier");
 
-                    // FIXED LOGIC: 
-                    // Redirect to WaitingApproval ONLY if:
-                    // 1. Not a courier
-                    // 2. Not approved
-                    // 3. Has a file (meaning they are a minor who needs checking) OR is rejected
                     if (!isCourier && (!user.IsApproved && !string.IsNullOrEmpty(user.DeclarationFilePath)))
                     {
-                        // Sign in first so the view can check if they are "REJECTED"
                         await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, false);
                         return RedirectToAction("WaitingApproval");
                     }

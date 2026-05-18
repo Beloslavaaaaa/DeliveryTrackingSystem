@@ -53,8 +53,6 @@ namespace DeliveryTrackingSystem.Controllers
                 IsCashOnDelivery = shipment.IsCashOnDelivery,
                 CodAmount = shipment.CodAmount,
                 Notes = shipment.Notes,
-
-                // FIXED: Map directly from the shipment's new explicit property instead of the static route base price
                 ShippingCost = shipment.ShippingCost
             };
 

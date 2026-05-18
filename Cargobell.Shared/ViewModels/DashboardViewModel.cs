@@ -5,7 +5,7 @@ namespace Cargobell.Shared.ViewModels
     public class DashboardViewModel
     {
         public string UserName { get; set; }
-        public int ActiveShipmentsCount { get; set; } // Add this property
+        public int ActiveShipmentsCount { get; set; }
         public decimal TotalSpent { get; set; }
         public decimal TotalEarned { get; set; }
         public List<RecentAction> RecentActions { get; set; }

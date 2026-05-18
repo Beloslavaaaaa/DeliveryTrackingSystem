@@ -16,7 +16,7 @@ namespace Cargobell.Shared.ViewModels
         [Required]
         public string ReceiverPhone { get; set; } = string.Empty;
 
-        public string DestinationType { get; set; } = "Hub"; // "Hub" or "Manual"
+        public string DestinationType { get; set; } = "Hub"; 
         public int? EndOfficeId { get; set; }
         public string? ManualDestinationAddress { get; set; }
 
