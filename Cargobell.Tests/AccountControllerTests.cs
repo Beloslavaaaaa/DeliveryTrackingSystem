@@ -74,5 +74,28 @@ namespace Cargobell.Tests
             Assert.That(result, Is.Not.Null);
             Assert.That(_controller.ModelState.IsValid, Is.False);
         }
+        [Test]
+        public async Task Register_Post_UnderageOperativeWithoutDeclarationFile_ReturnsValidationError()
+        {
+            // Arrange: Create a registration model instance where the applicant is 16 years old
+            var model = new RegisterViewModel
+            {
+                FirstName = "Alex",
+                LastName = "Vance",
+                Email = "recruit@cargobell.com",
+                DateOfBirth = System.DateTime.Now.AddYears(-16), // Underage threshold 
+                Password = "SecurePassword123!",
+                ConfirmPassword = "SecurePassword123!",
+                DeclarationFile = null // ERROR: Intentionally missing the required file asset
+            };
+
+            // Act: Fire the registration validation endpoint loop
+            var result = await _controller.Register(model) as ViewResult;
+
+            // Assert: Verify that the controller logic caught the missing file rule
+            Assert.That(result, Is.Not.Null, "Should stay on the registration screen.");
+            Assert.That(_controller.ModelState.IsValid, Is.False, "ModelState should be invalidated by the age guard check.");
+            Assert.That(_controller.ModelState.ContainsKey("DeclarationFile"), Is.True, "Error should target the required declaration file input.");
+        }
     }
 }
