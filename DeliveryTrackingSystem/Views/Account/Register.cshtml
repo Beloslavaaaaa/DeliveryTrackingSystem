@@ -4,16 +4,63 @@
 }
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 <style>
-    .iti { width: 100%; }
-    .iti__country-list { background-color: #0a0a0a !important; border: 1px solid #D4AF37 !important; color: white !important; z-index: 100; }
-    .iti__country:hover { background-color: #1a1a1a !important; }
-    .iti__selected-flag { background-color: rgba(255,255,255,0.05) !important; }
-    .iti__arrow { border-top-color: #D4AF37 !important; }
-    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
-    .form-control:focus { background-color: #111 !important; border-color: #D4AF37 !important; box-shadow: 0 0 10px rgba(212, 175, 55, 0.3) !important; }
-    .text-danger.small { font-size: 0.75rem; margin-top: 5px; display: block; }
+    .iti {
+        width: 100%;
+    }
+
+    .iti__country-list {
+        background-color: #0a0a0a !important;
+        border: 1px solid #D4AF37 !important;
+        color: white !important;
+        z-index: 100;
+    }
+
+    .iti__country:hover {
+        background-color: #1a1a1a !important;
+    }
+
+    .iti__selected-flag {
+        background-color: rgba(255,255,255,0.05) !important;
+    }
+
+    .iti__arrow {
+        border-top-color: #D4AF37 !important;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+    }
+
+    .form-control:focus {
+        background-color: #111 !important;
+        border-color: #D4AF37 !important;
+        box-shadow: 0 0 10px rgba(212, 175, 55, 0.3) !important;
+    }
+
+    .text-danger.small {
+        font-size: 0.75rem;
+        margin-top: 5px;
+        display: block;
+    }
+
+    .password-toggle-container {
+        position: relative;
+    }
+
+    .password-toggle-btn {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #D4AF37;
+        cursor: pointer;
+        z-index: 5;
+    }
 </style>
 
 <div class="container py-5 mt-5">
@@ -65,10 +112,10 @@
                     <div class="mb-4">
                         <div class="d-flex align-items-center mb-2">
                             <label asp-for="DateOfBirth" class="form-label small text-gold mb-0">DATE OF BIRTH</label>
-                            <i class="bi bi-info-circle ms-2 text-gold" style="cursor:help;" data-bs-toggle="tooltip" data-bs-placement="top" 
+                            <i class="bi bi-info-circle ms-2 text-gold" style="cursor:help;" data-bs-toggle="tooltip" data-bs-placement="top"
                                title="If you are under 18 you should have a declaration signed by your parents or legal guardians. Entering a false date can be caught by a worker when asking for an id, which will result in terminating the account."></i>
                         </div>
-                        <input asp-for="DateOfBirth" type="date" id="dobInput" class="form-control bg-dark text-white border-secondary py-3" 
+                        <input asp-for="DateOfBirth" type="date" id="dobInput" class="form-control bg-dark text-white border-secondary py-3"
                                style="background-color: #111 !important;" max="@DateTime.Now.ToString("yyyy-MM-dd")" required />
                         <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
                     </div>
@@ -81,13 +128,23 @@
 
                     <div class="mb-4">
                         <label asp-for="Password" class="form-label small text-gold">PASSWORD</label>
-                        <input asp-for="Password" type="password" class="form-control bg-dark text-white border-secondary py-3" placeholder="••••••••" style="background-color: #111 !important;" required />
+                        <div class="password-toggle-container">
+                            <input asp-for="Password" type="password" id="regPassword" class="form-control bg-dark text-white border-secondary py-3" placeholder="••••••••" style="background-color: #111 !important;" required />
+                            <button type="button" class="password-toggle-btn" data-target="regPassword">
+                                <i class="bi bi-eye-slash"></i>
+                            </button>
+                        </div>
                         <span asp-validation-for="Password" class="text-danger small"></span>
                     </div>
 
                     <div class="mb-4">
                         <label asp-for="ConfirmPassword" class="form-label small text-gold">CONFIRM PASSWORD</label>
-                        <input asp-for="ConfirmPassword" type="password" class="form-control bg-dark text-white border-secondary py-3" placeholder="••••••••" style="background-color: #111 !important;" required />
+                        <div class="password-toggle-container">
+                            <input asp-for="ConfirmPassword" type="password" id="regConfirmPassword" class="form-control bg-dark text-white border-secondary py-3" placeholder="••••••••" style="background-color: #111 !important;" required />
+                            <button type="button" class="password-toggle-btn" data-target="regConfirmPassword">
+                                <i class="bi bi-eye-slash"></i>
+                            </button>
+                        </div>
                         <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
                     </div>
 
@@ -106,7 +163,6 @@
     <partial name="_ValidationScriptsPartial" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
     <script>
-        // Tooltip Initialization
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
             return new bootstrap.Tooltip(tooltipTriggerEl)
@@ -119,7 +175,6 @@
             utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
         });
 
-        // Toggle Declaration Section based on Age
         document.getElementById('dobInput').addEventListener('change', function() {
             const dob = new Date(this.value);
             const today = new Date();
@@ -131,6 +186,21 @@
                 $('#declarationSection').slideDown();
             } else {
                 $('#declarationSection').slideUp();
+            }
+        });
+
+        // Universal Password Visibility Engine
+        $('.password-toggle-btn').on('click', function() {
+            const targetId = $(this).data('target');
+            const $inputField = $('#' + targetId);
+            const $icon = $(this).find('i');
+
+            if ($inputField.attr('type') === 'password') {
+                $inputField.attr('type', 'text');
+                $icon.removeClass('bi-eye-slash').addClass('bi-eye');
+            } else {
+                $inputField.attr('type', 'password');
+                $icon.removeClass('bi-eye').addClass('bi-eye-slash');
             }
         });
 

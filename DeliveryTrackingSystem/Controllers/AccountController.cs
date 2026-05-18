@@ -24,6 +24,7 @@ namespace DeliveryTrackingSystem.Controllers
         public IActionResult Register() => View();
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)
@@ -31,6 +32,14 @@ namespace DeliveryTrackingSystem.Controllers
                 if (model.DateOfBirth > DateTime.Now)
                 {
                     ModelState.AddModelError("DateOfBirth", "Date of birth cannot be in the future.");
+                    return View(model);
+                }
+
+                // --- ADDED: Check if Phone Number Already Exists ---
+                var phoneExists = await _userManager.Users.AnyAsync(u => u.PhoneNumber == model.PhoneNumber);
+                if (phoneExists)
+                {
+                    ModelState.AddModelError("PhoneNumber", "This phone number is already registered.");
                     return View(model);
                 }
 
@@ -71,7 +80,6 @@ namespace DeliveryTrackingSystem.Controllers
                     DateOfBirth = model.DateOfBirth,
                     PhoneNumber = model.PhoneNumber,
                     DeclarationFilePath = savedFileName,
-                    // FIXED: Automatic approval for adults
                     IsApproved = (age >= 18)
                 };
 
@@ -79,15 +87,12 @@ namespace DeliveryTrackingSystem.Controllers
 
                 if (result.Succeeded)
                 {
-                    // If minor, they stay unapproved and go to waiting page
                     if (!user.IsApproved)
                     {
-                        // We sign them in so the WaitingApproval view can access their data via UserManager
                         await _signInManager.SignInAsync(user, isPersistent: false);
                         return RedirectToAction("WaitingApproval");
                     }
 
-                    // Adults go straight to dashboard
                     await _signInManager.SignInAsync(user, isPersistent: false);
                     return RedirectToAction("Index", "Dashboard");
                 }
