@@ -373,6 +373,22 @@ namespace DeliveryTrackingSystem.Controllers
             }
             return RedirectToAction("ShipmentDetails", new { id = shipmentId });
         }
+        [HttpGet("/CourierPanel/ManifestDetails/{id}")]
+        public async Task<IActionResult> ManifestDetails(int id)
+        {
+            var shipment = await _context.Shipments
+                .Include(s => s.Sender)
+                .Include(s => s.Receiver)
+                .Include(s => s.DeliveryRoute)
+                .FirstOrDefaultAsync(s => s.ShipmentId == id);
+
+            if (shipment == null)
+            {
+                return NotFound();
+            }
+
+            return View(shipment);
+        }
 
         // --- AJAX HELPERS ---
         [HttpGet("GetUserByPhone")]
