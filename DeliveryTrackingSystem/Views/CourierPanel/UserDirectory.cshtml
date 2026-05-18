@@ -3,6 +3,19 @@
 @{
     Layout = "_CourierLayout";
     var allRequests = (List<Cargobell.Shared.Models.CourierRequest>)ViewBag.AllRequests;
+
+    // --- LOGICAL PARTITIONING ENGINE ---
+    // Section 1: Underage verification holds (Needs attention based on file path metrics)
+    var underageHolds = Model.Where(vm => !vm.User.IsApproved &&
+                                           !string.IsNullOrEmpty(vm.User.DeclarationFilePath) &&
+                                           vm.User.DeclarationFilePath != "REJECTED").ToList();
+
+    // Section 2: Approved users who have active, unhandled requests
+    var usersWithRequests = Model.Where(vm => !underageHolds.Contains(vm) &&
+                                               allRequests.Any(r => r.UserId == vm.User.Id)).ToList();
+
+    // Section 3: Standard active/inactive base accounts
+    var standardNodes = Model.Where(vm => !underageHolds.Contains(vm) && !usersWithRequests.Contains(vm)).ToList();
 }
 
 <style>
@@ -13,6 +26,7 @@
         --terminal-card-bg: #121212;
         --terminal-border: #262626;
         --terminal-muted: #888888;
+        --terminal-red: #dc3545;
     }
 
     /* Core UI Animations */
@@ -36,20 +50,26 @@
             border-color: var(--terminal-gold);
         }
     }
-        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
-        border-color: var(--terminal-gold);
+
+    .animate-pulse-red {
+        animation: pulse-red-frame 2s infinite;
     }
 
-    70% {
-        box-shadow: 0 0 0 8px rgba(212, 175, 55, 0);
-        border-color: rgba(212, 175, 55, 0.5);
-    }
+    @@keyframes pulse-red-frame {
+        0% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+            border-color: var(--terminal-red);
+        }
 
-    100% {
-        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
-        border-color: var(--terminal-gold);
-    }
+        70% {
+            box-shadow: 0 0 0 8px rgba(220, 53, 69, 0);
+            border-color: rgba(220, 53, 69, 0.5);
+        }
 
+        100% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
+            border-color: var(--terminal-red);
+        }
     }
 
     /* Redesigned Card Components */
@@ -66,6 +86,10 @@
         }
 
     .terminal-attention-card {
+        background: linear-gradient(145deg, #161010 0%, #121212 100%) !important;
+    }
+
+    .terminal-request-card {
         background: linear-gradient(145deg, #141310 0%, #121212 100%) !important;
     }
 
@@ -94,6 +118,11 @@
         border-left: 3px solid var(--terminal-gold);
         border-radius: 4px;
     }
+
+    .section-divider {
+        border-bottom: 1px dashed var(--terminal-border);
+        letter-spacing: 1.5px;
+    }
 </style>
 
 <div class="container-fluid py-4">
@@ -108,97 +137,155 @@
         </div>
     </div>
 
-    <div class="node-grid-layout" id="nodeGrid">
-        @foreach (var vm in Model)
+    <div id="masterNodeGrid">
+
+        @if (underageHolds.Any())
         {
-            bool needsAttention = !vm.User.IsApproved && !string.IsNullOrEmpty(vm.User.DeclarationFilePath) && vm.User.DeclarationFilePath != "REJECTED";
-
-            <div class="node-item">
-                <div class="terminal-node-card p-4 h-100 d-flex flex-column justify-content-between @(needsAttention ? "terminal-attention-card animate-pulse-gold" : "")">
-
-                    <div>
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h5 class="fw-bold text-white mb-0 text-uppercase tracking-tight">@vm.User.FirstName @vm.User.LastName</h5>
-                            @if (needsAttention)
-                            {
-                                <span class="badge rounded-1 bg-warning text-black font-monospace px-2 py-1 small fw-bold">PENDING VERIFICATION</span>
-                            }
-                        </div>
-
-                        <div class="text-gold small mb-4 font-monospace d-flex align-items-center">
-                            <i class="bi bi-telephone me-2 opacity-50"></i>@vm.User.PhoneNumber
-                        </div>
-
-                        @if (needsAttention)
-                        {
-                            <div class="p-3 mb-4 bg-black border border-warning border-opacity-25 rounded-1 shadow-sm">
-                                <p class="text-warning small fw-bold mb-3 font-monospace">
-                                    <i class="bi bi-file-earmark-pdf-fill me-1"></i> ACCOUNT ACTION REQUIRED
-                                </p>
-                                <div class="d-grid gap-2">
-                                    <a href="/uploads/declarations/@vm.User.DeclarationFilePath" target="_blank" class="btn btn-sm btn-outline-warning font-monospace py-2 fw-bold text-center">
-                                        REVIEW SECURE DOCUMENT
-                                    </a>
-                                    <div class="d-flex gap-2">
-                                        <form asp-controller="CourierPanel" asp-action="ApproveUser" method="post" class="w-100 m-0">
-                                            <input type="hidden" name="userId" value="@vm.User.Id" />
-                                            <button type="submit" class="btn btn-sm btn-success w-100 fw-bold py-2 font-monospace">
-                                                <i class="bi bi-check-lg me-1"></i>APPROVE
-                                            </button>
-                                        </form>
-                                        <form asp-controller="CourierPanel" asp-action="RejectUser" method="post" class="m-0">
-                                            <input type="hidden" name="userId" value="@vm.User.Id" />
-                                            <button type="submit" class="btn btn-sm btn-outline-danger px-3 py-2">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
+            <div class="mb-5 section-group">
+                <h6 class="text-danger font-monospace fw-bold mb-3 section-divider pb-2 text-uppercase">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> [01] CRITICAL PROTOCOL: UNDERAGE VERIFICATION HOLDS (@underageHolds.Count)
+                </h6>
+                <div class="node-grid-layout">
+                    @foreach (var vm in underageHolds)
+                    {
+                        <div class="node-item">
+                            <div class="terminal-node-card p-4 h-100 d-flex flex-column justify-content-between terminal-attention-card animate-pulse-red">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="fw-bold text-white mb-0 text-uppercase tracking-tight">@vm.User.FirstName @vm.User.LastName</h5>
+                                        <span class="badge rounded-1 bg-danger text-white font-monospace px-2 py-1 small fw-bold">AGE VERIFICATION</span>
                                     </div>
-                                </div>
-                            </div>
-                        }
 
-                        <div class="request-list mt-2">
-                            @{
-                                var userRequests = allRequests.Where(r => r.UserId == vm.User.Id).ToList();
-                            }
-                            @if (userRequests.Any())
-                            {
-                                <span class="text-muted small uppercase-tracking d-block mb-2 font-monospace" style="font-size:0.7rem;">Active Manifest Requests (@userRequests.Count)</span>
-                                foreach (var req in userRequests)
-                                {
-                                    <div class="inner-request-row p-3 mb-2 shadow-sm">
-                                        <div class="text-white small fw-bold mb-2 font-monospace text-truncate"><i class="bi bi-box-seam me-2 text-gold"></i>@req.PackageDescription</div>
-                                        <div class="d-flex align-items-center justify-content-between gap-2 mt-1">
-                                            <button type="button" class="btn btn-sm btn-gold px-3 font-monospace text-black fw-bold" style="font-size: 0.72rem; border-radius: 3px;"
-                                                    onclick="openApproveModal('@req.CourierRequestId', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.PackageDescription ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.PickupAddress ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.DropoffAddress ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(vm.User.FirstName + " " + vm.User.LastName))')">
-                                                INSPECT SEGMENT
-                                            </button>
-                                            <form asp-controller="CourierPanel" asp-action="RejectRequest" method="post" class="m-0">
-                                                <input type="hidden" name="requestId" value="@req.CourierRequestId" />
-                                                <button type="submit" class="btn btn-sm btn-link text-danger text-decoration-none p-0 px-1 font-monospace" style="font-size: 0.75rem;">
-                                                    DISMISS
-                                                </button>
-                                            </form>
+                                    <div class="text-gold small mb-4 font-monospace d-flex align-items-center">
+                                        <i class="bi bi-telephone me-2 opacity-50"></i>@vm.User.PhoneNumber
+                                    </div>
+
+                                    <div class="p-3 mb-4 bg-black border border-danger border-opacity-25 rounded-1 shadow-sm">
+                                        <p class="text-danger small fw-bold mb-3 font-monospace">
+                                            <i class="bi bi-file-earmark-pdf-fill me-1"></i> AGE DECLARATION SUBMITTED
+                                        </p>
+                                        <div class="d-grid gap-2">
+                                            <a href="/uploads/declarations/@vm.User.DeclarationFilePath" target="_blank" class="btn btn-sm btn-outline-danger font-monospace py-2 fw-bold text-center">
+                                                REVIEW SIGNED FORMS
+                                            </a>
+                                            <div class="d-flex gap-2">
+                                                <form asp-controller="CourierPanel" asp-action="ApproveUser" method="post" class="w-100 m-0">
+                                                    <input type="hidden" name="userId" value="@vm.User.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-success w-100 fw-bold py-2 font-monospace">
+                                                        <i class="bi bi-check-lg me-1"></i>OVERRIDE & APPROVE
+                                                    </button>
+                                                </form>
+                                                <form asp-controller="CourierPanel" asp-action="RejectUser" method="post" class="m-0">
+                                                    <input type="hidden" name="userId" value="@vm.User.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger px-3 py-2">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
-                                }
-                            }
-                            else if (!needsAttention)
-                            {
-                                <div class="text-center py-4 border border-dashed border-secondary border-opacity-10 rounded">
-                                    <span class="text-muted small font-monospace" style="font-size: 0.75rem;">[ NO PENDING DISPATCHES ]</span>
                                 </div>
-                            }
+
+                                <div class="border-top border-secondary border-opacity-25 pt-2 mt-4 d-flex justify-content-between align-items-center">
+                                    <span class="text-muted font-monospace" style="font-size: 0.65rem;">SYS_ID: @vm.User.Id.Substring(0, 8).ToUpper()</span>
+                                    <span class="font-monospace small text-danger" style="font-size: 0.7rem;">● LOCKED</span>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    }
+                </div>
+            </div>
+        }
 
-                    <div class="border-top border-secondary border-opacity-25 pt-2 mt-4 d-flex justify-content-between align-items-center">
-                        <span class="text-muted font-monospace" style="font-size: 0.65rem;">SYS_ID: @vm.User.Id.Substring(0, 8).ToUpper()</span>
-                        <span class="font-monospace small @(vm.User.IsApproved ? "text-success" : "text-muted")" style="font-size: 0.7rem;">
-                            ● @(vm.User.IsApproved ? "AUTHORIZED NODE" : "UNVERIFIED")
-                        </span>
-                    </div>
+        @if (usersWithRequests.Any())
+        {
+            <div class="mb-5 section-group">
+                <h6 class="text-gold font-monospace fw-bold mb-3 section-divider pb-2 text-uppercase">
+                    <i class="bi bi-box-seam-fill me-2"></i> [02] PRIORITY LOGISTICS: ACTIVE MANIFEST DEMANDS (@usersWithRequests.Count)
+                </h6>
+                <div class="node-grid-layout">
+                    @foreach (var vm in usersWithRequests)
+                    {
+                        var userRequests = allRequests.Where(r => r.UserId == vm.User.Id).ToList();
 
+                        <div class="node-item">
+                            <div class="terminal-node-card p-4 h-100 d-flex flex-column justify-content-between terminal-request-card animate-pulse-gold">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="fw-bold text-white mb-0 text-uppercase tracking-tight">@vm.User.FirstName @vm.User.LastName</h5>
+                                        <span class="badge rounded-1 bg-warning text-black font-monospace px-2 py-1 small fw-bold">REQUESTS PENDING</span>
+                                    </div>
+
+                                    <div class="text-gold small mb-4 font-monospace d-flex align-items-center">
+                                        <i class="bi bi-telephone me-2 opacity-50"></i>@vm.User.PhoneNumber
+                                    </div>
+
+                                    <div class="request-list mt-2">
+                                        <span class="text-muted small uppercase-tracking d-block mb-2 font-monospace" style="font-size:0.7rem;">Active Manifest Requests (@userRequests.Count)</span>
+                                        @foreach (var req in userRequests)
+                                        {
+                                            <div class="inner-request-row p-3 mb-2 shadow-sm">
+                                                <div class="text-white small fw-bold mb-2 font-monospace text-truncate"><i class="bi bi-box-seam me-2 text-gold"></i>@req.PackageDescription</div>
+                                                <div class="d-flex align-items-center justify-content-between gap-2 mt-1">
+                                                    <button type="button" class="btn btn-sm btn-gold px-3 font-monospace text-black fw-bold" style="font-size: 0.72rem; border-radius: 3px;"
+                                                            onclick="openApproveModal('@req.CourierRequestId', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.PackageDescription ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.PickupAddress ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.DropoffAddress ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(vm.User.FirstName + " " + vm.User.LastName))')">
+                                                        INSPECT SEGMENT
+                                                    </button>
+                                                    <form asp-controller="CourierPanel" asp-action="RejectRequest" method="post" class="m-0">
+                                                        <input type="hidden" name="requestId" value="@req.CourierRequestId" />
+                                                        <button type="submit" class="btn btn-sm btn-link text-danger text-decoration-none p-0 px-1 font-monospace" style="font-size: 0.75rem;">
+                                                            DISMISS
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="border-top border-secondary border-opacity-25 pt-2 mt-4 d-flex justify-content-between align-items-center">
+                                    <span class="text-muted font-monospace" style="font-size: 0.65rem;">SYS_ID: @vm.User.Id.Substring(0, 8).ToUpper()</span>
+                                    <span class="font-monospace small text-success" style="font-size: 0.7rem;">● AUTHORIZED NODE</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (standardNodes.Any())
+        {
+            <div class="mb-5 section-group">
+                <h6 class="text-secondary font-monospace fw-bold mb-3 section-divider pb-2 text-uppercase">
+                    <i class="bi bi-shield-check me-2"></i> [03] BASE REPOSITORY: STANDARD VERIFIED NODES (@standardNodes.Count)
+                </h6>
+                <div class="node-grid-layout">
+                    @foreach (var vm in standardNodes)
+                    {
+                        <div class="node-item">
+                            <div class="terminal-node-card p-4 h-100 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h5 class="fw-bold text-white mb-0 text-uppercase tracking-tight">@vm.User.FirstName @vm.User.LastName</h5>
+                                    </div>
+
+                                    <div class="text-gold small mb-4 font-monospace d-flex align-items-center">
+                                        <i class="bi bi-telephone me-2 opacity-50"></i>@vm.User.PhoneNumber
+                                    </div>
+
+                                    <div class="text-center py-4 border border-dashed border-secondary border-opacity-10 rounded">
+                                        <span class="text-muted small font-monospace" style="font-size: 0.75rem;">[ NO PENDING DISPATCHES ]</span>
+                                    </div>
+                                </div>
+
+                                <div class="border-top border-secondary border-opacity-25 pt-2 mt-4 d-flex justify-content-between align-items-center">
+                                    <span class="text-muted font-monospace" style="font-size: 0.65rem;">SYS_ID: @vm.User.Id.Substring(0, 8).ToUpper()</span>
+                                    <span class="font-monospace small text-success" style="font-size: 0.7rem;">● AUTHORIZED NODE</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         }
@@ -244,7 +331,7 @@
                     </div>
                 </div>
                 <div class="modal-footer border-secondary border-opacity-50 p-3">
-                    <button type="button" class="btn btn-outline-secondary font-monospace px-4" data-bs-toggle="modal">CANCEL</button>
+                    <button type="button" class="btn btn-outline-secondary font-monospace px-4" data-bs-dismiss="modal">CANCEL</button>
                     <button type="submit" class="btn btn-gold font-monospace px-4 fw-bold text-black">AUTHORIZE & DEPLOY</button>
                 </div>
             </form>
@@ -264,13 +351,21 @@
             new bootstrap.Modal(document.getElementById('approveModal')).show();
         }
 
-        // Live Grid Client Filter Routing
+        // Live Grid Client Filter Routing (Updated to correctly support partitioned grid layouts)
         document.getElementById('nodeFilter').addEventListener('input', function (e) {
             let filter = e.target.value.toLowerCase();
             let items = document.querySelectorAll('.node-item');
+
             items.forEach(item => {
                 let text = item.textContent.toLowerCase();
                 item.style.display = text.includes(filter) ? '' : 'none';
+            });
+
+            // Clean visualization helper: Hide group sections completely if they contain no matching elements
+            document.querySelectorAll('.section-group').forEach(section => {
+                let itemsInSection = section.querySelectorAll('.node-item');
+                let hasVisibleItems = Array.from(itemsInSection).some(i => i.style.display !== 'none');
+                section.style.display = hasVisibleItems ? '' : 'none';
             });
         });
     </script>
