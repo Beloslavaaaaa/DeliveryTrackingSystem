@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Cargobell.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260320074602_AddUniquePhoneNumber")]
-    partial class AddUniquePhoneNumber
+    [Migration("20260518162417_CleanProductionSync")]
+    partial class CleanProductionSync
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,6 +41,9 @@ namespace Cargobell.Data.Migrations
                         .IsRequired()
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("DeclarationFilePath")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -51,6 +54,9 @@ namespace Cargobell.Data.Migrations
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -114,18 +120,51 @@ namespace Cargobell.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CourierRequestId"));
 
+                    b.Property<decimal?>("CodAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("CustomSenderEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomSenderName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CustomSenderPhone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DestinationZone")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DropoffAddress")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<decimal>("EstimatedPrice")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsCashOnDelivery")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsCustomSender")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsExactTime")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsFragile")
                         .HasColumnType("bit");
 
                     b.Property<string>("PackageDescription")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PackageType")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PickupAddress")
@@ -135,12 +174,24 @@ namespace Cargobell.Data.Migrations
                     b.Property<DateTime>("PreferredPickupTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("PreferredPickupTimeEnd")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ReceiverName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
+                    b.Property<string>("ReceiverPhone")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("CourierRequestId");
@@ -255,7 +306,6 @@ namespace Cargobell.Data.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("CourierId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -277,16 +327,16 @@ namespace Cargobell.Data.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Notes")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ReceiverId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("SenderId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal>("ShippingCost")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("StatusId")
                         .HasColumnType("int");
@@ -515,9 +565,7 @@ namespace Cargobell.Data.Migrations
                 {
                     b.HasOne("Cargobell.Shared.Models.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("User");
                 });
@@ -546,8 +594,7 @@ namespace Cargobell.Data.Migrations
                     b.HasOne("Cargobell.Shared.Models.ApplicationUser", "Courier")
                         .WithMany()
                         .HasForeignKey("CourierId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Cargobell.Shared.Models.DeliveryRoute", "DeliveryRoute")
                         .WithMany()
@@ -558,14 +605,12 @@ namespace Cargobell.Data.Migrations
                     b.HasOne("Cargobell.Shared.Models.ApplicationUser", "Receiver")
                         .WithMany()
                         .HasForeignKey("ReceiverId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Cargobell.Shared.Models.ApplicationUser", "Sender")
                         .WithMany()
                         .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Cargobell.Shared.Models.Status", "Status")
                         .WithMany()

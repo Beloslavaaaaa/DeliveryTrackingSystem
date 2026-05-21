@@ -1,0 +1,148 @@
+﻿@{
+    ViewData["Title"] = "About Our Operations | Cargobell";
+}
+
+<style>
+    /* --- SYSTEM UI KEYFRAME ANIMATION ENGINE --- */
+    .animate-terminal-fade {
+        opacity: 0;
+        transform: translateY(12px);
+        animation: terminalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* DOUBLE @@ ESCAPED KEYFRAMES FOR RAZOR COMPATIBILITY */
+    @@keyframes terminalSlideUp {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Theme Styles */
+    .text-gold {
+        color: #D4AF37 !important;
+    }
+
+    .border-gold {
+        border-color: #D4AF37 !important;
+    }
+
+    /* Tighter Interactive Row Nodes */
+    .manifest-row {
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(15px);
+        border: 1px solid #2a2a2a;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .manifest-row:hover {
+            border-color: #D4AF37 !important;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.1);
+        }
+
+    /* Scaled down Image Wrapper Rules */
+    .manifest-img-wrap {
+        border: 1px solid #222;
+        overflow: hidden;
+        width: 100%;
+        max-height: 280px; /* Made the pictures shorter */
+        background-color: #0b0b0b;
+    }
+
+    /* Fluid Image Rules */
+    .manifest-img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover; /* Keeps images looking sharp within the smaller heights */
+        opacity: 0.8;
+        transition: transform 0.4s ease, opacity 0.4s ease;
+    }
+
+    .manifest-row:hover .manifest-img {
+        transform: scale(1.01);
+        opacity: 1;
+    }
+</style>
+
+<div class="container py-4 mt-lg-4">
+
+    <div class="text-center mb-4 animate-terminal-fade">
+        <h1 class="fs-2 text-gold mb-1 fw-bold text-uppercase" style="letter-spacing: 2px;">More about our work and us</h1>
+        <p class="text-secondary opacity-75 mt-0" style="letter-spacing: 5px; font-size: 0.8rem;">CARGOBELL OPERATIONAL MANIFESTO</p>
+    </div>
+
+    <div class="row g-3 justify-content-center">
+        <div class="col-xl-9 col-lg-11">
+            <div class="row g-3">
+
+                <div class="col-md-6 animate-terminal-fade" style="animation-delay: 100ms;">
+                    <div class="card p-3 h-100 manifest-row rounded-0">
+                        <h3 class="small text-white fw-light mb-2 text-uppercase" style="letter-spacing: 1px;">
+                            <span class="text-gold fw-bold">// PROTOCOL 01:</span> There isn't an unreachable place for us
+                        </h3>
+                        <div class="manifest-img-wrap mt-auto">
+                            <img src="~/images/1pic.png" alt="Global Reaching Logistics Coordinates" class="manifest-img" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 animate-terminal-fade" style="animation-delay: 130ms;">
+                    <div class="card p-3 h-100 manifest-row rounded-0">
+                        <h3 class="small text-white fw-light mb-2 text-uppercase" style="letter-spacing: 1px;">
+                            <span class="text-gold fw-bold">// PROTOCOL 02:</span> There isn't a package too big for us
+                        </h3>
+                        <div class="manifest-img-wrap mt-auto">
+                            <img src="~/images/3pic.png" alt="Heavy Payload Capacity Configuration" class="manifest-img" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 animate-terminal-fade" style="animation-delay: 160ms;">
+                    <div class="card p-3 h-100 manifest-row rounded-0">
+                        <h3 class="small text-white fw-light mb-2 text-uppercase" style="letter-spacing: 1px;">
+                            <span class="text-gold fw-bold">// PROTOCOL 03:</span> In perfect physical form for your needs
+                        </h3>
+                        <div class="manifest-img-wrap mt-auto">
+                            <img src="~/images/5pic.png" alt="Optimized Fleet Operations and Physical Conditioning" class="manifest-img" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 animate-terminal-fade" style="animation-delay: 190ms;">
+                    <div class="card p-3 h-100 manifest-row rounded-0">
+                        <h3 class="small text-white fw-light mb-2 text-uppercase" style="letter-spacing: 1px;">
+                            <span class="text-gold fw-bold">// PROTOCOL 04:</span> Never a problem to authorities
+                        </h3>
+                        <div class="manifest-img-wrap mt-auto">
+                            <img src="~/images/4pic.png" alt="Seamless Regulatory Customs Authorization" class="manifest-img" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 animate-terminal-fade" style="animation-delay: 220ms;">
+                    <div class="card p-3 h-100 manifest-row rounded-0">
+                        <h3 class="small text-white fw-light mb-2 text-uppercase" style="letter-spacing: 1px;">
+                            <span class="text-gold fw-bold">// PROTOCOL 05:</span> Working anywhere, anytime, with anyone
+                        </h3>
+                        <div class="manifest-img-wrap mt-auto">
+                            <img src="~/images/2pic.png" alt="Universal Network Synchronization Matrix" class="manifest-img" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 animate-terminal-fade" style="animation-delay: 250ms;">
+                    <div class="card p-3 h-100 manifest-row rounded-0">
+                        <h3 class="small text-gold fw-bold mb-2 text-uppercase" style="letter-spacing: 1px;">
+                            // DIRECT TRANSMISSION: From the team
+                        </h3>
+                        <div class="manifest-img-wrap mt-auto">
+                            <img src="~/images/6pic.png" alt="Cargobell Strategic Operational Personnel" class="manifest-img" />
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

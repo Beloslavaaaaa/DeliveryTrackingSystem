@@ -35,7 +35,7 @@ namespace Cargobell.Shared.Models
         public bool IsCompleted { get; set; }
 
         [Required(ErrorMessage = "Please select a pickup date")]
-        public DateTime PreferredPickupTime { get; set; }
+        public DateTime PreferredPickupTime { get; set; } = DateTime.Today;
 
         public string? PreferredPickupTimeEnd { get; set; }
         public bool IsExactTime { get; set; }

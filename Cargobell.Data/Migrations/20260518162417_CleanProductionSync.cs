@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Cargobell.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class CleanProductionSync : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,6 +33,8 @@ namespace Cargobell.Data.Migrations
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DeclarationFilePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsApproved = table.Column<bool>(type: "bit", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -41,7 +43,7 @@ namespace Cargobell.Data.Migrations
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
                     TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
                     LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
@@ -68,6 +70,23 @@ namespace Cargobell.Data.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DeliveryRoutes", x => x.DeliveryRouteId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Offices",
+                columns: table => new
+                {
+                    OfficeId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CodeName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    City = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Offices", x => x.OfficeId);
                 });
 
             migrationBuilder.CreateTable(
@@ -196,14 +215,29 @@ namespace Cargobell.Data.Migrations
                 {
                     CourierRequestId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     PickupAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DropoffAddress = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PackageDescription = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PreferredPickupTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PackageType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DestinationZone = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsFragile = table.Column<bool>(type: "bit", nullable: false),
+                    IsCashOnDelivery = table.Column<bool>(type: "bit", nullable: false),
+                    CodAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    EstimatedPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsCompleted = table.Column<bool>(type: "bit", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    PreferredPickupTime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    PreferredPickupTimeEnd = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsExactTime = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsCustomSender = table.Column<bool>(type: "bit", nullable: false),
+                    CustomSenderName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CustomSenderPhone = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CustomSenderEmail = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReceiverName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ReceiverPhone = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ReceiverEmail = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -212,8 +246,7 @@ namespace Cargobell.Data.Migrations
                         name: "FK_CourierRequests_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -223,16 +256,19 @@ namespace Cargobell.Data.Migrations
                     ShipmentId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TrackingCode = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
-                    SenderId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ReceiverId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    CourierId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    SenderId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    ReceiverId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    CourierId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     DeliveryRouteId = table.Column<int>(type: "int", nullable: false),
                     StatusId = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EstimatedDelivery = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DeliveredDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsCashOnDelivery = table.Column<bool>(type: "bit", nullable: false),
-                    CodAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
+                    CodAmount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    IsFragile = table.Column<bool>(type: "bit", nullable: false),
+                    Notes = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ShippingCost = table.Column<decimal>(type: "decimal(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -365,6 +401,13 @@ namespace Cargobell.Data.Migrations
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_PhoneNumber",
+                table: "AspNetUsers",
+                column: "PhoneNumber",
+                unique: true,
+                filter: "[PhoneNumber] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
@@ -453,6 +496,9 @@ namespace Cargobell.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "CourierRequests");
+
+            migrationBuilder.DropTable(
+                name: "Offices");
 
             migrationBuilder.DropTable(
                 name: "Ratings");

@@ -4,136 +4,47 @@
     Layout = "_CourierLayout";
     var allRequests = (List<Cargobell.Shared.Models.CourierRequest>)ViewBag.AllRequests;
 
-    // --- LOGICAL PARTITIONING ENGINE ---
-    // Section 1: Underage verification holds (Needs attention based on file path metrics)
+    // --- LOGICAL PARTITIONING ENGINE (UNTOUCHED) ---
     var underageHolds = Model.Where(vm => !vm.User.IsApproved &&
                                            !string.IsNullOrEmpty(vm.User.DeclarationFilePath) &&
                                            vm.User.DeclarationFilePath != "REJECTED").ToList();
 
-    // Section 2: Approved users who have active, unhandled requests
     var usersWithRequests = Model.Where(vm => !underageHolds.Contains(vm) &&
                                                allRequests.Any(r => r.UserId == vm.User.Id)).ToList();
 
-    // Section 3: Standard active/inactive base accounts
     var standardNodes = Model.Where(vm => !underageHolds.Contains(vm) && !usersWithRequests.Contains(vm)).ToList();
 }
 
-<style>
-    /* Terminal Theme Variables */
-    :root {
-        --terminal-gold: #D4AF37;
-        --terminal-dark: #0a0a0a;
-        --terminal-card-bg: #121212;
-        --terminal-border: #262626;
-        --terminal-muted: #888888;
-        --terminal-red: #dc3545;
-    }
+<div class="container-fluid py-4 text-white" style="background-color: #050505; font-family: 'Courier New', Courier, monospace;">
 
-    /* Core UI Animations */
-    .animate-pulse-gold {
-        animation: pulse-gold-frame 2s infinite;
-    }
-
-    @@keyframes pulse-gold-frame {
-        0% {
-            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4);
-            border-color: var(--terminal-gold);
-        }
-
-        70% {
-            box-shadow: 0 0 0 8px rgba(212, 175, 55, 0);
-            border-color: rgba(212, 175, 55, 0.5);
-        }
-
-        100% {
-            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
-            border-color: var(--terminal-gold);
-        }
-    }
-
-    .animate-pulse-red {
-        animation: pulse-red-frame 2s infinite;
-    }
-
-    @@keyframes pulse-red-frame {
-        0% {
-            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
-            border-color: var(--terminal-red);
-        }
-
-        70% {
-            box-shadow: 0 0 0 8px rgba(220, 53, 69, 0);
-            border-color: rgba(220, 53, 69, 0.5);
-        }
-
-        100% {
-            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
-            border-color: var(--terminal-red);
-        }
-    }
-
-    /* Redesigned Card Components */
-    .terminal-node-card {
-        background-color: var(--terminal-card-bg);
-        border: 1px solid var(--terminal-border);
-        border-radius: 6px;
-        transition: transform 0.22s ease, border-color 0.22s ease;
-    }
-
-        .terminal-node-card:hover {
-            border-color: #444;
-            transform: translateY(-2px);
-        }
-
-    .terminal-attention-card {
-        background: linear-gradient(145deg, #161010 0%, #121212 100%) !important;
-    }
-
-    .terminal-request-card {
-        background: linear-gradient(145deg, #141310 0%, #121212 100%) !important;
-    }
-
-    /* Custom Input Line Styles */
-    .terminal-search-line {
-        border-width: 0 0 2px 0 !important;
-        border-color: var(--terminal-border) !important;
-        transition: border-color 0.3s;
-    }
-
-        .terminal-search-line:focus {
-            border-color: var(--terminal-gold) !important;
-            box-shadow: none !important;
-        }
-
-    /* Utility Grid Setup */
-    .node-grid-layout {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 1.5rem;
-    }
-
-    .inner-request-row {
-        background: #181818;
-        border: 1px solid var(--terminal-border);
-        border-left: 3px solid var(--terminal-gold);
-        border-radius: 4px;
-    }
-
-    .section-divider {
-        border-bottom: 1px dashed var(--terminal-border);
-        letter-spacing: 1.5px;
-    }
-</style>
-
-<div class="container-fluid py-4">
-    <div class="d-flex align-items-center justify-content-between mb-5 border-start border-gold ps-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-end pb-3 mb-4 border-bottom border-secondary">
         <div>
-            <h4 class="text-secondary small mb-1 text-uppercase tracking-wider" style="letter-spacing: 2px;">Operational Node Overview</h4>
-            <h2 class="text-white fw-bold mb-0" style="letter-spacing: -0.5px;">ENTITY DIRECTORY</h2>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="spinner-grow spinner-grow-sm text-gold" role="status"></span>
+                <h6 class="text-muted small mb-0 text-uppercase tracking-wider">Logistics Command System</h6>
+            </div>
+            <h1 class="text-gold fw-bold tracking-tight mb-0" style="color: #d4af37; text-shadow: 0 0 10px rgba(212,175,55,0.2);">ENTITY DIRECTORY MATRIX</h1>
         </div>
-        <div>
-            <input type="text" id="nodeFilter" class="form-control bg-transparent terminal-search-line text-white rounded-0 px-0 font-monospace"
-                   placeholder="[ SEARCH & FILTER NODES... ]" style="width: 280px; font-size: 0.85rem;">
+    </div>
+
+    <div class="card bg-black border-secondary rounded-0 mb-5" style="background: #0a0a0a; border-style: dashed !important;">
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label text-gold small font-monospace tracking-widest text-uppercase mb-2">
+                        <i class="bi bi-search me-2"></i>Query Node Network Registry
+                    </label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-black text-gold border-secondary rounded-0">
+                            <i class="bi bi-terminal mx-1"></i>
+                        </span>
+                        <input type="text" id="nodeFilter" autofocus
+                               class="form-control bg-black text-white border-secondary rounded-0 font-monospace py-3 ps-3"
+                               placeholder="[ENTER NODE NAME, SYSTEM ID, OR PHONE IDENTIFIER TO FILTER RUNTIME...]"
+                               style="box-shadow: none;">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -142,53 +53,70 @@
         @if (underageHolds.Any())
         {
             <div class="mb-5 section-group">
-                <h6 class="text-danger font-monospace fw-bold mb-3 section-divider pb-2 text-uppercase">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i> [01] CRITICAL PROTOCOL: UNDERAGE VERIFICATION HOLDS (@underageHolds.Count)
-                </h6>
-                <div class="node-grid-layout">
+                <div class="border-bottom border-danger pb-2 mb-4">
+                    <h6 class="text-danger font-monospace fw-bold mb-0 text-uppercase tracking-widest">
+                        <i class="bi bi-exclamation-triangle-fill me-2 animate-flicker"></i> [01] CRITICAL PROTOCOL: UNDERAGE VERIFICATION HOLDS (@underageHolds.Count)
+                    </h6>
+                </div>
+
+                <div class="row g-4">
                     @foreach (var vm in underageHolds)
                     {
-                        <div class="node-item">
-                            <div class="terminal-node-card p-4 h-100 d-flex flex-column justify-content-between terminal-attention-card animate-pulse-red">
-                                <div>
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <h5 class="fw-bold text-white mb-0 text-uppercase tracking-tight">@vm.User.FirstName @vm.User.LastName</h5>
-                                        <span class="badge rounded-1 bg-danger text-white font-monospace px-2 py-1 small fw-bold">AGE VERIFICATION</span>
-                                    </div>
+                        <div class="col-xl-4 col-md-6 node-item">
+                            <div class="card h-100 bg-black rounded-0 border-danger position-relative animate-pulse-red"
+                                 style="background: #0d0d0d; border: 1px solid #dc3545;">
 
-                                    <div class="text-gold small mb-4 font-monospace d-flex align-items-center">
-                                        <i class="bi bi-telephone me-2 opacity-50"></i>@vm.User.PhoneNumber
-                                    </div>
+                                <div class="card-header bg-black border-bottom border-danger d-flex justify-content-between align-items-center py-3 px-4 rounded-0">
+                                    <span class="fw-bold text-uppercase tracking-wider">
+                                        <a href="/CourierPanel/UserDetails/@vm.User.Id" class="text-white text-decoration-none border-bottom border-transparent hover-gold" style="transition: color 0.15s ease;">
+                                            @vm.User.FirstName @vm.User.LastName <i class="bi bi-box-arrow-up-right small ms-1" style="font-size:0.65rem; vertical-align:middle;"></i>
+                                        </a>
+                                    </span>
+                                    <span class="badge border px-3 py-1 tracking-widest text-uppercase"
+                                          style="font-size: 0.65rem; color: #dc3545; border-color: #dc3545; background-color: rgba(220,53,69,0.05);">
+                                        AGE VERIFY HOLD
+                                    </span>
+                                </div>
 
-                                    <div class="p-3 mb-4 bg-black border border-danger border-opacity-25 rounded-1 shadow-sm">
-                                        <p class="text-danger small fw-bold mb-3 font-monospace">
-                                            <i class="bi bi-file-earmark-pdf-fill me-1"></i> AGE DECLARATION SUBMITTED
-                                        </p>
-                                        <div class="d-grid gap-2">
-                                            <a href="/uploads/declarations/@vm.User.DeclarationFilePath" target="_blank" class="btn btn-sm btn-outline-danger font-monospace py-2 fw-bold text-center">
-                                                REVIEW SIGNED FORMS
-                                            </a>
-                                            <div class="d-flex gap-2">
-                                                <form asp-controller="CourierPanel" asp-action="ApproveUser" method="post" class="w-100 m-0">
-                                                    <input type="hidden" name="userId" value="@vm.User.Id" />
-                                                    <button type="submit" class="btn btn-sm btn-success w-100 fw-bold py-2 font-monospace">
-                                                        <i class="bi bi-check-lg me-1"></i>OVERRIDE & APPROVE
-                                                    </button>
-                                                </form>
-                                                <form asp-controller="CourierPanel" asp-action="RejectUser" method="post" class="m-0">
-                                                    <input type="hidden" name="userId" value="@vm.User.Id" />
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger px-3 py-2">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </form>
+                                <div class="card-body p-4">
+                                    <div class="d-flex flex-column gap-3">
+                                        <div>
+                                            <small class="text-muted tracking-widest d-block text-uppercase" style="font-size: 0.65rem;">Comms Registry</small>
+                                            <div class="text-gold font-monospace small mt-1"><i class="bi bi-telephone me-2 text-muted"></i>@vm.User.PhoneNumber</div>
+                                        </div>
+
+                                        <hr class="border-secondary my-1">
+
+                                        <div class="p-3 bg-black border border-danger border-opacity-25 rounded-0 font-monospace">
+                                            <p class="text-danger small fw-bold mb-3 d-flex align-items-center">
+                                                <i class="bi bi-file-earmark-pdf-fill me-2 fs-5"></i> AGE DECLARATION SUBMITTED
+                                            </p>
+                                            <div class="d-grid gap-2">
+                                                <a href="/uploads/declarations/@vm.User.DeclarationFilePath" target="_blank" class="btn btn-sm btn-outline-danger font-monospace py-2 fw-bold text-uppercase rounded-0">
+                                                    Review Signed Document
+                                                </a>
+                                                <div class="d-flex gap-2">
+                                                    <form asp-controller="CourierPanel" asp-action="ApproveUser" method="post" class="w-100 m-0">
+                                                        <input type="hidden" name="userId" value="@vm.User.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-success text-black w-100 fw-bold py-2 font-monospace rounded-0 text-uppercase" style="background-color: #198754; border: none;">
+                                                            Override &amp; Pass
+                                                        </button>
+                                                    </form>
+                                                    <form asp-controller="CourierPanel" asp-action="RejectUser" method="post" class="m-0">
+                                                        <input type="hidden" name="userId" value="@vm.User.Id" />
+                                                        <button type="submit" class="btn btn-sm btn-outline-danger px-3 py-2 rounded-0">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="border-top border-secondary border-opacity-25 pt-2 mt-4 d-flex justify-content-between align-items-center">
-                                    <span class="text-muted font-monospace" style="font-size: 0.65rem;">SYS_ID: @vm.User.Id.Substring(0, 8).ToUpper()</span>
-                                    <span class="font-monospace small text-danger" style="font-size: 0.7rem;">● LOCKED</span>
+                                <div class="card-footer bg-black border-top border-danger p-3 d-flex justify-content-between align-items-center font-monospace rounded-0" style="border-top-style: dashed !important;">
+                                    <span class="text-muted" style="font-size: 0.65rem;">NODE_REF: @vm.User.Id.Substring(0, 8).ToUpper()</span>
+                                    <span class="small text-danger fw-bold" style="font-size: 0.7rem;">● INTERCEPT LOCKED</span>
                                 </div>
                             </div>
                         </div>
@@ -200,52 +128,74 @@
         @if (usersWithRequests.Any())
         {
             <div class="mb-5 section-group">
-                <h6 class="text-gold font-monospace fw-bold mb-3 section-divider pb-2 text-uppercase">
-                    <i class="bi bi-box-seam-fill me-2"></i> [02] PRIORITY LOGISTICS: ACTIVE MANIFEST DEMANDS (@usersWithRequests.Count)
-                </h6>
-                <div class="node-grid-layout">
+                <div class="border-bottom border-warning pb-2 mb-4">
+                    <h6 class="text-gold font-monospace fw-bold mb-0 text-uppercase tracking-widest">
+                        <i class="bi bi-box-seam-fill me-2"></i> [02] PRIORITY LOGISTICS: ACTIVE MANIFEST DEMANDS (@usersWithRequests.Count)
+                    </h6>
+                </div>
+
+                <div class="row g-4">
                     @foreach (var vm in usersWithRequests)
                     {
                         var userRequests = allRequests.Where(r => r.UserId == vm.User.Id).ToList();
 
-                        <div class="node-item">
-                            <div class="terminal-node-card p-4 h-100 d-flex flex-column justify-content-between terminal-request-card animate-pulse-gold">
-                                <div>
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <h5 class="fw-bold text-white mb-0 text-uppercase tracking-tight">@vm.User.FirstName @vm.User.LastName</h5>
-                                        <span class="badge rounded-1 bg-warning text-black font-monospace px-2 py-1 small fw-bold">REQUESTS PENDING</span>
-                                    </div>
+                        <div class="col-xl-4 col-md-6 node-item">
+                            <div class="card h-100 bg-black rounded-0 border-secondary position-relative animate-pulse-gold"
+                                 style="background: #0d0d0d; border: 1px solid #222;"
+                                 onmouseover="this.style.borderColor='#d4af37'" onmouseout="this.style.borderColor='#222'">
 
-                                    <div class="text-gold small mb-4 font-monospace d-flex align-items-center">
-                                        <i class="bi bi-telephone me-2 opacity-50"></i>@vm.User.PhoneNumber
-                                    </div>
+                                <div class="card-header bg-black border-bottom border-secondary d-flex justify-content-between align-items-center py-3 px-4 rounded-0">
+                                    <span class="fw-bold text-uppercase tracking-wider">
+                                        <a href="/CourierPanel/UserDetails/@vm.User.Id" class="text-white text-decoration-none border-bottom border-transparent hover-gold" style="transition: color 0.15s ease;">
+                                            @vm.User.FirstName @vm.User.LastName <i class="bi bi-box-arrow-up-right small ms-1" style="font-size:0.65rem; vertical-align:middle;"></i>
+                                        </a>
+                                    </span>
+                                    <span class="badge border px-3 py-1 tracking-widest text-uppercase animate-flicker"
+                                          style="font-size: 0.65rem; color: #d4af37; border-color: #d4af37; background-color: rgba(212,175,55,0.05);">
+                                        DEMANDS PENDING
+                                    </span>
+                                </div>
 
-                                    <div class="request-list mt-2">
-                                        <span class="text-muted small uppercase-tracking d-block mb-2 font-monospace" style="font-size:0.7rem;">Active Manifest Requests (@userRequests.Count)</span>
-                                        @foreach (var req in userRequests)
-                                        {
-                                            <div class="inner-request-row p-3 mb-2 shadow-sm">
-                                                <div class="text-white small fw-bold mb-2 font-monospace text-truncate"><i class="bi bi-box-seam me-2 text-gold"></i>@req.PackageDescription</div>
-                                                <div class="d-flex align-items-center justify-content-between gap-2 mt-1">
-                                                    <button type="button" class="btn btn-sm btn-gold px-3 font-monospace text-black fw-bold" style="font-size: 0.72rem; border-radius: 3px;"
-                                                            onclick="openApproveModal('@req.CourierRequestId', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.PackageDescription ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.PickupAddress ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.DropoffAddress ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(vm.User.FirstName + " " + vm.User.LastName))')">
-                                                        INSPECT SEGMENT
-                                                    </button>
-                                                    <form asp-controller="CourierPanel" asp-action="RejectRequest" method="post" class="m-0">
-                                                        <input type="hidden" name="requestId" value="@req.CourierRequestId" />
-                                                        <button type="submit" class="btn btn-sm btn-link text-danger text-decoration-none p-0 px-1 font-monospace" style="font-size: 0.75rem;">
-                                                            DISMISS
-                                                        </button>
-                                                    </form>
-                                                </div>
+                                <div class="card-body p-4">
+                                    <div class="d-flex flex-column gap-3">
+                                        <div>
+                                            <small class="text-muted tracking-widest d-block text-uppercase" style="font-size: 0.65rem;">Comms Registry</small>
+                                            <div class="text-gold font-monospace small mt-1"><i class="bi bi-telephone me-2 text-muted"></i>@vm.User.PhoneNumber</div>
+                                        </div>
+
+                                        <hr class="border-secondary my-1">
+
+                                        <div>
+                                            <small class="text-muted tracking-widest d-block text-uppercase mb-2 font-monospace" style="font-size:0.65rem;">Queue Array Logs (@userRequests.Count)</small>
+                                            <div style="max-height: 240px; overflow-y: auto;">
+                                                @foreach (var req in userRequests)
+                                                {
+                                                    <div class="p-3 mb-2 rounded-0 font-monospace" style="background: #121212; border: 1px solid #262626; border-left: 3px solid #d4af37;">
+                                                        <div class="text-white small fw-bold mb-2 text-truncate">
+                                                            <i class="bi bi-box-seam me-2 text-gold"></i>@req.PackageDescription
+                                                        </div>
+                                                        <div class="d-flex align-items-center justify-content-between gap-2 mt-2">
+                                                            <button type="button" class="btn btn-sm btn-gold text-black fw-bold px-3 rounded-0 text-uppercase" style="font-size: 0.68rem; background-color: #d4af37; border: none;"
+                                                                    onclick="openApproveModal('@req.CourierRequestId', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.PackageDescription ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.PickupAddress ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(req.DropoffAddress ?? ""))', '@Html.Raw(JavaScriptEncoder.Default.Encode(vm.User.FirstName + " " + vm.User.LastName))')">
+                                                                Inspect Segment
+                                                            </button>
+                                                            <form asp-controller="CourierPanel" asp-action="RejectRequest" method="post" class="m-0">
+                                                                <input type="hidden" name="requestId" value="@req.CourierRequestId" />
+                                                                <button type="submit" class="btn btn-sm btn-link text-danger text-decoration-none p-0 px-1 font-monospace text-uppercase fw-bold" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+                                                                    Dismiss
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    </div>
+                                                }
                                             </div>
-                                        }
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="border-top border-secondary border-opacity-25 pt-2 mt-4 d-flex justify-content-between align-items-center">
-                                    <span class="text-muted font-monospace" style="font-size: 0.65rem;">SYS_ID: @vm.User.Id.Substring(0, 8).ToUpper()</span>
-                                    <span class="font-monospace small text-success" style="font-size: 0.7rem;">● AUTHORIZED NODE</span>
+                                <div class="card-footer bg-black border-top border-secondary p-3 d-flex justify-content-between align-items-center font-monospace rounded-0">
+                                    <span class="text-muted" style="font-size: 0.65rem;">NODE_REF: @vm.User.Id.Substring(0, 8).ToUpper()</span>
+                                    <span class="small text-success fw-bold" style="font-size: 0.7rem;">● ONLINE RECORD</span>
                                 </div>
                             </div>
                         </div>
@@ -257,31 +207,46 @@
         @if (standardNodes.Any())
         {
             <div class="mb-5 section-group">
-                <h6 class="text-secondary font-monospace fw-bold mb-3 section-divider pb-2 text-uppercase">
-                    <i class="bi bi-shield-check me-2"></i> [03] BASE REPOSITORY: STANDARD VERIFIED NODES (@standardNodes.Count)
-                </h6>
-                <div class="node-grid-layout">
+                <div class="border-bottom border-secondary pb-2 mb-4">
+                    <h6 class="text-muted font-monospace fw-bold mb-0 text-uppercase tracking-widest">
+                        <i class="bi bi-shield-check me-2"></i> [03] BASE REPOSITORY: STANDARD VERIFIED NODES (@standardNodes.Count)
+                    </h6>
+                </div>
+
+                <div class="row g-4">
                     @foreach (var vm in standardNodes)
                     {
-                        <div class="node-item">
-                            <div class="terminal-node-card p-4 h-100 d-flex flex-column justify-content-between">
-                                <div>
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <h5 class="fw-bold text-white mb-0 text-uppercase tracking-tight">@vm.User.FirstName @vm.User.LastName</h5>
-                                    </div>
+                        <div class="col-xl-4 col-md-6 node-item">
+                            <div class="card h-100 bg-black rounded-0 border-secondary position-relative"
+                                 style="border: 1px solid #1a1a1a; background: #0d0d0d; transition: border-color 0.2s;"
+                                 onmouseover="this.style.borderColor='#333'" onmouseout="this.style.borderColor='#1a1a1a'">
 
-                                    <div class="text-gold small mb-4 font-monospace d-flex align-items-center">
-                                        <i class="bi bi-telephone me-2 opacity-50"></i>@vm.User.PhoneNumber
-                                    </div>
+                                <div class="card-header bg-black border-bottom border-secondary d-flex justify-content-between align-items-center py-3 px-4 rounded-0" style="border-color: #1a1a1a !important;">
+                                    <span class="fw-bold text-uppercase tracking-wider">
+                                        <a href="/CourierPanel/UserDetails/@vm.User.Id" class="text-secondary text-decoration-none border-bottom border-transparent hover-gold" style="transition: color 0.15s ease;">
+                                            @vm.User.FirstName @vm.User.LastName <i class="bi bi-box-arrow-up-right small ms-1" style="font-size:0.65rem; vertical-align:middle;"></i>
+                                        </a>
+                                    </span>
+                                </div>
 
-                                    <div class="text-center py-4 border border-dashed border-secondary border-opacity-10 rounded">
-                                        <span class="text-muted small font-monospace" style="font-size: 0.75rem;">[ NO PENDING DISPATCHES ]</span>
+                                <div class="card-body p-4">
+                                    <div class="d-flex flex-column gap-3">
+                                        <div>
+                                            <small class="text-muted tracking-widest d-block text-uppercase" style="font-size: 0.65rem;">Comms Registry</small>
+                                            <div class="text-white opacity-70 font-monospace small mt-1"><i class="bi bi-telephone me-2 text-muted"></i>@vm.User.PhoneNumber</div>
+                                        </div>
+
+                                        <hr class="border-secondary my-1" style="border-color: #1a1a1a !important;">
+
+                                        <div class="text-center py-4 border border-dashed border-secondary border-opacity-20 rounded-0" style="background-color: #090909;">
+                                            <span class="text-muted small font-monospace tracking-wider" style="font-size: 0.72rem;">[ NO PENDING DISPATCHES ]</span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="border-top border-secondary border-opacity-25 pt-2 mt-4 d-flex justify-content-between align-items-center">
-                                    <span class="text-muted font-monospace" style="font-size: 0.65rem;">SYS_ID: @vm.User.Id.Substring(0, 8).ToUpper()</span>
-                                    <span class="font-monospace small text-success" style="font-size: 0.7rem;">● AUTHORIZED NODE</span>
+                                <div class="card-footer bg-black border-top border-secondary p-3 d-flex justify-content-between align-items-center font-monospace rounded-0" style="border-color: #1a1a1a !important;">
+                                    <span class="text-muted" style="font-size: 0.65rem;">NODE_REF: @vm.User.Id.Substring(0, 8).ToUpper()</span>
+                                    <span class="small text-muted" style="font-size: 0.7rem;">● IDLE CORE</span>
                                 </div>
                             </div>
                         </div>
@@ -294,45 +259,47 @@
 
 <div class="modal fade" id="approveModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark border-gold text-white rounded-2" style="border: 1px solid var(--terminal-gold) !important;">
-            <div class="modal-header border-secondary border-opacity-50 px-4">
-                <h5 class="modal-title text-gold fw-bold font-monospace"><i class="bi bi-terminal me-2"></i>REQUEST INSPECTION PROTOCOL</h5>
+        <div class="modal-content bg-dark border-gold text-white rounded-0" style="background-color: #0d0d0d !important; border: 1px solid #d4af37 !important;">
+            <div class="modal-header border-secondary px-4 py-3 rounded-0">
+                <h5 class="modal-title text-gold fw-bold font-monospace text-uppercase" style="letter-spacing: 0.5px;">
+                    <i class="bi bi-terminal me-2"></i>Request Inspection Protocol
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form asp-controller="CourierPanel" asp-action="ApproveRequest" method="post">
-                <div class="modal-body p-4">
+                <div class="modal-body p-4 font-monospace">
                     <input type="hidden" name="requestId" id="modalId">
 
                     <div class="mb-3">
-                        <label class="text-muted small d-block font-monospace mb-1">ORIGINATING NODE / SENDER</label>
-                        <div class="p-2 bg-black border border-secondary rounded-1 font-monospace" id="modalSender"></div>
+                        <small class="text-muted d-block text-uppercase tracking-wider mb-1" style="font-size: 0.65rem;">Originating Node / Sender</small>
+                        <div class="p-2 bg-black border border-secondary rounded-0 text-white" id="modalSender"></div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="text-muted small d-block font-monospace mb-1">CARGO MANIFEST DESCRIPTION</label>
-                        <div class="p-2 bg-black border border-secondary rounded-1 small" id="modalDesc"></div>
+                        <small class="text-muted d-block text-uppercase tracking-wider mb-1" style="font-size: 0.65rem;">Cargo Manifest Description</small>
+                        <div class="p-2 bg-black border border-secondary rounded-0 small text-gold" id="modalDesc"></div>
                     </div>
 
-                    <div class="mb-4 p-3 bg-soft-black border border-secondary border-opacity-50 rounded-1 small text-muted">
-                        <div class="mb-2"><strong class="text-white font-monospace">PICKUP LOC:</strong> <span id="modalPickup" class="text-light"></span></div>
-                        <div><strong class="text-white font-monospace">DROPOFF LOC:</strong> <span id="modalDropoff" class="text-light"></span></div>
+                    <div class="mb-4 p-3 bg-black border border-secondary rounded-0 small text-muted" style="border-style: dashed !important;">
+                        <div class="mb-2 text-truncate"><strong class="text-white text-uppercase">Pickup Loc:</strong> <span id="modalPickup" class="text-light ms-1"></span></div>
+                        <div class="text-truncate"><strong class="text-white text-uppercase">Dropoff Loc:</strong> <span id="modalDropoff" class="text-light ms-1"></span></div>
                     </div>
 
-                    <hr class="border-secondary border-opacity-50 my-4" />
+                    <hr class="border-secondary my-4" />
 
                     <div class="mb-2">
-                        <label class="text-gold small d-block mb-2 fw-bold font-monospace">ASSIGN LOGISTICS TRANSIT SECTOR</label>
-                        <select name="deliveryRouteId" class="form-select bg-black text-white border-secondary rounded-1 font-monospace py-2" required>
+                        <label class="text-gold small d-block mb-2 fw-bold text-uppercase tracking-wider">Assign Logistics Transit Sector</label>
+                        <select name="deliveryRouteId" class="form-select bg-black text-white border-secondary rounded-0 py-2 font-monospace" style="box-shadow: none;" required>
                             <option value="1">Primary Hub Transit (Sector A)</option>
                             <option value="2">Secondary Hub Transit (Sector B)</option>
                             <option value="3">Express Local Node (Sector C)</option>
                         </select>
-                        <span class="text-muted d-block mt-2 font-monospace" style="font-size: 0.65rem;">[ WARNING: This action will permanently initialize a tracking manifest code ]</span>
+                        <span class="text-muted d-block mt-2" style="font-size: 0.6rem; letter-spacing: 0.2px;">[ WARNING: THIS ACTION PERMANENTLY INITIALIZES THE SECTOR TRACKING CORE ]</span>
                     </div>
                 </div>
-                <div class="modal-footer border-secondary border-opacity-50 p-3">
-                    <button type="button" class="btn btn-outline-secondary font-monospace px-4" data-bs-dismiss="modal">CANCEL</button>
-                    <button type="submit" class="btn btn-gold font-monospace px-4 fw-bold text-black">AUTHORIZE & DEPLOY</button>
+                <div class="modal-footer border-secondary p-3 rounded-0">
+                    <button type="button" class="btn btn-outline-secondary font-monospace rounded-0 px-4 text-uppercase fw-bold" style="font-size:0.8rem;" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-gold font-monospace rounded-0 px-4 fw-bold text-black text-uppercase" style="background-color: #d4af37; font-size:0.8rem; border: none;">Authorize &amp; Deploy</button>
                 </div>
             </form>
         </div>
@@ -341,6 +308,7 @@
 
 @section Scripts {
     <script>
+        // Untouched Original Function Binding Logic
         function openApproveModal(id, desc, pickup, dropoff, user) {
             document.getElementById('modalId').value = id;
             document.getElementById('modalSender').innerText = user;
@@ -351,7 +319,7 @@
             new bootstrap.Modal(document.getElementById('approveModal')).show();
         }
 
-        // Live Grid Client Filter Routing (Updated to correctly support partitioned grid layouts)
+        // Live Grid Client Filter Routing Engine (Maintained perfectly)
         document.getElementById('nodeFilter').addEventListener('input', function (e) {
             let filter = e.target.value.toLowerCase();
             let items = document.querySelectorAll('.node-item');
@@ -361,7 +329,6 @@
                 item.style.display = text.includes(filter) ? '' : 'none';
             });
 
-            // Clean visualization helper: Hide group sections completely if they contain no matching elements
             document.querySelectorAll('.section-group').forEach(section => {
                 let itemsInSection = section.querySelectorAll('.node-item');
                 let hasVisibleItems = Array.from(itemsInSection).some(i => i.style.display !== 'none');
@@ -370,3 +337,105 @@
         });
     </script>
 }
+
+<style>
+    /* Framework Visual Isolation Constants */
+    .tracking-widest {
+        letter-spacing: 0.12em;
+    }
+
+    .tracking-wider {
+        letter-spacing: 0.08em;
+    }
+
+    .text-gold {
+        color: #d4af37 !important;
+    }
+
+    .btn-gold:hover {
+        background-color: #bfa030 !important;
+        color: black !important;
+    }
+
+    .btn-outline-gold:hover {
+        background-color: rgba(212,175,55,0.1) !important;
+        color: #d4af37 !important;
+    }
+
+    /* System State Animators */
+    .animate-pulse-gold {
+        animation: pulse-gold-framework 2.5s infinite;
+    }
+
+    @@keyframes pulse-gold-framework {
+        0% {
+            border-color: #222;
+            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.1);
+        }
+
+        50% {
+            border-color: #d4af37;
+            box-shadow: 0 0 12px 0 rgba(212, 175, 55, 0.15);
+        }
+
+        100% {
+            border-color: #222;
+            box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.1);
+        }
+    }
+
+    .animate-pulse-red {
+        animation: pulse-red-framework 2s infinite;
+    }
+
+    @@keyframes pulse-red-framework {
+        0% {
+            border-color: rgba(220,53,69,0.4);
+            box-shadow: 0 0 0 0 rgba(220,53,69,0.1);
+        }
+
+        50% {
+            border-color: rgba(220,53,69,1);
+            box-shadow: 0 0 14px 0 rgba(220,53,69,0.25);
+        }
+
+        100% {
+            border-color: rgba(220,53,69,0.4);
+            box-shadow: 0 0 0 0 rgba(220,53,69,0.1);
+        }
+    }
+
+    .animate-flicker {
+        animation: text-flicker-framework 3s infinite;
+    }
+
+    @@keyframes text-flicker-framework {
+        0% {
+            opacity: 1;
+        }
+
+        48% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.6;
+        }
+
+        52% {
+            opacity: 1;
+        }
+
+        54% {
+            opacity: 0.4;
+        }
+
+        56% {
+            opacity: 1;
+        }
+
+        .hover-gold:hover {
+            color: #d4af37 !important;
+        }
+    }
+</style>

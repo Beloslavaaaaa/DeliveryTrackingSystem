@@ -12,7 +12,7 @@
 
     <form asp-action="CreateShipment" method="post" class="terminal-card p-5 shadow-lg">
         @Html.AntiForgeryToken()
-
+         <div asp-validation-summary="All" class="text-danger fw-bold mb-4 font-monospace p-3 bg-black border border-danger rounded small"></div>
         <input type="hidden" asp-for="SenderId" id="senderId" />
         <input type="hidden" asp-for="ReceiverId" id="receiverId" />
         <input type="hidden" asp-for="DeliveryRouteId" id="finalRouteId" />

@@ -45,6 +45,7 @@ namespace DeliveryTrackingSystem.Controllers
         public async Task<IActionResult> ActiveCargo(string searchTerm)
         {
             var userId = _userManager.GetUserId(User);
+
             var query = _context.Shipments
                 .Include(s => s.Status)
                 .Include(s => s.Sender)
@@ -52,14 +53,30 @@ namespace DeliveryTrackingSystem.Controllers
                 .Include(s => s.DeliveryRoute)
                 .Where(s => s.CourierId == userId && s.Status.Name != "Delivered");
 
-            if (!string.IsNullOrEmpty(searchTerm))
+            if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                query = query.Where(s => s.TrackingCode.Contains(searchTerm) ||
-                                     s.Receiver.PhoneNumber.Contains(searchTerm) ||
-                                     s.Receiver.FirstName.Contains(searchTerm));
+                string cleanTerm = searchTerm.Trim().ToLower();
+
+                query = query.Where(s =>
+                    s.TrackingCode.ToLower().Contains(cleanTerm) ||
+
+                    (s.Receiver != null && (s.Receiver.FirstName.ToLower().Contains(cleanTerm) ||
+                                            s.Receiver.LastName.ToLower().Contains(cleanTerm) ||
+                                            s.Receiver.PhoneNumber.Contains(cleanTerm))) ||
+
+                    (s.Sender != null && (s.Sender.FirstName.ToLower().Contains(cleanTerm) ||
+                                          s.Sender.LastName.ToLower().Contains(cleanTerm) ||
+                                          s.Sender.PhoneNumber.Contains(cleanTerm))) ||
+
+                    (s.DeliveryRoute != null && (s.DeliveryRoute.StartLocation.ToLower().Contains(cleanTerm) ||
+                                                 s.DeliveryRoute.EndLocation.ToLower().Contains(cleanTerm))) ||
+
+                    (!string.IsNullOrEmpty(s.Notes) && s.Notes.ToLower().Contains(cleanTerm))
+                );
             }
 
-            return View(await query.OrderByDescending(s => s.CreatedAt).ToListAsync());
+            var manifests = await query.ToListAsync();
+            return View(manifests);
         }
 
         [HttpGet("ShipmentDetails/{id}")]
@@ -96,8 +113,11 @@ namespace DeliveryTrackingSystem.Controllers
 
         [HttpGet("CreateShipment")]
         public async Task<IActionResult> CreateShipment()
-        {
-            ViewBag.Offices = await _context.Offices.ToListAsync();
+        { 
+            var officesList = await _context.Offices.ToListAsync();
+
+            ViewBag.Offices = officesList;
+
             return View(new CreateShipmentViewModel());
         }
 
@@ -105,7 +125,15 @@ namespace DeliveryTrackingSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateShipment(CreateShipmentViewModel vm)
         {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Offices = await _context.Offices.ToListAsync();
+                return View(vm);
+            }
+
             var initialStatus = await _context.Statuses.FirstOrDefaultAsync(s => s.Name == "In Transit");
+            int dynamicStatusId = initialStatus?.StatusId ?? 2; 
+
             string generatedCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
 
             string finalizedDestination = "Unassigned Sector Location";
@@ -120,7 +148,12 @@ namespace DeliveryTrackingSystem.Controllers
             }
 
             var activeRoute = await _context.DeliveryRoutes.FirstOrDefaultAsync();
-            int routeId = activeRoute?.DeliveryRouteId ?? 1;
+            if (activeRoute == null)
+            {
+                ModelState.AddModelError("", "Critical Error: No delivery routes found in the system database.");
+                ViewBag.Offices = await _context.Offices.ToListAsync();
+                return View(vm);
+            }
 
             string structuredNotes = $"GUEST_SENDER_NAME: {vm.SenderManualName} | GUEST_SENDER_PHONE: {vm.SenderPhone} | " +
                                      $"GUEST_RECEIVER_NAME: {vm.ReceiverManualName} | GUEST_RECEIVER_PHONE: {vm.ReceiverPhone} | " +
@@ -130,10 +163,13 @@ namespace DeliveryTrackingSystem.Controllers
             {
                 TrackingCode = generatedCode,
                 CourierId = _userManager.GetUserId(User),
-                SenderId = vm.SenderId,
-                ReceiverId = vm.ReceiverId,
-                DeliveryRouteId = routeId,
-                StatusId = initialStatus?.StatusId ?? 1,
+                SenderId = string.IsNullOrWhiteSpace(vm.SenderId) ? null : vm.SenderId,
+                ReceiverId = string.IsNullOrWhiteSpace(vm.ReceiverId) ? null : vm.ReceiverId,
+
+                DeliveryRouteId = activeRoute.DeliveryRouteId,
+                DeliveryRoute = activeRoute,
+
+                StatusId = 1,
                 IsCashOnDelivery = vm.IsCashOnDelivery,
                 CodAmount = vm.CodAmount,
                 IsFragile = vm.IsFragile,
@@ -158,7 +194,6 @@ namespace DeliveryTrackingSystem.Controllers
             TempData["SuccessMessage"] = $"MANIFEST {generatedCode} AUTHORIZED.";
             return RedirectToAction("ActiveCargo");
         }
-
         [HttpGet("Users")]
         public async Task<IActionResult> UserDirectory()
         {
@@ -218,29 +253,48 @@ namespace DeliveryTrackingSystem.Controllers
         [Authorize(Roles = "Courier,Admin")]
         public async Task<IActionResult> ApproveRequest(int requestId, int deliveryRouteId)
         {
-            var request = await _context.CourierRequests.FirstOrDefaultAsync(r => r.CourierRequestId == requestId);
+            var request = await _context.CourierRequests.Include(r => r.User).FirstOrDefaultAsync(r => r.CourierRequestId == requestId);
             if (request == null) return NotFound();
 
-            var route = await _context.DeliveryRoutes.FirstOrDefaultAsync(r => r.DeliveryRouteId == deliveryRouteId);
+            var route = await _context.DeliveryRoutes.FirstOrDefaultAsync(r => r.DeliveryRouteId == deliveryRouteId)
+                        ?? await _context.DeliveryRoutes.FirstOrDefaultAsync();
+
             if (route == null)
             {
-                route = await _context.DeliveryRoutes.FirstOrDefaultAsync();
-                if (route == null)
-                {
-                    TempData["ErrorMessage"] = "CRITICAL: No delivery routes found in the database.";
-                    return RedirectToAction("UserDirectory");
-                }
+                TempData["ErrorMessage"] = "CRITICAL: No active delivery routes found in the tracking registry.";
+                return RedirectToAction("UserDirectory");
             }
 
             string? senderId = request.UserId;
-            var matchedReceiver = await _userManager.Users
-                .FirstOrDefaultAsync(u => u.PhoneNumber == request.ReceiverPhone);
+            string? receiverId = null;
+
+            if (!string.IsNullOrWhiteSpace(request.ReceiverPhone))
+            {
+                string cleanPhone = request.ReceiverPhone.Replace("+", "").Replace(" ", "").Replace("-", "").TrimStart('0');
+
+                var matchedReceiver = await _context.Users
+                    .FirstOrDefaultAsync(u => u.PhoneNumber != null &&
+                                             u.PhoneNumber.Replace("+", "").Replace(" ", "").Replace("-", "").EndsWith(cleanPhone));
+
+                if (matchedReceiver != null)
+                {
+                    receiverId = matchedReceiver.Id;
+                }
+            }
+
+            string structuredNotes = $"GUEST_SENDER_NAME: {(request.User != null ? $"{request.User.FirstName} {request.User.LastName}" : "Guest Sender")} | " +
+                                     $"GUEST_SENDER_PHONE: {request.User?.PhoneNumber ?? "N/A"} | " +
+                                     $"GUEST_RECEIVER_NAME: {request.ReceiverName} | " +
+                                     $"GUEST_RECEIVER_PHONE: {request.ReceiverPhone} | " +
+                                     $"DESTINATION_LOCATION: {request.DropoffAddress ?? "Custom Local Node"} | " +
+                                     $"START_LOCATION: {route?.StartLocation ?? "Main Distribution Hub"} | " +
+                                     $"DESCRIPTION: {request.PackageDescription}";
 
             var newShipment = new Shipment
             {
                 TrackingCode = "CB-" + Guid.NewGuid().ToString().Substring(0, 8).ToUpper(),
                 SenderId = senderId,
-                ReceiverId = matchedReceiver?.Id,
+                ReceiverId = receiverId,
                 CourierId = _userManager.GetUserId(User),
                 DeliveryRouteId = route.DeliveryRouteId,
                 StatusId = 1,
@@ -249,24 +303,34 @@ namespace DeliveryTrackingSystem.Controllers
                 CodAmount = request.CodAmount ?? 0m,
                 IsFragile = request.IsFragile,
                 ShippingCost = request.EstimatedPrice,
-                Notes = $"DROP-OFF RECIPIENT: {request.ReceiverName} ({request.ReceiverPhone}). DESCRIPTION: {request.PackageDescription}"
+                Notes = structuredNotes
             };
 
             request.Status = "Approved";
             request.IsCompleted = true;
 
-            _context.Shipments.Add(newShipment);
-            await _context.SaveChangesAsync();
-
-            _context.StatusHistories.Add(new StatusHistory
+            try
             {
-                ShipmentId = newShipment.ShipmentId,
-                StatusId = newShipment.StatusId,
-                Timestamp = DateTime.UtcNow,
-                Note = "Courier dispatch request approved. Manifest initialized.",
-                Location = "Logistics Dispatch Hub"
-            });
-            await _context.SaveChangesAsync();
+                _context.Shipments.Add(newShipment);
+                await _context.SaveChangesAsync();
+
+                _context.StatusHistories.Add(new StatusHistory
+                {
+                    ShipmentId = newShipment.ShipmentId,
+                    StatusId = newShipment.StatusId,
+                    Timestamp = DateTime.UtcNow,
+                    Note = "Courier dispatch request approved. Manifest initialized via system sync.",
+                    Location = "Logistics Dispatch Hub"
+                });
+
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"DISPATCH MANIFEST {newShipment.TrackingCode} AUTHORIZED SUCCESSFULLY.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"CRITICAL TRANSACTION FAILURE: {ex.InnerException?.Message ?? ex.Message}";
+                return RedirectToAction("UserDirectory");
+            }
 
             return RedirectToAction("ActiveCargo");
         }
@@ -284,19 +348,86 @@ namespace DeliveryTrackingSystem.Controllers
             }
             return RedirectToAction("UserDirectory");
         }
+        [HttpGet("UserDetails/{id}")]
+        public async Task<IActionResult> UserDetails(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            // Fetch all active or history requests linked to this user profile
+            var userRequests = await _context.CourierRequests
+                .Where(r => r.UserId == id)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            var viewModel = new UserRequestViewModel
+            {
+                User = user,
+                RequestCount = userRequests.Count(r => !r.IsCompleted)
+            };
+
+            ViewBag.UserRequests = userRequests;
+            return View(viewModel);
+        }
+
+        [HttpPost("DeleteUserProfile")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteUserProfile(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            var linkedRequests = _context.CourierRequests.Where(r => r.UserId == id);
+            _context.CourierRequests.RemoveRange(linkedRequests);
+            await _context.SaveChangesAsync();
+
+            var result = await _userManager.DeleteAsync(user);
+            if (!result.Succeeded)
+            {
+                TempData["ErrorMessage"] = "CRITICAL: Database identity record could not be purged.";
+                return RedirectToAction("UserDetails", new { id = id });
+            }
+
+            TempData["SuccessMessage"] = "NODE PURGE COMPLETE. PROFILE CORES CLEARED.";
+            return RedirectToAction("UserDirectory");
+        }
 
         [HttpGet("History")]
         public async Task<IActionResult> PackageHistory(string searchTerm)
         {
             var userId = _userManager.GetUserId(User);
             var query = _context.Shipments
-                .Include(s => s.Status).Include(s => s.Sender).Include(s => s.Receiver)
-                .Where(s => s.CourierId == userId && s.Status.Name == "Delivered");
+        .Include(s => s.Status)
+        .Include(s => s.Sender)
+        .Include(s => s.Receiver)
+        .Include(s => s.DeliveryRoute)
+        .Where(s => s.CourierId == userId && s.Status.Name == "Delivered");
 
-            if (!string.IsNullOrEmpty(searchTerm))
+            if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                query = query.Where(s => s.TrackingCode.Contains(searchTerm) || s.Receiver.PhoneNumber.Contains(searchTerm));
+                string cleanTerm = searchTerm.Trim().ToLower();
+
+                query = query.Where(s =>
+                    s.TrackingCode.ToLower().Contains(cleanTerm) ||
+
+                    (s.Receiver != null && (s.Receiver.FirstName.ToLower().Contains(cleanTerm) ||
+                                            s.Receiver.LastName.ToLower().Contains(cleanTerm) ||
+                                            s.Receiver.PhoneNumber.Contains(cleanTerm))) ||
+
+                    (s.Sender != null && (s.Sender.FirstName.ToLower().Contains(cleanTerm) ||
+                                          s.Sender.LastName.ToLower().Contains(cleanTerm) ||
+                                          s.Sender.PhoneNumber.Contains(cleanTerm))) ||
+
+                    (s.DeliveryRoute != null && (s.DeliveryRoute.StartLocation.ToLower().Contains(cleanTerm) ||
+                                                 s.DeliveryRoute.EndLocation.ToLower().Contains(cleanTerm))) ||
+
+                    (!string.IsNullOrEmpty(s.Notes) && s.Notes.ToLower().Contains(cleanTerm))
+                );
             }
+
+            var archivedManifests = await query
+                .OrderByDescending(s => s.DeliveredDate)
+                .ToListAsync();
 
             return View(await query.OrderByDescending(s => s.DeliveredDate ?? s.CreatedAt).ToListAsync());
         }
@@ -364,6 +495,7 @@ namespace DeliveryTrackingSystem.Controllers
             }
             return RedirectToAction("ShipmentDetails", new { id = shipmentId });
         }
+
         [HttpGet("/CourierPanel/ManifestDetails/{id}")]
         public async Task<IActionResult> ManifestDetails(int id)
         {
@@ -381,7 +513,6 @@ namespace DeliveryTrackingSystem.Controllers
             return View(shipment);
         }
 
-        // --- AJAX HELPERS ---
         [HttpGet("GetUserByPhone")]
         public async Task<IActionResult> GetUserByPhone(string phone)
         {

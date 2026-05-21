@@ -55,6 +55,8 @@ namespace DeliveryTrackingSystem.Controllers
 
             return View("~/Views/Shipments/Details.cshtml", viewModel);
         }
+        [HttpGet]
+        public IActionResult About() => View();
 
         public IActionResult Contact() => View();
         public IActionResult Privacy() => View();

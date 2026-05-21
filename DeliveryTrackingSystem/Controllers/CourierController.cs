@@ -29,7 +29,10 @@ namespace DeliveryTrackingSystem.Controllers
             await PopulateViewBagsAsync(userId);
 
             ViewBag.ActiveTab = tab;
-
+            var model = new CourierRequest
+            {
+                PreferredPickupTime = DateTime.Today
+            };
             return View(new CourierRequest());
         }
 

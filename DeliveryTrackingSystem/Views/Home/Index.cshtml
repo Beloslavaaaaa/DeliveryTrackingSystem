@@ -98,6 +98,11 @@
         box-shadow: none !important;
         outline: none !important;
     }
+
+    /* Uniform height rule applied to every single card */
+    .uniform-card-height {
+        min-height: 170px;
+    }
 </style>
 
 <div class="hero-wrap">
@@ -135,30 +140,46 @@
             </div>
         </div>
 
-        <div class="row g-5 mt-5 text-center">
-            <div class="col-md-4 animate-terminal-fade" style="animation-delay: 200ms;">
-                <div class="p-4 border border-secondary rounded h-100 d-flex flex-column card-interactive-node" style="background: rgba(0,0,0,0.6);">
-                    <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Contact Us</h5>
-                    <p class="small text-secondary fw-light mb-4">Reach out to our global concierge for support.</p>
-                    <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-gold px-4 mt-auto py-2">Open Inquiry</a>
+        <div class="row g-4 mt-5 justify-content-center text-center">
+
+            <div class="col-lg-4 col-md-6 animate-terminal-fade" style="animation-delay: 200ms;">
+                <div class="p-4 border border-secondary rounded card-interactive-node d-flex flex-column justify-content-center uniform-card-height" style="background: rgba(0,0,0,0.6);">
+                    <h5 class="text-gold text-uppercase small mb-2" style="letter-spacing: 3px;">Contact Us</h5>
+                    <p class="small text-secondary fw-light mb-3">Reach out to our global concierge for direct support chains.</p>
+                    <div>
+                        <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-gold px-5 py-2">Open Inquiry</a>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-md-4 animate-terminal-fade" style="animation-delay: 250ms;">
-                <div class="p-4 border border-gold rounded h-100 d-flex flex-column shadow-lg card-interactive-node animate-glow-pulse" style="background: rgba(212, 175, 55, 0.15); transform: scale(1.05); backdrop-filter: blur(5px);">
-                    <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Pricing</h5>
-                    <p class="small text-white fw-light mb-4">Calculate shipping rates for domestic and international.</p>
-                    <a asp-controller="Home" asp-action="Pricing" class="btn btn-gold px-4 mt-auto py-2">View Rates</a>
+            <div class="col-lg-4 col-md-6 d-flex flex-column gap-4 animate-terminal-fade" style="animation-delay: 250ms;">
+                <div class="p-4 border border-gold rounded shadow-lg card-interactive-node animate-glow-pulse d-flex flex-column justify-content-center uniform-card-height" style="background: rgba(212, 175, 55, 0.15); backdrop-filter: blur(5px);">
+                    <h5 class="text-gold text-uppercase small mb-2" style="letter-spacing: 3px;">Pricing</h5>
+                    <p class="small text-white fw-light mb-3">Calculate secure shipping rates for transit parameters.</p>
+                    <div>
+                        <a asp-controller="Home" asp-action="Pricing" class="btn btn-gold px-5 py-2">View Rates</a>
+                    </div>
+                </div>
+
+                <div class="p-4 border border-secondary rounded card-interactive-node d-flex flex-column justify-content-center uniform-card-height" style="background: rgba(0,0,0,0.6);">
+                    <h5 class="text-gold text-uppercase small mb-2" style="letter-spacing: 3px;">About Us</h5>
+                    <p class="small text-secondary fw-light mb-3">Learn about our secure operational manifesto and global grid.</p>
+                    <div>
+                        <a asp-controller="Home" asp-action="About" class="btn btn-outline-gold px-5 py-2">Our Manifesto</a>
+                    </div>
                 </div>
             </div>
 
-            <div class="col-md-4 animate-terminal-fade" style="animation-delay: 300ms;">
-                <div class="p-4 border border-secondary rounded h-100 d-flex flex-column card-interactive-node" style="background: rgba(0,0,0,0.6);">
-                    <h5 class="text-gold text-uppercase small mb-3" style="letter-spacing: 3px;">Privacy Policy</h5>
-                    <p class="small text-secondary fw-light mb-4">Learn about our data security and cargo protection.</p>
-                    <a asp-controller="Home" asp-action="Privacy" class="btn btn-outline-gold px-4 mt-auto py-2">Read Policy</a>
+            <div class="col-lg-4 col-md-6 animate-terminal-fade" style="animation-delay: 300ms;">
+                <div class="p-4 border border-secondary rounded card-interactive-node d-flex flex-column justify-content-center uniform-card-height" style="background: rgba(0,0,0,0.6);">
+                    <h5 class="text-gold text-uppercase small mb-2" style="letter-spacing: 3px;">Privacy Policy</h5>
+                    <p class="small text-secondary fw-light mb-3">Learn about our extreme data protection algorithms.</p>
+                    <div>
+                        <a asp-controller="Home" asp-action="Privacy" class="btn btn-outline-gold px-5 py-2">Read Policy</a>
+                    </div>
                 </div>
             </div>
+
         </div>
     </div>
 </div>

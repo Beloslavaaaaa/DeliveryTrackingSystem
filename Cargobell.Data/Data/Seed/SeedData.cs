@@ -1,6 +1,7 @@
 ﻿using Cargobell.Shared.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,42 @@ namespace Cargobell.Data.Data.Seed
 
             await context.Offices.AddRangeAsync(offices);
             await context.SaveChangesAsync();
+        }
+        public static async Task SeedAdminUserAsync(IServiceProvider serviceProvider, IConfiguration configuration)
+        {
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+
+            string roleName = "Courier";
+            if (!await roleManager.RoleExistsAsync(roleName))
+            {
+                await roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+
+            var adminSettings = configuration.GetSection("AdminAccount");
+            string email = adminSettings["Email"] ?? "courier@cargobell.com";
+            string password = adminSettings["Password"] ?? "Courier123!";  
+
+            var existingUser = await userManager.FindByEmailAsync(email);
+            if (existingUser == null)
+            {
+                var newCourier = new ApplicationUser
+                {
+                    UserName = email,
+                    Email = email,
+                    FirstName = "Bella",
+                    LastName = "Mrnv",
+                    DateOfBirth = new DateTime(2007, 2, 14),
+                    EmailConfirmed = true
+                };
+
+                var createResult = await userManager.CreateAsync(newCourier, password);
+                if (createResult.Succeeded)
+                {
+                    await userManager.AddToRoleAsync(newCourier, roleName);
+                }
+            }
+        
         }
     }
 }

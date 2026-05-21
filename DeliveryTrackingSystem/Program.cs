@@ -8,17 +8,23 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+Console.WriteLine($"\n========================================\nACTIVE CONNECTION STRING: {connectionString}\n========================================\n");
 
+// =======================================================================
+// UPDATED: Added compatibility levels specifically matching your SSMS 20 context 
+// =======================================================================
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString,
-    x => x.MigrationsAssembly("Cargobell.Data")));
+    options.UseSqlServer(connectionString, x =>
+    {
+        x.MigrationsAssembly("Cargobell.Data");
+        x.UseCompatibilityLevel(160); // Forces structural compatibility across environments
+    }));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
-    // FIXED: Enabled security requirements to trigger specific error messages
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
     options.Password.RequireNonAlphanumeric = true;
@@ -33,7 +39,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
     options.SlidingExpiration = true;
 
-    options.LoginPath = "/Account/Login"; // Fixed path to match your AccountController
+    options.LoginPath = "/Account/Login";
     options.LogoutPath = "/Account/Logout";
     options.AccessDeniedPath = "/Error/403";
 
@@ -59,40 +65,35 @@ builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
+// =======================================================================
+// PROFESSIONAL UPDATES: Database Migrations & Dynamic Configurations Seeding
+// =======================================================================
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
-    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var context = services.GetRequiredService<ApplicationDbContext>();
-    await SeedData.SeedOffices(context);
+    var configuration = services.GetRequiredService<IConfiguration>();
 
-    if (!await roleManager.RoleExistsAsync("Courier"))
+    try
     {
-        await roleManager.CreateAsync(new IdentityRole("Courier"));
+        // Keep Migrate inside the try block for cloud host target handshakes
+        context.Database.Migrate();
+
+        // Run your seeding logic cleanly using async tasks safely processed at startup
+        Task.Run(async () =>
+        {
+            // Seed your static items first
+            await SeedData.SeedOffices(context);
+
+            // Seed your courier/admin system roles & users dynamically from configuration
+            await SeedData.SeedAdminUserAsync(services, configuration);
+
+        }).GetAwaiter().GetResult();
     }
-
-    string courierEmail = "courier@cargobell.com";
-    string courierPass = "Courier123!";
-
-    var user = await userManager.FindByEmailAsync(courierEmail);
-    if (user == null)
+    catch (Exception ex)
     {
-        var newCourier = new ApplicationUser
-        {
-            UserName = courierEmail,
-            Email = courierEmail,
-            FirstName = "Bella",
-            LastName = "Belova",
-            DateOfBirth = new DateTime(1990, 1, 1),
-            EmailConfirmed = true
-        };
-
-        var result = await userManager.CreateAsync(newCourier, courierPass);
-        if (result.Succeeded)
-        {
-            await userManager.AddToRoleAsync(newCourier, "Courier");
-        }
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred during database setup/seeding.");
     }
 }
 
@@ -110,6 +111,7 @@ app.UseStatusCodePagesWithReExecute("/Error/{0}");
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
 

@@ -3,21 +3,16 @@
     Layout = "_CourierLayout";
     ViewData["Title"] = $"Manifest Readout #{Model.TrackingCode}";
 
-    // 1. --- NAMES & PHONES EXTRACTION ---
     string senderName = Model.Sender != null ? $"{Model.Sender.FirstName} {Model.Sender.LastName}" : "UNREGISTERED SENDER";
     string senderPhone = Model.Sender?.PhoneNumber ?? "N/A";
     string receiverName = Model.Receiver != null ? $"{Model.Receiver.FirstName} {Model.Receiver.LastName}" : "UNREGISTERED RECIPIENT";
     string receiverPhone = Model.Receiver?.PhoneNumber ?? "N/A";
 
-    // 2. --- ROUTE ADDRESSES (Falls back to DeliveryRoute, then Notes, then Default text) ---
     string startLocation = Model.DeliveryRoute?.StartLocation ?? "Main Distribution Hub";
     string finalDest = Model.DeliveryRoute?.EndLocation ?? "Custom Local Node";
 
-    // 3. --- FINANCIALS & METRICS (Defensive checks for missing properties) ---
-    // If your Shipment model lacks 'ShippingCost', we calculate it from the route or use €0.00
-    decimal costCalculated = Model.ShippingCost != null ? Model.ShippingCost : 0.00m;
+    decimal costCalculated = Model.ShippingCost;
 
-    // 4. --- PARSING SYSTEM NOTES FOR GUEST OVERRIDES ---
     if (!string.IsNullOrEmpty(Model.Notes))
     {
         if (Model.Notes.Contains("GUEST_SENDER_NAME:"))

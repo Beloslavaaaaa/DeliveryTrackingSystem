@@ -2,6 +2,7 @@
 @{
     ViewData["Title"] = "Contact Concierge | Cargobell";
     string apiKey = Configuration["GoogleMaps:ApiKey"];
+    string mapId = Configuration["GoogleMaps:MapId"];
 }
 
 <div class="container py-5 mt-lg-5">
@@ -14,15 +15,24 @@
         <div class="col-lg-5">
             <div class="card p-4 border-secondary h-100 bg-soft-black">
                 <h3 class="h5 text-white mb-4 text-uppercase fw-bold">Direct Secure Channel</h3>
-                <form>
+
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success bg-transparent border-success text-success text-center mb-4 py-3" role="alert">
+                        <strong>@TempData["SuccessMessage"]</strong><br />
+                        Secure dispatch has been routed to headquarters.
+                    </div>
+                }
+
+                <form asp-controller="Home" asp-action="SendTransmission" method="post">
                     <div class="mb-3">
-                        <input type="text" class="form-control py-3" placeholder="NAME">
+                        <input type="text" name="name" class="form-control py-3" placeholder="NAME" required>
                     </div>
                     <div class="mb-3">
-                        <input type="email" class="form-control py-3" placeholder="SECURE EMAIL">
+                        <input type="email" name="email" class="form-control py-3" placeholder="SECURE EMAIL" required>
                     </div>
                     <div class="mb-3">
-                        <textarea class="form-control py-3" rows="4" placeholder="TRANSMISSION CONTENT"></textarea>
+                        <textarea name="messageContent" class="form-control py-3" rows="4" placeholder="TRANSMISSION CONTENT" required></textarea>
                     </div>
                     <button type="submit" class="btn btn-gold w-100 py-3 fw-bold">DISPATCH</button>
                 </form>
@@ -31,7 +41,7 @@
 
         <div class="col-lg-7">
             <div class="terminal-border h-100 p-1" style="min-height: 450px;">
-                <div id="map" class="h-100 w-100" style="min-height: 450px; filter: grayscale(1) invert(0.9) sepia(0.5);"></div>
+                <div id="map" class="h-100 w-100" style="min-height: 450px;"></div>
             </div>
         </div>
     </div>
@@ -45,12 +55,10 @@
             const map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 5,
                 center: hq,
-                styles: [
-                    { "stylers": [{ "visibility": "simplified" }, { "color": "#131314" }] },
-                    { "featureType": "water", "stylers": [{ "color": "#000000" }] }
-                ],
-                disableDefaultUI: true 
+                mapId: "@mapId",
+                disableDefaultUI: true
             });
+
             new google.maps.Marker({
                 position: hq,
                 map: map,

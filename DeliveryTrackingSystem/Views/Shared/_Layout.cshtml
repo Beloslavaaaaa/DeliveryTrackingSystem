@@ -195,6 +195,7 @@
             @if (User.Identity.IsAuthenticated)
             {
                 <div class="d-flex justify-content-center gap-4 mb-4">
+                    <a asp-controller="Home" asp-action="About" class="footer-link">ABOUT US</a>
                     <a asp-controller="Home" asp-action="Contact" class="footer-link">CONTACT US</a>
                     <a asp-controller="Home" asp-action="Pricing" class="footer-link">PRICING</a>
                     <a asp-controller="Home" asp-action="Privacy" class="footer-link">PRIVACY POLICY</a>

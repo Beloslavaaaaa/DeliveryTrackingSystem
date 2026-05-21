@@ -6,7 +6,6 @@
     string activeTab = ViewBag.ActiveTab ?? "active";
     var currentUser = await UserManager.GetUserAsync(User);
 
-    // Safety fallback for rendering lists via ViewBag if passed as a composite collection, or handling query parameters
     var activeRequests = (ViewBag.ActiveRequests as List<Cargobell.Shared.Models.CourierRequest>) ?? new List<Cargobell.Shared.Models.CourierRequest>();
     var finishedRequests = (ViewBag.FinishedRequests as List<Cargobell.Shared.Models.CourierRequest>) ?? new List<Cargobell.Shared.Models.CourierRequest>();
 }
@@ -74,7 +73,6 @@
                         @Html.AntiForgeryToken()
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
-                        @* STEP 1: PARTIES *@
                         <div class="step-content" id="step-1">
                             <h5 class="text-gold mb-3 small fw-bold uppercase">Step 1: Dispatch Parties</h5>
 
@@ -107,7 +105,6 @@
                             </div>
                         </div>
 
-                        @* STEP 2: ROUTE *@
                         <div class="step-content d-none" id="step-2">
                             <h5 class="text-gold mb-4 small fw-bold uppercase">Step 2: Route</h5>
                             <input asp-for="PickupAddress" class="form-control bg-dark text-white border-secondary mb-1 py-3" placeholder="Pickup Address*">
@@ -117,7 +114,6 @@
                             <span asp-validation-for="DropoffAddress" class="text-danger smaller d-block"></span>
                         </div>
 
-                        @* STEP 3: SHIPMENT *@
                         <div class="step-content d-none" id="step-3">
                             <h5 class="text-gold mb-4 small fw-bold uppercase">Step 3: Shipment</h5>
                             <div class="row g-3 mb-4">
@@ -166,7 +162,6 @@
                             </div>
                         </div>
 
-                        @* STEP 4: TIMING *@
                         <div class="step-content d-none" id="step-4">
                             <h5 class="text-gold mb-4 small fw-bold uppercase">Step 4: Timing</h5>
                             <input type="date" asp-for="PreferredPickupTime" id="pickupDate" class="form-control bg-dark text-white border-secondary mb-1 py-3">
@@ -320,7 +315,6 @@
                 });
             }
 
-            // Validates fields inside the CURRENT active wizard step panel only
             function isCurrentStepValid() {
                 let isValid = true;
                 $(`#step-${step} input, #step-${step} select, #step-${step} textarea`).each(function() {
@@ -354,7 +348,7 @@
                 } else {
                     $('#otherInfoFields').slideUp(200);
                     $('#myInfoFields').slideDown(200);
-                    $('#otherInfoFields input').val(''); // Clear on toggle away
+                    $('#otherInfoFields input').val('');
                 }
             });
 
@@ -377,9 +371,10 @@
 
             const pDate = document.getElementById('pickupDate');
             if(pDate) {
-                const today = new Date().toISOString().split('T')[0];
-                pDate.setAttribute('min', today);
-                if(!pDate.value) pDate.value = today;
+                const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+                const localISODate = (new Date(Date.now() - tzoffset)).toISOString().split('T')[0];
+                pDate.setAttribute('min', localISODate);
+                if(!pDate.value) pDate.value = localISODate;
             }
         });
     </script>
